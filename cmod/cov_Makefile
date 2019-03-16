@@ -1,0 +1,47 @@
+#
+# Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License")
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+CTC = ctcwrap -i m -C "NO_EXCLUDE=*matchlib/*.h"
+COV_XML ?= coverage.xml
+MAKE_TARGET ?= all run
+
+MON.dat: $(MAKE_TARGET)
+
+# Apparently CTC doesn't like full path g++
+#CC_ := $(CC)
+CC_ = "g++"
+
+cov: CC = $(CTC) $(CC_)
+cov: clean MON.dat
+	ctcpost				\
+		-x $(COV_XML)		\
+		-t timing.txt		\
+		-p coverage.txt		\
+		-u untested.txt		\
+		MON.dat			\
+		MON.sym
+
+	ctcxmlmerge			\
+		$(COV_XML)		\
+		-x coverage_merged.xml	\
+		-p coverage_profile.txt	\
+
+	ctc2html			\
+		-i coverage_profile.txt	\
+		-o web-report
+
+cov_clean:
+	rm -rf MON.dat MON.sym coverage.xml timing.txt coverage.txt untested.txt coverage_merged.xml coverage_profile.txt web-report

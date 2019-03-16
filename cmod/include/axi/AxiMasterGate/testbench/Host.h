@@ -1,0 +1,193 @@
+/*
+ * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef __AXIMG_T_HOST__
+#define __AXIMG_T_HOST__
+
+#include <systemc.h>
+#include <ac_reset_signal_is.h>
+
+#include <axi/axi4.h>
+#include <nvhls_connections.h>
+
+#include <queue>
+#include <deque>
+
+/**
+ * \brief A testbench component to verify AxiMasterGate.
+ * \ingroup AXI
+ *
+ * \tparam Cfg     A valid AXI config.
+ *
+ * \par Overview
+ *
+ * This component connects to the request-response (non-AXI) interface of AXIMasterGate.
+ * It launches read and write requests and checks for appropriate responses.
+ */
+template <typename Cfg>
+SC_MODULE(Host) {
+ public:
+  sc_in<bool> reset_bar;
+  sc_in<bool> clk;
+
+  Connections::Out<WrRequest<Cfg> > wrRequestOut;
+  Connections::In<WrResp<Cfg> > wrRespIn;
+  Connections::Out<RdRequest<Cfg> > rdRequestOut;
+  Connections::In<RdResp<Cfg> > rdRespIn;
+
+  static const int bytesPerBeat = Cfg::dataWidth >> 3;
+
+  sc_out<bool> done_write;
+  sc_out<bool> done_read;
+
+  static const int write_count = 400;
+  static const int read_count = 100;
+
+  std::deque<unsigned int> read_ref;
+  std::queue<sc_uint<Cfg::dataWidth> > dataQ;
+
+  SC_CTOR(Host) : reset_bar("reset_bar"), clk("clk") {
+    SC_CTHREAD(run_wr_source, clk.pos());
+    async_reset_signal_is(reset_bar, false);
+
+    SC_CTHREAD(run_wr_sink, clk.pos());
+    async_reset_signal_is(reset_bar, false);
+
+    SC_CTHREAD(run_rd_source, clk.pos());
+    async_reset_signal_is(reset_bar, false);
+
+    SC_CTHREAD(run_rd_sink, clk.pos());
+    async_reset_signal_is(reset_bar, false);
+  }
+
+  struct Data { // don't really need this except to test out gen_random_payload
+    static const int width = Cfg::dataWidth;
+    NVUINTW(width) d;
+
+    template <unsigned int Size>
+    void Marshall(Marshaller<Size>& m) {
+      m& d;
+    }
+  };
+
+ protected:
+  void run_wr_source() {
+    wrRequestOut.Reset();
+    int addr = 0;
+    int ctr = 0;
+
+    wait(20); // If we start sending requests before resetting the ReorderBufs, bad things happen
+
+    while (1) {
+      wait();
+
+      if (ctr < write_count) {
+        WrRequest<Cfg> wrRequest;
+        wrRequest.addr = addr;
+
+        int len = rand() % 6;
+
+        wrRequest.len = len;
+        wrRequest.last = 0;
+
+        for (int i = 0; i <= len; ++i) {
+          if (i == len) {
+            wrRequest.last = 1;
+            ctr++;
+          }
+          wrRequest.data = nvhls::gen_random_payload<Data>().d;
+          std::cout << "@" << sc_time_stamp()
+                    << " write source initiated a request:"
+                    << "\t addr = " << hex << wrRequest.addr.to_uint64()
+                    << "\t data = " << hex << wrRequest.data.to_uint64() 
+                    << "\t len = " << dec << wrRequest.len.to_uint64()
+                    << std::endl;
+          wrRequestOut.Push(wrRequest);
+          dataQ.push(static_cast<sc_uint<Cfg::dataWidth> >(wrRequest.data));
+          addr += bytesPerBeat;
+        }
+      }
+    }
+  }
+
+  void run_wr_sink() {
+    wrRespIn.Reset();
+    done_write = 0;
+    int ctr = 0;
+
+    while (1) {
+      wait();
+      WrResp<Cfg> wrResp = wrRespIn.Pop();
+
+      std::cout << "@" << sc_time_stamp() << " write sink received response:"
+                << "\t resp = " << dec << wrResp.resp
+                << std::endl;
+      if (++ctr == write_count) done_write = 1;
+    }
+  }
+
+  void run_rd_source() {
+    rdRequestOut.Reset();
+    int addr = 0;
+    int ctr = 0;
+
+    wait(1000); // Let writes run well ahead of reads
+
+    while (1) {
+      wait();
+
+      if (ctr < read_count) {
+        RdRequest<Cfg> rdRequest;
+        rdRequest.addr = addr;
+        int len = rand() % 6;
+
+        rdRequest.len = len;
+
+        std::cout << "@" << sc_time_stamp() << " read source initiated a request:"
+                  << "\t addr = " << hex << rdRequest.addr.to_uint64()
+                  << "\t len = " << dec << rdRequest.len.to_uint64()
+                  << std::endl;
+        rdRequestOut.Push(rdRequest);
+        addr += (len+1)*bytesPerBeat;
+        ctr++;
+      }
+    }
+  }
+
+  void run_rd_sink() {
+    rdRespIn.Reset();
+    done_read = 0;
+    int ctr = 0;
+
+    while (1) {
+      wait();
+      RdResp<Cfg> rdResp = rdRespIn.Pop();
+      sc_uint<Cfg::dataWidth> rd_data_expected = dataQ.front(); dataQ.pop();
+
+      std::cout << "@" << sc_time_stamp() << " read sink received response:"
+                << "\t last = " << rdResp.last
+                << "\t data = " << hex << rdResp.data.to_uint64()
+                << "\t expected = " << hex << rd_data_expected
+                << std::endl;
+      NVHLS_ASSERT(static_cast<sc_uint<Cfg::dataWidth> >(rdResp.data) == rd_data_expected);
+
+      if (rdResp.last == 1) ctr++;
+      if (ctr == read_count) done_read = 1;
+    }
+  }
+};
+
+#endif

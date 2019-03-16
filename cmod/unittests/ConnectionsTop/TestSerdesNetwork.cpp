@@ -1,0 +1,183 @@
+/*
+ * Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+//========================================================================
+// TestSerdesNetwork.cc
+//========================================================================
+
+#include <vector>
+#include <systemc.h>
+#include <nvhls_serdes.h>
+#include <nvhls_connections.h>
+#include <testbench/Pacer.h>
+#include "TestSource.h"
+#include "TestSink.h"
+
+//------------------------------------------------------------------------
+// TestHarness
+//------------------------------------------------------------------------
+
+template< typename T >
+class TestHarness: public sc_module {
+  SC_HAS_PROCESS(TestHarness);
+
+ public:
+  // Module Interface
+  typedef Packet<Wrapped<T>::width,4,1,2> Packet_t;
+  typedef Flit<16,4,1,2,FlitId2bit> Flit_t;
+
+  sc_clock              clk;
+  sc_signal< bool >     rst;
+  TestSourceBlocking<T> src;
+  TestSinkBlocking<T>   sink;
+
+  serializer<Packet_t, Flit_t>      ser;
+  deserializer<Packet_t, Flit_t, 4> deser;
+
+  Connections::OutNetwork<T,4,1,2> enq_net;
+  Connections::InNetwork<T,4,1,2>  deq_net;
+
+  Connections::Combinational<T> enq_chan;
+  Connections::Combinational<T> deq_chan;
+
+  Connections::Combinational< Packet_t > ser_in;
+  Connections::Combinational< Flit_t >   deser_in;
+  Connections::Combinational< Packet_t > deser_out;
+
+  Connections::Out< sc_lv< 4*1 > > route;
+  Connections::Out< sc_lv< 2 > >   id;
+
+  Connections::Combinational< sc_lv< 4*1 > > route_chan;
+  Connections::Combinational< sc_lv< 2 > >   id_chan;
+
+  TestHarness(sc_module_name name,
+              std::vector<T>& src_msgs,
+              std::vector<T>& sink_msgs)
+    : sc_module(name),
+      clk("clk", 1, SC_NS, 0.5, 0, SC_NS, true),
+      rst("rst"),
+      src("src", Pacer(0.3, 0.7), src_msgs),
+      sink("sink", Pacer(0.5, 0.7), sink_msgs),
+      ser("serializer"),
+      deser("deserializer"),
+      enq_net("enq_net"),
+      deq_net("deq_net"),
+      enq_chan("enq_chan"),
+      deq_chan("deq_chan"),
+      ser_in("ser_in"),
+      deser_in("deser_in"),
+      deser_out("deser_out"),
+      route("route"),
+      id("id"),
+      route_chan("route_chan"),
+      id_chan("id_chan"),
+      cycle(0)
+    {
+      src.clk(clk);
+      src.rst(rst);
+
+      sink.clk(clk);
+      sink.rst(rst);
+
+      enq_net.clk(clk);
+      enq_net.rst(rst);
+
+      deq_net.clk(clk);
+      deq_net.rst(rst);
+
+      ser.clk(clk);
+      ser.rst(rst);
+
+      deser.clk(clk);
+      deser.rst(rst);
+
+      route(route_chan);
+      enq_net.route(route_chan);
+      id(id_chan);
+      enq_net.id(id_chan);
+
+      src.out(enq_chan);
+      enq_net.enq(enq_chan);
+      enq_net.deq(ser_in);
+      ser.in_packet(ser_in);
+      ser.out_flit(deser_in);
+      deser.in_flit(deser_in);
+      deser.out_packet(deser_out);
+      deq_net.enq(deser_out);
+      deq_net.deq(deq_chan);
+      sink.in_(deq_chan);
+
+      SC_CTHREAD(reset, clk);
+
+      SC_METHOD(line_trace);
+      sensitive << clk.posedge_event();
+    }
+
+    void line_trace() {
+      if (rst.read()) {
+        std::cout << std::dec << "[" << std::setw(3) << cycle++ << "] ";
+        src.line_trace();
+        enq_net.line_trace();
+        deq_net.line_trace();
+        sink.line_trace();
+        std::cout << std::endl;
+      }
+    }
+
+    void reset() {
+      std::cout << "@" << sc_time_stamp() <<" Asserting reset" << std::endl;
+      rst.write(false);
+      wait( 10);
+      rst.write(true);
+      std::cout << "@" << sc_time_stamp() <<" De-Asserting reset" << std::endl;
+
+      cycle = 0;
+
+      // Needs to be zero for deserializer to work
+      // HACK: fix this ???
+      sc_lv<2> set_id = 1;
+      sc_lv<4> set_route = 3;
+
+      id.Push(set_id);
+      route.Push(set_route);
+
+      src.Go();
+      sink.Go();
+    }
+
+ private:
+  unsigned int cycle;
+};
+
+//------------------------------------------------------------------------
+// sc_main
+//------------------------------------------------------------------------
+
+int sc_main(int argc, char* argv[]) {
+  typedef sc_lv<32> Bits;
+  static const unsigned int MAX_COUNT = 10;
+
+  // Generate source and sink messages
+  std::vector<Bits> src_msgs;
+  std::vector<Bits> sink_msgs;
+  for (unsigned int i = 0; i < MAX_COUNT; ++i ) {
+    src_msgs.push_back( i );
+    sink_msgs.push_back( i );
+  }
+
+  TestHarness<Bits> test("test", src_msgs, sink_msgs);
+  sc_start();
+  return 0;
+}

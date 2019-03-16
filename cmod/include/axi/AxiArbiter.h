@@ -1,0 +1,300 @@
+/*
+ * Copyright (c) 2018-2019, NVIDIA CORPORATION.  All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef __AXI_ARBITER_H__
+#define __AXI_ARBITER_H__
+
+#include <systemc.h>
+#include <nvhls_connections.h>
+#include <nvhls_serdes.h>
+#include <nvhls_packet.h>
+#include <nvhls_int.h>
+#include <nvhls_array.h>
+#include <axi/axi4.h>
+#include "Arbiter.h"
+#include "TypeToBits.h"
+
+/**
+ * \brief An n-way arbiter that connects multiple AXI master ports to a single AXI slave port.
+ * \ingroup AXI
+ *
+ * \tparam axiCfg                   A valid AXI config.
+ * \tparam numMasters               The number of masters to arbitrate between.
+ * \tparam maxOutstandingRequests   The number of oustanding read or write requests that can be tracked with internal state.
+ *
+ * \par Overview
+ * AxiArbiter connects one or more AXI masters to a single AXI slave.  In the case of contention, a round-robin Arbiter selects the next request to pass through.
+ * - The arbiter assumes that responses are returned in the order that requests are sent.  Downstream request reordering is currently not supported. 
+ * - The AXI configs of all ports must be the same.
+ *
+ */
+template <typename axiCfg, int numMasters, int maxOutstandingRequests>
+class AxiArbiter : public sc_module {
+ public:
+  static const int kDebugLevel = 5;
+  sc_in<bool> clk;
+  sc_in<bool> reset_bar;
+
+  typedef typename axi::axi4<axiCfg> axi_;
+  static const int numMasters_width = nvhls::log2_ceil<numMasters>::val;
+
+  typedef typename axi_::read::slave::ARPort axi_rd_slave_ar;
+  typedef typename axi_::read::slave::RPort axi_rd_slave_r;
+  typedef typename axi_::write::slave::AWPort axi_wr_slave_aw;
+  typedef typename axi_::write::slave::WPort axi_wr_slave_w;
+  typedef typename axi_::write::slave::BPort axi_wr_slave_b;
+
+  // [ben] Unfortunately HLS cannot handle an nv_array of the master/slave wrapper classes.
+  // It will work fine in C but die mysteriously in Catapult 10.1b when methods of the
+  // bundled connections are accessed.
+  nvhls::nv_array<axi_rd_slave_ar, numMasters> axi_rd_m_ar;
+  nvhls::nv_array<axi_rd_slave_r, numMasters> axi_rd_m_r;
+  nvhls::nv_array<axi_wr_slave_aw, numMasters> axi_wr_m_aw;
+  nvhls::nv_array<axi_wr_slave_w, numMasters> axi_wr_m_w;
+  nvhls::nv_array<axi_wr_slave_b, numMasters> axi_wr_m_b;
+  typename axi_::read::master axi_rd_s;
+  typename axi_::write::master axi_wr_s;
+
+  typedef NVUINTW(numMasters_width) inFlight_t;
+  FIFO<inFlight_t, maxOutstandingRequests> readQ;
+  Connections::Combinational<inFlight_t> read_in_flight;
+  FIFO<inFlight_t, maxOutstandingRequests> writeQ;
+  Connections::Combinational<inFlight_t> write_in_flight;
+
+  SC_HAS_PROCESS(AxiArbiter);
+
+  AxiArbiter(sc_module_name name)
+      : sc_module(name),
+        clk("clk"),
+        reset_bar("reset_bar"),
+        axi_rd_m_ar("axi_rd_m_ar"),
+        axi_rd_m_r("axi_rd_m_r"),
+        axi_wr_m_aw("axi_wr_m_aw"),
+        axi_wr_m_w("axi_wr_m_w"),
+        axi_wr_m_b("axi_wr_m_b"),
+        axi_rd_s("axi_rd_s"),
+        axi_wr_s("axi_wr_s")
+    {
+    SC_THREAD(run_ar);
+    sensitive << clk.pos();
+    async_reset_signal_is(reset_bar, false);
+
+    SC_THREAD(run_r);
+    sensitive << clk.pos();
+    async_reset_signal_is(reset_bar, false);
+
+    SC_THREAD(run_w);
+    sensitive << clk.pos();
+    async_reset_signal_is(reset_bar, false);
+
+    SC_THREAD(run_b);
+    sensitive << clk.pos();
+    async_reset_signal_is(reset_bar, false);   
+  }
+
+  void run_ar() {
+#pragma hls_unroll yes
+    for (int i=0; i<numMasters; i++) {
+      axi_rd_m_ar[i].Reset();
+    }
+    axi_rd_s.ar.Reset();
+    read_in_flight.ResetWrite();
+
+    nvhls::nv_array<typename axi_::AddrPayload, numMasters> AR_reg;
+    NVUINTW(numMasters) valid_mask = 0;
+    NVUINTW(numMasters) select_mask = 0;
+    Arbiter<numMasters> arb;
+    
+    while (1) {
+      wait();
+
+      // TODO - these loops (and similar in other threads) could be unrolled,
+      // but refactoring would be needed to maintain II=1
+      for (int i=0; i<numMasters; i++) {
+        if (nvhls::get_slc<1>(valid_mask,i) == 0) {
+          if (axi_rd_m_ar[i].PopNB(AR_reg[i])) {
+            valid_mask = valid_mask | (1 << i); 
+          }
+        }
+      }
+
+      select_mask = arb.pick(valid_mask);
+
+      for (int i=0; i<numMasters; i++) {
+        if (nvhls::get_slc<1>(select_mask,i) == 1) {
+          axi_rd_s.ar.Push(AR_reg[i]);
+          select_mask = 0;
+          valid_mask = ~(~valid_mask | (1<<i));
+          CDCOUT(sc_time_stamp() << " " << name() << " Pushed read request:"
+                        << " from_port=" << i
+                        << " addr=" << hex << AR_reg[i].addr.to_int64()
+                        << endl, kDebugLevel);
+          read_in_flight.Push(i);
+        }
+      }
+    }
+  }
+
+  void run_r() {
+#pragma hls_unroll yes
+    for (int i=0; i<numMasters; i++) {
+      axi_rd_m_r[i].Reset();
+    }
+    axi_rd_s.r.Reset();
+    read_in_flight.ResetRead();
+    readQ.reset();
+
+    typename axi_::ReadPayload R_reg;    
+    inFlight_t inFlight_reg;
+    inFlight_t inFlight_resp_reg;
+    
+    bool read_inProgress = 0;
+
+    while (1) {
+      wait();
+
+      if (!readQ.isFull()) {
+        if (read_in_flight.PopNB(inFlight_reg)) {
+          readQ.push(inFlight_reg);
+        }
+      }
+
+      if (!read_inProgress) {
+        if (!readQ.isEmpty()) {
+          inFlight_resp_reg = readQ.pop();
+          read_inProgress = 1;
+        }
+      } else {
+        if (axi_rd_s.r.PopNB(R_reg)) {
+          axi_rd_m_r[inFlight_resp_reg].Push(R_reg);
+          CDCOUT(sc_time_stamp() << " " << name() << " Pushed read response:"
+                        << " to_port=" << inFlight_resp_reg
+                        << " data=" << hex << R_reg.data.to_int64()
+                        << endl, kDebugLevel);
+          if (R_reg.last == 1) read_inProgress = 0;
+        }
+      }
+    }
+  }
+
+  void run_w() {
+#pragma hls_unroll yes
+    for (int i=0; i<numMasters; i++) {
+      axi_wr_m_aw[i].Reset();
+      axi_wr_m_w[i].Reset();
+    }
+    axi_wr_s.aw.Reset();
+    axi_wr_s.w.Reset();
+    write_in_flight.ResetWrite();
+
+    nvhls::nv_array<typename axi_::AddrPayload, numMasters> AW_reg;
+    typename axi_::WritePayload W_reg;
+    NVUINTW(numMasters) valid_mask = 0;
+    NVUINTW(numMasters) select_mask = 0;
+    Arbiter<numMasters> arb;
+
+    inFlight_t active_master;
+    enum {
+      IDLE = 0,
+      WRITE_INFLIGHT = 1,
+      DATA_INFLIGHT = 2,
+    };
+    NVUINT2 s = IDLE;
+    bool arb_needs_update = 1;
+
+    while (1) {
+      wait();
+
+      for (int i=0; i<numMasters; i++) {
+        if (nvhls::get_slc<1>(valid_mask,i) == 0) {
+          if (axi_wr_m_aw[i].PopNB(AW_reg[i])) {
+            valid_mask = valid_mask | (1 << i); 
+          }
+        }
+      }
+      
+      if (arb_needs_update) {
+        select_mask = arb.pick(valid_mask);
+        if (select_mask != 0) arb_needs_update = 0;
+      }
+
+      switch (s) {
+        case IDLE:
+          for (int i=0; i<numMasters; i++) {
+            if (nvhls::get_slc<1>(select_mask,i) == 1) {
+              active_master = i;
+              s = WRITE_INFLIGHT;
+            }
+          }
+          break;
+        case WRITE_INFLIGHT:
+          if (axi_wr_s.aw.PushNB(AW_reg[active_master])) {
+            s = DATA_INFLIGHT;
+          }
+          break;
+        case DATA_INFLIGHT:
+          if (axi_wr_m_w[active_master].PopNB(W_reg)) {
+            axi_wr_s.w.Push(W_reg);
+            if (W_reg.last == 1) {
+              select_mask = 0;
+              valid_mask = ~(~valid_mask | (1 << active_master));
+              arb_needs_update = 1;
+              write_in_flight.Push(active_master);
+              s = IDLE;
+            }
+          }
+          break;
+      }
+    }
+  }
+
+  void run_b() {
+#pragma hls_unroll yes
+    for (int i=0; i<numMasters; i++) {
+      axi_wr_m_b[i].Reset();
+    }
+    axi_wr_s.b.Reset();
+    write_in_flight.ResetRead();
+    writeQ.reset();
+
+    typename axi_::WRespPayload B_reg;    
+    inFlight_t inFlight_reg;
+    inFlight_t inFlight_resp_reg;
+
+    while (1) {
+      wait();
+      
+      if (!writeQ.isFull()) {
+        if (write_in_flight.PopNB(inFlight_reg)) {
+          writeQ.push(inFlight_reg);
+        }
+      }
+
+      if (!writeQ.isEmpty()) {
+        if (axiCfg::useWriteResponses) {
+          if (axi_wr_s.b.PopNB(B_reg)) {
+            inFlight_resp_reg = writeQ.pop();
+            axi_wr_m_b[inFlight_resp_reg].Push(B_reg);
+          }
+        } else {
+          writeQ.pop();
+        }
+      }
+    }
+  }
+
+};
+
+#endif

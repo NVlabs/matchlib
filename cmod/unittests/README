@@ -1,0 +1,99 @@
+This directory contains unit tests and top-level module descriptions.
+
+The number of design instances required to instantiate all possible template
+parameterizations of the MatchLib component library would be prohibitive.  Here
+we briefly describe the subset of design instances actually included in this
+directory.
+
+Most MatchLib components cannot be targeted for HLS directly because the HLS
+tools cannot target templated classes.  Instances ending in "Top" provide an
+HLS-ready wrapper around the named MatchLib component by selecting a particular
+instance of the class.  These instances have been verified as valid HLS targets
+by the Catapult tool, though only a subset of the relevant HLS scripts are
+included in the open-source release.
+
+ArbiterModule - Implements a SystemC module of roundrobin Arbiter with
+latency-insensitive channel interfaces. Testbench tests the arbiter with 1000
+random inputs.
+
+ArbiterTop - Implements arbiter as C++ function. Arbiter can be configured to be
+Static or RoundRobin using CFLAG: ARBITER_TYPE. Number of inputs can also be
+configured using NUM_INPUTS. Testbench is configured to test different
+specializations with 1000 random inputs. 
+
+ArbitratedCrossbarTop - Implements an arbitrated crossbar as a C++ function.
+Number of inputs, number of outputs, length of input and output fifos can be
+configured using NUM_INPUTS, NUM_OUTPUTS, LEN_INPUT_BUFFER, LEN_OUTPUT_BUFFER
+CFLAGs respectively. Testbench tests the design with random inputs.
+
+ArbitratedScratchpadDPTop - Implements a dual-ported scratchpad with
+configurable number of banks, dimensions of banks and number of read and write
+ports. Testbench tests the functionality by performing writes to random
+addresses followed by reading and checking results in random order.
+
+ArbitratedScratchpadTop - Implements an ArbitratedScratchpad with configurable
+number of ports, banks and size of memory banks. Request at each port can either
+be read or write. Each bank services 1 request per cycle. If there are write
+requests from multiple ports to the same address, the design does not guarantee
+ordering of those writes. Testbench tests the functionality by performing writes
+to random addresses followed by reading and checking results in random order.
+
+ConnectionsTop - Tests various Connections components, including different
+channel types.
+
+CrossbarTop - Implements different configurations of MatchLib crossbar and
+verifies them with random inputs.
+
+FifoTop - Implements a FIFO and tests various operations in a FIFO including
+push, pop, peek, incrHead, isEmpty, isFull, getHead, getTail using random tests.
+
+LzdTop - Implements Leading zero detector function and tests it with random
+inputs.
+
+ReorderBufTop - Implements different operations in MatchLib reorder buffer and
+tests them.
+
+ScratchpadTop - Implements a scratchpad with configurable input ports and banks.
+All requests are assumed to be conflict free and therefore, there is no
+arbitration. Request can either be load or store. 
+
+VectorUnit - Implements a vector unit that supports Mul, Add, MAC, Dot-product,
+reduction, etc. 
+
+WHVCRouterTop - Implements a wormhole router with source routing and multicast
+support. Testbench verifies the design with random input sequences.
+
+axi/AxiAddRemoveWRespTop - Connects AxiAddWriteResponse and
+AxiRemoveWriteResponse blocks into a synthesizable target.
+
+axi/AxiAddWriteResp - Tests AxiAddWriteResponse.
+
+axi/AxiArbSplitTop - Connects a two-way AxiArbiter and a two-way AxiSplitter
+into a synthesizable target.
+
+axi/AxiArbiter - Tests a four-way AxiArbiter.
+
+axi/AxiExampleTB - This test simply connects the AXI master and slave testbench
+constructs, with no DUT in between.
+
+axi/AxiExampleTBFromFile - A simple example of generating AXI requests from a
+csv file.
+
+axi/AxiLiteSlaveToMemTop - Implements a synthesizable AxiLiteSlaveToMem instance with 2048kB
+capacity.
+
+axi/AxiMasterGateTop - Implements a synthesizable AxiMasterGate instance and
+test infrastructure.
+
+axi/AxiRemoveWriteResp - Tests AxiRemoveWriteResponse.
+
+axi/AxiSlaveToMemTop - Implements an AxiSlaveToMem instance with 2048kB
+capacity.
+
+axi/AxiSlaveToReadyValidTop - Implements a synthesizable AxiSlaveToReadyValid
+instance.
+
+axi/AxiSlaveToRegTop - Implements a synthesizable AxiSlaveToReg instance with
+128 8-byte registers and a base address of 0x100.
+
+axi/AxiSplitter - Tests a two-way AxiSplitter.

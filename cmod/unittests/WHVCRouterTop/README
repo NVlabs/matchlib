@@ -1,0 +1,25 @@
+#
+# Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License")
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+SystemC Connections interface design of WHVCRouter with support for one or more virtual channels.
+(1) To simulate the design with one virtual channel:
+    - Set NUM_VCHANNELS = 1
+    - Do not define PACKETIDWIDTH 
+(2) To simulate the design with two virtual channels:
+    - Set NUM_VCHANNELS = 2
+    - Set PACKETIDWIDTH = 1
+
+The design, by default, supports only unicast routing. Define ENABLE_MULTICAST to enable support for multicast routing.
