@@ -1,10 +1,12 @@
 MatchLib
 ========
+[![Build Status](https://travis-ci.org/NVlabs/matchlib.svg?branch=master)](https://travis-ci.org/NVlabs/matchlib)
 
 MatchLib is a SystemC/C++ library of commonly-used hardware functions and components that can
 be synthesized by most commercially-available HLS tools into RTL.
 
-Doxygen-generated documentation can be found here.  Additional documentation on the Connections
+Doxygen-generated documentation can be found [here](https://NVlabs.github.io/matchlib/).
+Additional documentation on the Connections
 latency-insensitive channel implementation can be found in the [Connections Guide](doc/connections-guide.pdf).
 
 # Getting Started
