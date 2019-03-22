@@ -23,6 +23,7 @@
 #include <ccs_types.h>
 #include <ccs_p2p.h>
 #include <nvhls_assert.h>
+#include <nvhls_message.h>
 
 //------------------------------------------------------------------------
 // Marshaller

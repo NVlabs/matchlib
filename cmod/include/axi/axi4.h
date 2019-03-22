@@ -20,6 +20,7 @@
 #include <systemc>
 #include <nvhls_connections.h>
 #include <nvhls_assert.h>
+#include <nvhls_message.h>
 #include <axi/axi4_encoding.h>
 #include <axi/axi4_configs.h>
 
@@ -29,7 +30,7 @@
 /**
  * \brief The EmptyField class is used for rudimentary support for members of a struct that can be configured to have zero width.
  */
-struct EmptyField {
+struct EmptyField : public nvhls_message {
   template <typename T>
   EmptyField operator=(T const &) {
     NVHLS_ASSERT(true);  // If an assignment actually occurs during runtime
@@ -170,7 +171,7 @@ class axi4 {
   /**
    * \brief A struct composed of the signals associated with AXI read and write requests.
    */
-  struct AddrPayload {
+  struct AddrPayload : public nvhls_message {
     Id id;
     Addr addr;
     Burst burst;
@@ -199,7 +200,7 @@ class axi4 {
    * \brief A struct composed of the signals associated with an AXI read
    * response.
    */
-  struct ReadPayload {
+  struct ReadPayload : public nvhls_message {
     Id id;
     Data data;
     Resp resp;
@@ -223,7 +224,7 @@ class axi4 {
    * \brief A struct composed of the signals associated with an AXI write
    * response.
    */
-  struct WRespPayload {
+  struct WRespPayload : public nvhls_message {
     BId id;
     Resp resp;
     BUser buser;
@@ -241,7 +242,7 @@ class axi4 {
   /**
    * \brief A struct composed of the signals associated with AXI write data.
    */
-  struct WritePayload {
+  struct WritePayload : public nvhls_message {
     // no id here!
     Data data;
     Last last;

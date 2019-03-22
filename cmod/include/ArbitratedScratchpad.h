@@ -18,6 +18,7 @@
 
 #include <nvhls_int.h>
 #include <nvhls_types.h>
+#include <nvhls_message.h>
 #include <fifo.h>
 #include <Arbiter.h>
 #include <mem_array.h>
@@ -68,7 +69,7 @@ class ArbitratedScratchpad {
   typedef NVUINTW(addr_width - log2_nbanks) bank_addr_t;  // address within bank
   typedef NVUINTW(log2_inputs) input_sel_t;               // index of input
 
-  struct bank_req_t {
+  struct bank_req_t : public nvhls_message {
     NVUINT1 do_store;
     bank_addr_t addr;
     DataType    wdata;
@@ -83,7 +84,7 @@ class ArbitratedScratchpad {
       m& input_chan;
     }
   };
-  struct bank_rsp_t {
+  struct bank_rsp_t : public nvhls_message {
     NVUINT1 valid;
     DataType rdata;
     static const int width = 1 + Wrapped<DataType>::width;

@@ -44,10 +44,14 @@ SC_MODULE (Source) {
         fifo.clear();
 
         Adder2::Data x = start_val;
-        
+
+	// Wait for initial reset.
+	wait(20.0, SC_NS);
+	
         wait();
+	
         while(1) {
-            //cout << "@" << sc_time_stamp() << "\t" << name() << " sending X=" << x << endl ;
+	    //cout << "@" << sc_time_stamp() << "\t" << name() << " sending X=" << x << endl ;
             x_out.Push(x);            
             //cout << "@" << sc_time_stamp() << "\t" << name() << " DONE" << endl ;
             fifo.push_back(x);
@@ -55,7 +59,7 @@ SC_MODULE (Source) {
 
             wait();
             while (pacer.tic()) { 
-                //cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl ;
+	        //cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl ;
                 wait(); 
             }
         }
@@ -92,12 +96,19 @@ SC_MODULE (Dest) {
         pacer.reset();
         Adder2::Data sum;
 
+	// Wait for initial reset.
+	wait(20.0, SC_NS);
+
         wait();
 
         while(1) {
-            //cout << "@" << sc_time_stamp() << "\t\t\t\t\t\t Dest checking for result" << endl ;
+	    //cout << "@" << sc_time_stamp() << "\t\t\t\t\t\t Dest checking for result" << endl ;
             sum = sum_in.Pop();  
             //cout << "@" << sc_time_stamp() << "\t\t\t\t\t\t       GOT " << sum << endl;
+
+	    while(fifo_a.empty() || fifo_b.empty()) {
+	      wait();
+	    }
             
             if (sum == ((fifo_a.front() + fifo_b.front()) & 0xffff)) 
             {

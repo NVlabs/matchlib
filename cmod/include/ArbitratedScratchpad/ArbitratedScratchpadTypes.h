@@ -18,10 +18,11 @@
 
 #include <nvhls_int.h>
 #include <nvhls_types.h>
+#include <nvhls_message.h>
 #include <comptrees.h>
 
 // Declare client input and output interfaces as structs
-class CLITYPE_T {
+class CLITYPE_T : public nvhls_message {
  public:
   enum { LOAD, STORE };
   sc_uint<1> val;
@@ -34,7 +35,7 @@ class CLITYPE_T {
 };
 
 template <typename T, unsigned int AddrWidth, unsigned int N>
-class cli_req_t {
+class cli_req_t : public nvhls_message {
  public:
   CLITYPE_T type;
   bool valids[N];
@@ -55,7 +56,7 @@ class cli_req_t {
 };
 
 template <typename T, unsigned int N>
-class cli_rsp_t {
+class cli_rsp_t : public nvhls_message {
  public:
   bool valids[N];
   T data[N];

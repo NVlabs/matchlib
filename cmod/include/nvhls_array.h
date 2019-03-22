@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <nvhls_marshaller.h>
 #ifndef NVHLS_ARRAY
 #define NVHLS_ARRAY
+
+#include <nvhls_marshaller.h>
+#include <nvhls_message.h>
 
 namespace nvhls {
 /**
@@ -20559,7 +20561,7 @@ class nv_array {
     }
   };
   template <typename A>
-  class NNode<p2p_fifo<>::chan<A>, 31> {
+  class NNode<p2p_fifo<>::chan<A>, 31> : public nvhls_message {
    public:
     p2p_fifo<>::chan<A> data0;
     p2p_fifo<>::chan<A> data1;
@@ -21458,7 +21460,7 @@ class nv_array {
   }
 };
 template <typename Type>
-class nv_array<Type, 0> {
+class nv_array<Type, 0> : public nvhls_message {
  public:
   nv_array() {}
   nv_array(const char* prefix) {}

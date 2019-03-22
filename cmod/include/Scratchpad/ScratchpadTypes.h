@@ -18,6 +18,7 @@
 
 #include <nvhls_int.h>
 #include <nvhls_types.h>
+#include <nvhls_message.h>
 #include <comptrees.h>
 
 
@@ -27,7 +28,7 @@ enum ScratchpadOpcode {LOAD, STORE};
 MarshallEnum(ScratchpadOpcode, kScratchpadOpcodeSize);
 
 template <typename T, unsigned int AddrWidth, unsigned int N>
-class cli_req_t 
+class cli_req_t : public nvhls_message 
 {
  public:
   static const unsigned int type_width = Wrapped<T>::width;
@@ -51,7 +52,7 @@ class cli_req_t
 
 
 template <typename T, unsigned int N>
-class cli_rsp_t 
+class cli_rsp_t : public nvhls_message 
 {
 public:
   sc_lv<N> valids;

@@ -22,6 +22,7 @@
 #include <one_hot_to_bin.h>
 #include <hls_globals.h>
 #include <nvhls_marshaller.h>
+#include <nvhls_message.h>
 
 // Need to add in virtual output queueing at the input. Can replace the input
 // FIFOs with a Queue class which internally has multiple parallel FIFOs and
@@ -78,7 +79,7 @@ class ArbitratedCrossbar {
  private:
   // Convenience class which stores a data and destination
   // This is what is stored in the input FIFOs
-  class DataDest {
+  class DataDest : public nvhls_message {
    public:
     DataType data;
     OutputIdx dest;

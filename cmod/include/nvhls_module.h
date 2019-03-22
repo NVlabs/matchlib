@@ -22,6 +22,7 @@
 
 #include <nvhls_trace.h>
 #include <nvhls_marshaller.h>
+#include <nvhls_message.h>
 
 namespace match {
 /**
@@ -68,7 +69,7 @@ namespace match {
  *
  */
 
-class Module : public sc_module {
+class Module : public sc_module, public nvhls_message {
  public:
   // Interface in/out
   sc_in_clk clk;

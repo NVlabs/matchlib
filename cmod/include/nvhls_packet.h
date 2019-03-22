@@ -24,6 +24,7 @@
 #include <systemc.h>
 #include <nvhls_types.h>
 #include <nvhls_marshaller.h>
+#include <nvhls_message.h>
 
 //------------------------------------------------------------------------
 // Packet
@@ -67,7 +68,7 @@ enum RouterType { StoreForward, WormHole };
  */
 template <int DataWidth, int DestWidthPerHop, int MaxHops = 1,
           int PacketIdWidth = 0>
-class Packet {
+class Packet : public nvhls_message {
  public:
   Packet() { reset(); }
 
@@ -120,7 +121,7 @@ class Packet {
 // Packet (specialization without ID)
 //-----------------------------------------------------------------------
 template <int DataWidth, int DestWidthPerHop, int MaxHops>
-class Packet<DataWidth, DestWidthPerHop, MaxHops, 0> {
+class Packet<DataWidth, DestWidthPerHop, MaxHops, 0> : public nvhls_message {
  public:
   Packet() { reset(); }
 
@@ -198,7 +199,7 @@ class Flit;
  * \par
  *
  */
-class FlitId2bit {
+class FlitId2bit : public nvhls_message {
  public:
   enum { width = 2 };
 
@@ -281,7 +282,7 @@ T& operator<<(T& os, const FlitId2bit& id) {
 template <int DataWidth, int DestWidthPerHop, int MaxHops, int PacketIdWidth,
           class FlitId>
 class Flit<DataWidth, DestWidthPerHop, MaxHops, PacketIdWidth, FlitId,
-           StoreForward> {
+           StoreForward> : public nvhls_message {
  public:
   Flit();
 
@@ -365,7 +366,7 @@ Flit<DataWidth, DestWidthPerHop, MaxHops, PacketIdWidth, FlitId,
 // Flit-id is used to indicate type of payload : start, data, end
 
 template <int DataWidth, int PacketIdWidth, class FlitId>
-class Flit<DataWidth, 0, 0, PacketIdWidth, FlitId, WormHole> {
+class Flit<DataWidth, 0, 0, PacketIdWidth, FlitId, WormHole> : public nvhls_message {
  public:
   Flit();
 
@@ -437,7 +438,7 @@ inline std::ostream& operator<<(ostream& os, const Flit<DataWidth, 0, 0, PacketI
 }
 // WHFlit specialization without packet id
 template <int DataWidth, class FlitId>
-class Flit<DataWidth, 0, 0, 0, FlitId, WormHole> {
+class Flit<DataWidth, 0, 0, 0, FlitId, WormHole> : public nvhls_message {
  public:
   Flit();
 

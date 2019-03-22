@@ -17,6 +17,7 @@
 #ifndef __AXIMASTERGATEIF_H__
 #define __AXIMASTERGATEIF_H__
 
+#include <nvhls_message.h>
 #include <axi/axi4.h>
 
 /**
@@ -25,8 +26,18 @@
  * \tparam Cfg    A valid AXI config.
  */
 template <typename Cfg>
-struct Request {
- public:
+struct Request : public nvhls_message {
+  public:
+  Request() {};
+  Request(const Request &rhs) {
+    addr = rhs.addr;
+    burst = rhs.burst;
+    len = rhs.len;
+    size = rhs.size;
+    cache = rhs.cache;
+    auser = rhs.auser;
+  };
+  
   typedef axi::axi4<Cfg> axi4_;
 
   typename axi4_::Addr addr;
@@ -76,6 +87,12 @@ struct RdRequest : public Request<Cfg> {};
 template <typename Cfg>
 struct WrRequest : public Request<Cfg> {
  public:
+  WrRequest() {};
+  WrRequest(const WrRequest &rhs) : Request<Cfg>(rhs) {
+    data = rhs.data;
+    last = rhs.last;
+    wuser = rhs.wuser;
+  };
   typename Request<Cfg>::axi4_::Data data;
   typename Request<Cfg>::axi4_::WUser wuser;
   typename Request<Cfg>::axi4_::Last last;
@@ -104,7 +121,8 @@ struct WrRequest : public Request<Cfg> {
  * \tparam Cfg    A valid AXI config.
  */
 template <typename Cfg>
-struct WrResp {
+struct WrResp : public nvhls_message
+{
   typedef axi::axi4<Cfg> axi4_;
   typename axi4_::Resp resp;
   typename axi4_::BUser buser;
@@ -124,7 +142,8 @@ struct WrResp {
  * \tparam Cfg    A valid AXI config.
  */
 template <typename Cfg>
-struct RdResp {
+struct RdResp : public nvhls_message
+{
   typedef axi::axi4<Cfg> axi4_;
   typename axi4_::Resp resp;
   typename axi4_::Data data;

@@ -20,6 +20,7 @@
 #include <nvhls_int.h>
 #include <nvhls_types.h>
 #include <nvhls_assert.h>
+#include <nvhls_message.h>
 #include <arbitrated_crossbar.h>
 #include <crossbar.h>
 #include <hls_globals.h>
@@ -72,7 +73,7 @@ class ArbitratedScratchpadDP {
   typedef bool Ack;
 
 
-  class bankwrite_req_t {
+  class bankwrite_req_t : public nvhls_message {
    public:
     LocalIndex localindex;
     WordType data;
@@ -84,7 +85,7 @@ class ArbitratedScratchpadDP {
     }
   };
 
-  class bankread_req_t {
+  class bankread_req_t : public nvhls_message {
    public:
     LocalIndex localindex;
     static const int width = LocalIndex::width;
@@ -95,7 +96,7 @@ class ArbitratedScratchpadDP {
     }
   };
   
-  class bankread_rsp_t {
+  class bankread_rsp_t : public nvhls_message {
    public:
     bool     valid;
     WordType rdata;

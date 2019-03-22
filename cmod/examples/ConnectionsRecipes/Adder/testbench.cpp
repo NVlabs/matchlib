@@ -45,7 +45,11 @@ SC_MODULE (Source) {
 
         Adder::Data x = start_val;
         
+	// Wait for initial reset.
+	wait(20.0, SC_NS);
+
         wait();
+	
         while(1) {
             //cout << "@" << sc_time_stamp() << "\t" << name() << " sending X=" << x << endl ;
             x_out.Push(x);            
@@ -92,6 +96,9 @@ SC_MODULE (Dest) {
         pacer.reset();
         Adder::Data sum;
 
+	// Wait for initial reset.
+	wait(20.0, SC_NS);
+	
         wait();
 
         while(1) {

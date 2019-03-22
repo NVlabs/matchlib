@@ -23,6 +23,8 @@
 #include <nvhls_array.h>
 #include <ccs_p2p.h>
 #include <nvhls_assert.h>
+#include <nvhls_message.h>
+
 namespace nvhls {
 
 inline std::string synth_to_string(const unsigned int& n) {
@@ -72,7 +74,7 @@ inline std::string synth_to_string(const unsigned int& n) {
  */
 
 template <typename Type, unsigned int VectorLength>
-class nv_scvector {
+class nv_scvector : public nvhls_message {
  public:
   Type data[VectorLength];
   typedef Type type;
