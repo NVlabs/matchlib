@@ -92,7 +92,7 @@ To contribute bugfixes or new features, submit a pull request.
 
 MatchLib originated as a project of [NVIDIA Research](https://research.nvidia.com).  
 
-Contributors to the initial open-source release (alphabetical): Jason Clemons, Christopher Fletcher, Davide Giri, Ben Keller, Brucek Khailany, Alicia Klinefelter, Evgeni Krimer, Hyoukjun Kwon, Ziyun Li, Michael Pellauer, Nathaniel Pinckney, Antonio Puglielli, Sophia Shao, Shreesha Srinath, Gopalakrishnan Srinivasan, Rangharajan Venkatesan, Sam Xi
+Contributors to the initial open-source release (alphabetical): Jason Clemons, Christopher Fletcher, Davide Giri, Ben Keller, Brucek Khailany, Alicia Klinefelter, Evgeni Krimer, Hyoukjun Kwon, Ziyun Li, Michael Pellauer, Nathaniel Pinckney, Antonio Puglielli, Sophia Shao, Shreesha Srinath, Gopalakrishnan Srinivasan, Christopher Torng, Rangharajan Venkatesan, Sam Xi
 
 Portions of MatchLib are derived from code in Mentor Graphics' Algorithmic C Datatypes v3.7.1 (also released under the Apache 2.0 license).  See individual file headers for details.
 
