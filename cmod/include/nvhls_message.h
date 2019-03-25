@@ -20,6 +20,25 @@
 #ifndef NVHLS_MESSAGE_H_
 #define NVHLS_MESSAGE_H_
 
+/**
+ * \brief Class to support complex data types to bitvectors.
+ * \ingroup Marshaller
+ *
+ * \par Instantiate this class to provide default functionality for supporting complex data type
+ *      conversion to/from sc_lv without using the Marshaller, for DIRECT_MODE ports only. Example code:
+ *
+ * \code
+ *      #include <nvhls_connections.h>
+ *      #include <nvhls_message.h>
+ *
+ *      class Foo : public nvhls_message {
+ *
+ *        ...
+ *
+ *      };
+ * \endcode
+ *
+ */
 class nvhls_message {
  public:
   friend inline bool operator==(const nvhls_message& lhs, const nvhls_message& rhs) {
