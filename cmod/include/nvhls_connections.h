@@ -375,18 +375,22 @@ SC_MODULE(MarshalledToDirectOutPort) {
   typedef sc_lv<WMessage::width> MsgBits;
   sc_signal<MsgBits> msgbits;
   sc_out<Message> msg;
-
+  sc_in<bool> val;
+  
   void do_marshalled2direct() {
-    MsgBits mbits = msgbits.read();
-    Marshaller<WMessage::width> marshaller(mbits);
-    WMessage result;
-    result.Marshall(marshaller);
-    msg.write(result.val);
+    if(val) {
+      MsgBits mbits = msgbits.read();
+      Marshaller<WMessage::width> marshaller(mbits);
+      WMessage result;
+      result.Marshall(marshaller);
+      msg.write(result.val);
+    }
   }
   
   SC_CTOR(MarshalledToDirectOutPort) {
     SC_METHOD(do_marshalled2direct);
     sensitive << msgbits;
+    sensitive << val;
   }
 };
 
@@ -396,19 +400,23 @@ SC_MODULE(MarshalledToDirectInPort) {
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
   sc_in<MsgBits> msgbits;
+  sc_in<bool> val;
   sc_signal<Message> msg;
 
   void do_marshalled2direct() {
-    MsgBits mbits = msgbits.read();
-    Marshaller<WMessage::width> marshaller(mbits);
-    WMessage result;
-    result.Marshall(marshaller);
-    msg.write(result.val);
+    if(val) {
+      MsgBits mbits = msgbits.read();
+      Marshaller<WMessage::width> marshaller(mbits);
+      WMessage result;
+      result.Marshall(marshaller);
+      msg.write(result.val);
+    }
   }
   
   SC_CTOR(MarshalledToDirectInPort) {
     SC_METHOD(do_marshalled2direct);
     sensitive << msgbits;
+    sensitive << val;
   }
 };
  
@@ -1817,6 +1825,7 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
     
     this->msg(dynamic_m2dport->msgbits);
     dynamic_m2dport->msg(rhs.msg);
+    dynamic_m2dport->val(rhs.val);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
   }
@@ -1827,6 +1836,7 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
     dynamic_m2dport = new MarshalledToDirectOutPort<Message>("dynamic_m2dport");
     this->msg(dynamic_m2dport->msgbits);
     dynamic_m2dport->msg(rhs.msg);
+    dynamic_m2dport->val(rhs.val);
     
     this->val(rhs.val);
     this->rdy(rhs.rdy);
@@ -1962,6 +1972,7 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
     
     this->msg(dynamic_m2dport->msgbits);
     dynamic_m2dport->msg(rhs.msg);
+    dynamic_m2dport->val(rhs.val);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
   }
@@ -1972,6 +1983,7 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
     dynamic_m2dport = new MarshalledToDirectOutPort<Message>("dynamic_m2dport");
     this->msg(dynamic_m2dport->msgbits);
     dynamic_m2dport->msg(rhs.msg);
+    dynamic_m2dport->val(rhs.val);
     
     this->val(rhs.val);
     this->rdy(rhs.rdy);
