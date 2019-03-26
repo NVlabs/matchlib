@@ -21,8 +21,8 @@ MatchLib is regressed against the following tool/dependency verions:
 * `doxygen` - 1.8.11
 * `make` - 3.82
 * `catapult` - 10.3
-* `vcs` - 2015.09-SP2
-* `verdi` - 2016.06-SP2-5
+* `vcs` - 2017.03-SP2-11
+* `verdi` - 2017.12-SP2-2
 
 ## Environment requirements
 
@@ -30,10 +30,11 @@ Makefiles assume the appropriate definition of the following environment variabl
 
 * `BOOST_HOME`
 * `SYSTEMC_HOME`
-* `SCV_HOME`
 * `CATAPULT_HOME`
+* `VCS_HOME`
+* `NOVAS_INST_DIR`
 
-In addition, the boost, systemc, and scv library locations are expected to be in `LD_LIBRARY_PATH`.
+In addition, the boost and systemc library locations are expected to be in `LD_LIBRARY_PATH`.
 
 ## Build and run
 

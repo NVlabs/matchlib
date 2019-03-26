@@ -19,7 +19,7 @@ solution options defaults
 flow package require /SCVerify
 solution options set /Output/PackageOutput false
 #
-## Use fsdb file for power flow - make sure your environment var $NOVAS_INST_DIR has been set before your launch Catapult.
+## Use fsdb file for power flow - make sure your environment var $NOVAS_INST_DIR has been set before you launch Catapult.
 solution options set /Flows/LowPower/SWITCHING_ACTIVITY_TYPE fsdb
 ## SCVerify settings
 solution options set /Flows/SCVerify/USE_MSIM false
