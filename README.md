@@ -72,6 +72,8 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `SC_INCLUDE_DYNAMIC_PROCESSES` - Set to enable SystemC dynamic processes.
 * `__SYNTHESIS__` - Set by Catapult during the HLS flow (but not during sc_verify).
 * `_SYNTHESIS_` - Flag to set when calling the HLS tool during both HLS and sc_verify.
+* `AUTO_PORT` - Set Connections simulation port type (legal options are TLM_PORT, DIRECT_PORT, MARSHALL_PORT, SYN_PORT, from least to most accurate). If unset, defaults to TLM_PORT for simulation and alwaays sets to SYN_PORT for HLS, unless if FORCE_AUTO_PORT is set.
+* `FORCE_AUTO_PORT` - Like AUTO_PORT, but forces to a set port type for HLS too.
 * `CONNECTIONS_ACCURATE_SIM` - Set to enable sim-accurate mode in SystemC simulation of the Connections library. This can be used to accurately estimate the performance of SystemC designs before HLS.
 * `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode.  It should be disabled during HLS.
 * `CONN_RAND_STALL` - Set to enable random stall injection in Connections library.
