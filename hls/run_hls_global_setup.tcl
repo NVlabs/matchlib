@@ -32,7 +32,7 @@ if { [info exist env(VG_GNU_PACKAGE)] } {
     solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VCS_HOME)/gnu/linux
 }
 solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
-
+solution options set /Flows/VCS/SYSC_VERSION 2.3.1
 options set Input/CompilerFlags {-D_SYNTHESIS_ -DHLS_CATAPULT=1}
 options set Input/SearchPath ". ../../cmod ../../cmod/include"
 
