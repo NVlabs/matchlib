@@ -337,7 +337,7 @@ public:
             }
         }
 
-        assert(0);
+        NVHLS_ASSERT(0);
     }
 
     void run(bool value) {
@@ -507,7 +507,7 @@ protected:
   // Blocking_abs functions
   bool Pre() {
     if (val.read() && rdy.read()) {
-      assert(fifo->nb_can_get());
+      NVHLS_ASSERT(fifo->nb_can_get());
       fifo->get(); // Discard, we've already peeked it. Just incrementing the head here.
     }
     return true;
@@ -565,7 +565,7 @@ protected:
     if (rdy.read() && val.read()) {
       Message data;
       data = msg.read();
-      assert(fifo->nb_can_put());
+      NVHLS_ASSERT(fifo->nb_can_put());
       fifo->put(data);
     }
     return true;
@@ -616,14 +616,14 @@ class InBlocking_abs {
  public:
   // Reset read
   virtual void Reset() {
-    assert(0);
+    NVHLS_ASSERT(0);
   }
 
 // Pop
 #pragma design modulario < in >
   virtual Message Pop() {
     Message m;
-    assert(0);
+    NVHLS_ASSERT(0);
     return m;
   }
 
@@ -631,14 +631,14 @@ class InBlocking_abs {
 #pragma design modulario < in >
   virtual Message Peek() {
     Message m;
-    assert(0);
+    NVHLS_ASSERT(0);
     return m;
   }
 
 // PopNB
 #pragma design modulario < in >
   virtual bool PopNB(Message& data, const bool& do_wait = true) {
-    assert(0);
+    NVHLS_ASSERT(0);
     return false;
   }
 };
@@ -711,7 +711,7 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
  protected:
   virtual Message read_msg() {
     Message m;
-    assert(0);
+    NVHLS_ASSERT(0);
     return m;
   }
 };
@@ -885,7 +885,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   bool Empty_SIM() { return !data_val; }
 
   Message& ConsumeBuf_SIM() {
-    assert(data_val);
+    NVHLS_ASSERT(data_val);
     data_val = false;
     return data_buf;
   }
@@ -901,7 +901,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
  protected:
   virtual Message read_msg() {
     Message m;
-    assert(0);
+    NVHLS_ASSERT(0);
     return m;
   }
 };
@@ -1503,19 +1503,19 @@ class OutBlocking_abs {
 
   // Reset write
   void Reset() {
-    assert(0);
+    NVHLS_ASSERT(0);
   }
 
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
-    assert(0);
+    NVHLS_ASSERT(0);
   }
 
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m, const bool& do_wait = true) {
-    assert(0);
+    NVHLS_ASSERT(0);
     return false;
   }
 };
@@ -1581,13 +1581,13 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
 
  protected:
     virtual void reset_msg() {
-      assert(0);
+      NVHLS_ASSERT(0);
     }
     virtual void write_msg(const Message &m) {
-      assert(0);
+      NVHLS_ASSERT(0);
     }
     virtual void invalidate_msg() {
-      assert(0);
+      NVHLS_ASSERT(0);
     }
 };
 
@@ -1722,7 +1722,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
   }
 
   void FillBuf_SIM(const Message& m) {
-    assert(!data_val);
+    NVHLS_ASSERT(!data_val);
     data_val = true;
     transmit_data(m);
     data_buf = m;
@@ -2290,18 +2290,18 @@ class Combinational_abs {
  public:
   // Reset
   void ResetRead() {
-    assert(0);
+    NVHLS_ASSERT(0);
   }
 
   void ResetWrite() {
-    assert(0);
+    NVHLS_ASSERT(0);
   }
 
 // Pop
 #pragma design modulario < in >
   Message Pop() {
     Message m;
-    assert(0);
+    NVHLS_ASSERT(0);
     return m;
   }
 
@@ -2309,14 +2309,14 @@ class Combinational_abs {
 #pragma design modulario < in >
   Message Peek() {
     Message m;
-    assert(0);
+    NVHLS_ASSERT(0);
     return m;
   }
 
 // PopNB
 #pragma design modulario < in >
   bool PopNB(Message& data) {
-    assert(0);
+    NVHLS_ASSERT(0);
     return false;
   }
 
@@ -2327,13 +2327,13 @@ class Combinational_abs {
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
-    assert(0);
+    NVHLS_ASSERT(0);
   }
 
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m) {
-    assert(0);
+    NVHLS_ASSERT(0);
     return false;
   }
 
@@ -2436,18 +2436,18 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
   
  protected:
     virtual void reset_msg() {
-      assert(0);
+      NVHLS_ASSERT(0);
     }
     virtual Message read_msg() {
       Message m;
-      assert(0);
+      NVHLS_ASSERT(0);
       return m;
     }
     virtual void write_msg(const Message &m) {
-      assert(0);
+      NVHLS_ASSERT(0);
     }
     virtual void invalidate_msg() {
-      assert(0);
+      NVHLS_ASSERT(0);
     }
 };
 
