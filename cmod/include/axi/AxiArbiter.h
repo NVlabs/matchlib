@@ -272,6 +272,7 @@ class AxiArbiter : public sc_module {
     typename axi_::WRespPayload B_reg;    
     inFlight_t inFlight_reg;
     inFlight_t inFlight_resp_reg;
+    bool write_inProgress = 0;
 
     while (1) {
       wait();
@@ -282,14 +283,19 @@ class AxiArbiter : public sc_module {
         }
       }
 
-      if (!writeQ.isEmpty()) {
+      if (!write_inProgress) {
+        if (!writeQ.isEmpty()) {
+          inFlight_resp_reg = writeQ.pop();
+          write_inProgress = 1;
+        }
+      } else {
         if (axiCfg::useWriteResponses) {
           if (axi_wr_s.b.PopNB(B_reg)) {
-            inFlight_resp_reg = writeQ.pop();
             axi_wr_m_b[inFlight_resp_reg].Push(B_reg);
+            write_inProgress = 0;
           }
         } else {
-          writeQ.pop();
+          write_inProgress = 0;
         }
       }
     }
