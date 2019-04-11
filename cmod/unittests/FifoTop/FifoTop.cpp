@@ -22,7 +22,7 @@ void FifoTop( const OpType& op, const DataType& data, const BankIdx& idx, OutTyp
 {
     static Fifo_ fifo;
     out = 0;
-    NVHLS_ASSERT(idx < NUM_BANKS);
+    NVHLS_ASSERT_MSG(idx < NUM_BANKS, "Bank index is less than number of banks");
     switch (op)
     {
         case push:      fifo.push(data, idx); break;

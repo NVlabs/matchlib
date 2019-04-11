@@ -18,6 +18,7 @@
 #define NVHLS_ASSERT_H
 
 #include <systemc.h>
+#include <hls_globals.h>
 
 // the following is to avoid "statement has no effect"
 // during compilation when CTC coverage is disabled.
@@ -83,6 +84,43 @@
 #else 
 #define CMOD_ASSERT(x) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
 #endif
+
+/**
+ * \def NVHLS_ASSERT_MSG(x, msg)
+ * \ingroup Assertions
+ * Synthesizable assertion to check \a x and print \a msg if assertion fails. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings 
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_assert.h>
+ *
+ *      ...
+ *      while(1) {
+ *        if (in.PopNB(in_var)) {
+ *          NVHLS_ASSERT_MSG(in_var!=0, "Input is Zero"); // Assert that input is never 0
+ *        ...
+ *        }
+ *      }
+ * \endcode
+ * \par
+ */
+
+
+#ifdef HLS_CATAPULT
+#include <ac_assert.h>
+#define NVHLS_ASSERT_MSG(X,MSG) \
+     if (!(X)) { \
+       DCOUT("Assertion Failed. " << MSG << endl);  \
+     }\
+     assert(X)
+#else
+#define NVHLS_ASSERT_MSG(X,MSG)  \
+     if (!(X)) { \
+       DCOUT("Assertion Failed. " << MSG << endl);  \
+     } \
+     sc_assert(X)
+#endif
+
+
 
 
 #endif
