@@ -74,7 +74,7 @@ SC_MODULE(testbench) {
   nvhls::nv_array<typename axi_::write::chan, numSlaves>
       axi_write_m_tb;
 
-  AxiArbSplitTop axi_arbsplit;
+  CCS_DESIGN(AxiArbSplitTop) axi_arbsplit;
 
   nvhls::nv_array<typename axi_::read::chan, numSlaves>
       axi_read_s_tb;

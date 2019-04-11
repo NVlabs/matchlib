@@ -46,7 +46,7 @@ SC_MODULE(testbench) {
   };
 
   Master<axi::cfg::standard, masterCfg> master;
-  AxiSlaveToReadyValidTop slave;
+  CCS_DESIGN(AxiSlaveToReadyValidTop) slave;
   RVSink<rdyvldCfg> sink;
 
   sc_clock clk;

@@ -46,7 +46,7 @@ SC_MODULE(testbench) {
 
   Slave<axi::cfg::standard> slave;
   Master<axi::cfg::standard, Mcfg> master;
-  AxiAddRemoveWRespTop dut;
+  CCS_DESIGN(AxiAddRemoveWRespTop) dut;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;

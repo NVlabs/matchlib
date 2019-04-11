@@ -48,7 +48,7 @@ SC_MODULE(testbench) {
   };
 
   Master<axi::cfg::standard, Mcfg> master;
-  AxiSlaveToRegTop slave;
+  CCS_DESIGN(AxiSlaveToRegTop) slave;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;
