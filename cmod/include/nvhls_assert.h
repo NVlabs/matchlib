@@ -111,13 +111,17 @@
      if (!(X)) { \
        DCOUT("Assertion Failed. " << MSG << endl);  \
      }\
-     assert(X)
+     CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
 #else
-#define NVHLS_ASSERT_MSG(X,MSG)  \
+  #ifndef __SYNTHESIS__
+    #define NVHLS_ASSERT_MSG(X,MSG)  \
      if (!(X)) { \
        DCOUT("Assertion Failed. " << MSG << endl);  \
      } \
-     sc_assert(X)
+     CTC_SKIP_ASSERT sc_assert(X); CTC_ENDSKIP_ASSERT
+  #else
+    #define NVHLS_ASSERT_MSG(X,MSG) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+  #endif
 #endif
 
 
