@@ -109,6 +109,8 @@ int sc_main(int argc, char *argv[]) {
   nvhls::set_random_seed();
   testbench tb("tb");
   sc_report_handler::set_actions(SC_ERROR, SC_DISPLAY);
+  // Suppress mysterious time-zero X warnings in SCVerify
+  sc_report_handler::set_actions(SC_ID_LOGIC_X_TO_BOOL_,SC_DO_NOTHING);
   sc_start();
   bool rc = (sc_report_handler::get_count(SC_ERROR) > 0);
   if (rc)
