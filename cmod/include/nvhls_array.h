@@ -49,7 +49,7 @@ namespace nvhls {
  */
 template <typename Type, unsigned int VectorLength>
 class nv_array {
- protected:
+ public:
   template <typename A, unsigned int K>
   class NNode;
   template <typename A>
