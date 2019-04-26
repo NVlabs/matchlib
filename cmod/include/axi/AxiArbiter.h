@@ -72,6 +72,8 @@ class AxiArbiter : public sc_module {
   Connections::Combinational<inFlight_t> read_in_flight;
   FIFO<inFlight_t, maxOutstandingRequests> writeQ;
   Connections::Combinational<inFlight_t> write_in_flight;
+  Connections::Combinational<inFlight_t> active_write_master;
+  Connections::Combinational<NVUINT1> w_last; // true iff w item last bit is set
 
   SC_HAS_PROCESS(AxiArbiter);
 
@@ -85,8 +87,8 @@ class AxiArbiter : public sc_module {
         axi_wr_m_w("axi_wr_m_w"),
         axi_wr_m_b("axi_wr_m_b"),
         axi_rd_s("axi_rd_s"),
-        axi_wr_s("axi_wr_s")
-    {
+        axi_wr_s("axi_wr_s") {
+
     SC_THREAD(run_ar);
     sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
@@ -99,14 +101,18 @@ class AxiArbiter : public sc_module {
     sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
 
+    SC_THREAD(run_aw);
+    sensitive << clk.pos();
+    async_reset_signal_is(reset_bar, false);
+
     SC_THREAD(run_b);
     sensitive << clk.pos();
-    async_reset_signal_is(reset_bar, false);   
+    async_reset_signal_is(reset_bar, false);
   }
 
   void run_ar() {
-#pragma hls_unroll yes
-    for (int i=0; i<numMasters; i++) {
+    #pragma hls_unroll yes
+    for (int i = 0; i < numMasters; i++) {
       axi_rd_m_ar[i].Reset();
     }
     axi_rd_s.ar.Reset();
@@ -116,27 +122,25 @@ class AxiArbiter : public sc_module {
     NVUINTW(numMasters) valid_mask = 0;
     NVUINTW(numMasters) select_mask = 0;
     Arbiter<numMasters> arb;
-    
+
     while (1) {
       wait();
 
-      // TODO - these loops (and similar in other threads) could be unrolled,
-      // but refactoring would be needed to maintain II=1
-      for (int i=0; i<numMasters; i++) {
-        if (nvhls::get_slc<1>(valid_mask,i) == 0) {
+      for (int i = 0; i < numMasters; i++) {
+        if (nvhls::get_slc<1>(valid_mask, i) == 0) {
           if (axi_rd_m_ar[i].PopNB(AR_reg[i])) {
-            valid_mask = valid_mask | (1 << i); 
+            valid_mask = valid_mask | (1 << i);
           }
         }
       }
 
       select_mask = arb.pick(valid_mask);
 
-      for (int i=0; i<numMasters; i++) {
-        if (nvhls::get_slc<1>(select_mask,i) == 1) {
+      for (int i = 0; i < numMasters; i++) {
+        if (nvhls::get_slc<1>(select_mask, i) == 1) {
           axi_rd_s.ar.Push(AR_reg[i]);
           select_mask = 0;
-          valid_mask = ~(~valid_mask | (1<<i));
+          valid_mask = ~(~valid_mask | (1 << i));
           CDCOUT(sc_time_stamp() << " " << name() << " Pushed read request:"
                         << " from_port=" << i
                         << " addr=" << hex << AR_reg[i].addr.to_int64()
@@ -148,18 +152,18 @@ class AxiArbiter : public sc_module {
   }
 
   void run_r() {
-#pragma hls_unroll yes
-    for (int i=0; i<numMasters; i++) {
+    #pragma hls_unroll yes
+    for (int i = 0; i < numMasters; i++) {
       axi_rd_m_r[i].Reset();
     }
     axi_rd_s.r.Reset();
     read_in_flight.ResetRead();
     readQ.reset();
 
-    typename axi_::ReadPayload R_reg;    
+    typename axi_::ReadPayload R_reg;
     inFlight_t inFlight_reg;
     inFlight_t inFlight_resp_reg;
-    
+
     bool read_inProgress = 0;
 
     while (1) {
@@ -183,100 +187,105 @@ class AxiArbiter : public sc_module {
                         << " to_port=" << inFlight_resp_reg
                         << " data=" << hex << R_reg.data.to_int64()
                         << endl, kDebugLevel);
-          if (R_reg.last == 1) read_inProgress = 0;
+          if (R_reg.last == 1)
+            read_inProgress = 0;
         }
+      }
+    }
+  }
+
+  void run_aw() {
+    #pragma hls_unroll yes
+    for (int i = 0; i < numMasters; i++) {
+      axi_wr_m_aw[i].Reset();
+    }
+    axi_wr_s.aw.Reset();
+    write_in_flight.ResetWrite();
+    active_write_master.ResetWrite();
+    w_last.ResetRead();
+
+    inFlight_t active_master;
+
+    nvhls::nv_array<typename axi_::AddrPayload, numMasters> AW_reg;
+    NVUINTW(numMasters) valid_mask = 0;
+    NVUINTW(numMasters) select_mask = 0;
+    Arbiter<numMasters> arb;
+
+    while (1) {
+      wait();
+
+      #pragma hls_unroll yes
+      for (int i = 0; i < numMasters; i++) {
+        if (nvhls::get_slc<1>(valid_mask, i) == 0) {
+          if (axi_wr_m_aw[i].PopNB(AW_reg[i])) {
+            valid_mask = valid_mask | (1 << i);
+          }
+        }
+      }
+
+      select_mask = arb.pick(valid_mask);
+
+      if (select_mask != 0) {
+        #pragma hls_unroll yes
+        for (int i = 0; i < numMasters; i++) {
+          if (nvhls::get_slc<1>(select_mask, i) == 1) {
+            active_master = i;
+          }
+        }
+
+        axi_wr_s.aw.Push(AW_reg[active_master]);
+        active_write_master.Push(active_master);
+        write_in_flight.Push(active_master);
+
+        while (w_last.Pop() == false) {
+        }
+
+        select_mask = 0;
+        valid_mask = ~(~valid_mask | (1 << active_master));
       }
     }
   }
 
   void run_w() {
-#pragma hls_unroll yes
-    for (int i=0; i<numMasters; i++) {
-      axi_wr_m_aw[i].Reset();
+    typename axi_::WritePayload W_reg;
+    active_write_master.ResetRead();
+    w_last.ResetWrite();
+    axi_wr_s.w.Reset();
+    #pragma hls_unroll yes
+    for (int i = 0; i < numMasters; i++) {
       axi_wr_m_w[i].Reset();
     }
-    axi_wr_s.aw.Reset();
-    axi_wr_s.w.Reset();
-    write_in_flight.ResetWrite();
 
-    nvhls::nv_array<typename axi_::AddrPayload, numMasters> AW_reg;
-    typename axi_::WritePayload W_reg;
-    NVUINTW(numMasters) valid_mask = 0;
-    NVUINTW(numMasters) select_mask = 0;
-    Arbiter<numMasters> arb;
-
-    inFlight_t active_master;
-    enum {
-      IDLE = 0,
-      WRITE_INFLIGHT = 1,
-      DATA_INFLIGHT = 2,
-    };
-    NVUINT2 s = IDLE;
-    bool arb_needs_update = 1;
+    wait();
 
     while (1) {
-      wait();
+      inFlight_t active_master = active_write_master.Pop();
 
-      for (int i=0; i<numMasters; i++) {
-        if (nvhls::get_slc<1>(valid_mask,i) == 0) {
-          if (axi_wr_m_aw[i].PopNB(AW_reg[i])) {
-            valid_mask = valid_mask | (1 << i); 
-          }
-        }
-      }
-      
-      if (arb_needs_update) {
-        select_mask = arb.pick(valid_mask);
-        if (select_mask != 0) arb_needs_update = 0;
-      }
-
-      switch (s) {
-        case IDLE:
-          for (int i=0; i<numMasters; i++) {
-            if (nvhls::get_slc<1>(select_mask,i) == 1) {
-              active_master = i;
-              s = WRITE_INFLIGHT;
-            }
-          }
-          break;
-        case WRITE_INFLIGHT:
-          if (axi_wr_s.aw.PushNB(AW_reg[active_master])) {
-            s = DATA_INFLIGHT;
-          }
-          break;
-        case DATA_INFLIGHT:
-          if (axi_wr_m_w[active_master].PopNB(W_reg)) {
-            axi_wr_s.w.Push(W_reg);
-            if (W_reg.last == 1) {
-              select_mask = 0;
-              valid_mask = ~(~valid_mask | (1 << active_master));
-              arb_needs_update = 1;
-              write_in_flight.Push(active_master);
-              s = IDLE;
-            }
-          }
-          break;
-      }
+      do {
+        W_reg = axi_wr_m_w[active_master].Pop();
+        axi_wr_s.w.Push(W_reg);
+        w_last.Push(W_reg.last.to_uint64());
+      } while (W_reg.last != 1);
     }
   }
 
   void run_b() {
-#pragma hls_unroll yes
-    for (int i=0; i<numMasters; i++) {
+    #pragma hls_unroll yes
+    for (int i = 0; i < numMasters; i++) {
       axi_wr_m_b[i].Reset();
     }
     axi_wr_s.b.Reset();
     write_in_flight.ResetRead();
     writeQ.reset();
 
-    typename axi_::WRespPayload B_reg;    
+    typename axi_::WRespPayload B_reg;
     inFlight_t inFlight_reg;
     inFlight_t inFlight_resp_reg;
     bool write_inProgress = 0;
 
     while (1) {
       wait();
-      
+
       if (!writeQ.isFull()) {
         if (write_in_flight.PopNB(inFlight_reg)) {
           writeQ.push(inFlight_reg);
@@ -300,7 +309,6 @@ class AxiArbiter : public sc_module {
       }
     }
   }
-
 };
 
 #endif
