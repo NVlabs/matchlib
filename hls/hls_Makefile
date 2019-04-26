@@ -19,6 +19,9 @@ ifeq ($(HLS_CATAPULT),1)
 	export HLS_CATAPULT=1
 endif
 
+RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
+export SEED=$(RAND_SEED)
+
 export FSDB_VCS_RD_SC_VALPTR_PROTECT=1
 hls:
 	catapult -shell -product ultra -file go_hls.tcl

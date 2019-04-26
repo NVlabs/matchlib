@@ -15,6 +15,7 @@
  */
 #include <stdio.h>
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include "LzdTop.h"
 
@@ -52,6 +53,8 @@ Count reference_lzd(const Data& in)
 
 CCS_MAIN(int argc, char *argv[]) 
 {
+    nvhls::set_random_seed();
+
     for (int i =0; i < NUM_ITERS; ++i) 
     { 
 

@@ -21,6 +21,7 @@
 #include <systemc.h>
 #include <nvhls_connections.h>
 #include <testbench/Pacer.h>
+#include <testbench/nvhls_rand.h>
 #include "TestSource.h"
 #include "TestSink.h"
 
@@ -138,6 +139,7 @@ class TestHarnessBlocking : public sc_module {
 //------------------------------------------------------------------------
 
 int sc_main(int argc, char* argv[]) {
+  nvhls::set_random_seed();
   typedef sc_lv<32> Bits;
   static const unsigned int MAX_COUNT = 100;
 

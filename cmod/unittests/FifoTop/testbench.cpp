@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include "FifoTop.h"
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include <deque>
 
@@ -38,6 +39,9 @@ OpType semi_rand_op(int size)
 }
 
 CCS_MAIN(int argc, char *argv[]) {
+
+    nvhls::set_random_seed();
+
     MemWord_t data;
     OpType op;
     BankIdx idx;

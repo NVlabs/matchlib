@@ -15,6 +15,7 @@
  */
 #include <stdio.h>
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include "MemModel.h"
 #include "mem_config.h"
@@ -26,6 +27,9 @@
 MemWord_t wideRand ();
 
 CCS_MAIN(int argc, char *argv[]) { 
+
+  nvhls::set_random_seed();
+
   const int count = NUM_ITER;
   int start = 0;
 

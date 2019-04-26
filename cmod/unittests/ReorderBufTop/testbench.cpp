@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include "ReorderBufTop.h"
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include <deque>
 
@@ -160,6 +161,8 @@ OpType semi_rand_op(Ref& ref)
 }
 
 CCS_MAIN(int argc, char *argv[]) {
+
+    nvhls::set_random_seed();
 
     Ref ref;
 

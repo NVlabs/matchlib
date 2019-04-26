@@ -54,7 +54,7 @@ SC_MODULE(Host) {
   sc_out<bool> done_read;
 
   static const int write_count = 400;
-  static const int read_count = 100;
+  static const int read_count = 50;
 
   std::deque<unsigned int> read_ref;
   std::queue<sc_uint<Cfg::dataWidth> > dataQ;
@@ -144,25 +144,27 @@ SC_MODULE(Host) {
     int addr = 0;
     int ctr = 0;
 
-    wait(1000); // Let writes run well ahead of reads
+    wait(2000); // Let writes run well ahead of reads
 
     while (1) {
       wait();
 
       if (ctr < read_count) {
-        RdRequest<Cfg> rdRequest;
-        rdRequest.addr = addr;
-        int len = rand() % 6;
+        if (rand() % 5 == 0) { // Really need to pace ourselves here
+          RdRequest<Cfg> rdRequest;
+          rdRequest.addr = addr;
+          int len = rand() % 3;
 
-        rdRequest.len = len;
+          rdRequest.len = len;
 
-        std::cout << "@" << sc_time_stamp() << " read source initiated a request:"
-                  << "\t addr = " << hex << rdRequest.addr.to_uint64()
-                  << "\t len = " << dec << rdRequest.len.to_uint64()
-                  << std::endl;
-        rdRequestOut.Push(rdRequest);
-        addr += (len+1)*bytesPerBeat;
-        ctr++;
+          std::cout << "@" << sc_time_stamp() << " read source initiated a request:"
+                    << "\t addr = " << hex << rdRequest.addr.to_uint64()
+                    << "\t len = " << dec << rdRequest.len.to_uint64()
+                    << std::endl;
+          rdRequestOut.Push(rdRequest);
+          addr += (len+1)*bytesPerBeat;
+          ctr++;
+        }
       }
     }
   }

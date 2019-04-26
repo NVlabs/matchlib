@@ -15,6 +15,7 @@
  */
 #include <stdio.h>
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include "ArbiterTop.h"
 
@@ -75,6 +76,7 @@ mask_t reference_arbiter(const mask_t& valid)
 }
 
 CCS_MAIN(int argc, char *argv[]) { 
+    nvhls::set_random_seed();
     mask_t valid,select,ref;
 
     for (int i = 0; i< NUM_ITERS; i++) {

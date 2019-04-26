@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+# Without write responses there is no way to prevent a bad seed
+# that will stall writes in the TB so that reads overtake them.
+RAND_SEED := 1000
 
 USER_FLAGS +=  -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 include ../../unittests_Makefile

@@ -16,7 +16,7 @@
 
 include ../../cmod_Makefile
 
-all: sim_combinational sim_bypass sim_buffer sim_pipeline sim_multchain sim_network sim_credit sim_serdes sim_comb_buff
+all: sim_combinational sim_bypass sim_buffer sim_pipeline sim_multchain sim_network sim_credit sim_serdes sim_comb_buff sim_comb_chan
 #USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 
 run:
@@ -25,8 +25,11 @@ run:
 	./sim_buffer
 	./sim_pipeline
 	./sim_multchain
+	./sim_network
 	./sim_credit
 	./sim_serdes
+	./sim_comb_buff
+	./sim_comb_chan
 
 sim_combinational: $(wildcard *.h) TestCombinational.cpp $(wildcard ../../include/*.h) $(wildcard ../../include/*.h)
 	$(CC) -o sim_combinational $(CFLAGS) $(USER_FLAGS) -I../../include TestCombinational.cpp $(BOOSTLIBS) $(LIBS)
@@ -54,6 +57,9 @@ sim_serdes: $(wildcard *.h) TestSerdesNetwork.cpp $(wildcard ../../include/*.h) 
 
 sim_comb_buff: $(wildcard *.h) TestCombinationalBufferedEnds.cpp $(wildcard ../../include/*.h) $(wildcard ../../include/*.h)
 	$(CC) -o sim_comb_buff $(CFLAGS) $(USER_FLAGS) -I../../include TestCombinationalBufferedEnds.cpp $(BOOSTLIBS) $(LIBS)
+
+sim_comb_chan: $(wildcard *.h) TestCombinationalIntoChan.cpp $(wildcard ../../include/*.h) $(wildcard ../../include/*.h)
+	$(CC) -o sim_comb_chan $(CFLAGS) $(USER_FLAGS) -I../../include TestCombinationalIntoChan.cpp $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*

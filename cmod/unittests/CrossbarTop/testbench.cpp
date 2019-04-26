@@ -15,6 +15,7 @@
  */
 #include <stdio.h>
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include "CrossbarTop.h"
 
@@ -23,6 +24,8 @@
 #endif
 
 CCS_MAIN(int argc, char *argv[]) {
+
+  nvhls::set_random_seed();
 
   typedef DATA_TYPE Word_t;
   typedef NVUINTC(nvhls::nbits<NUM_INPUTS - 1>::val) Src_t;

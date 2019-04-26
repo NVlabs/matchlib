@@ -34,7 +34,7 @@ LIBS ?=
 LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_system
 
 RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
-USER_FLAGS += -DRAND_SEED=$(RAND_SEED)
+USER_FLAGS += -DRAND_SEED=$(RAND_SEED) -DCONN_RAND_STALL
 
 .PHONY: Build
 Build: all

@@ -22,7 +22,7 @@ run:
 	./sim_counter
 
 sim_counter: $(wildcard *.h) $(wildcard *.cpp)
-	$(CC) -o sim_counter $(CFLAGS) $(USER_FLAGS) -I../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+	$(CC) -o sim_counter $(CFLAGS) $(USER_FLAGS) -I../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*

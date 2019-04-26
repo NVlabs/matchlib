@@ -657,6 +657,7 @@ SC_MODULE(testbench) {
 };
 
 int sc_main(int argc, char* argv[]) {
+  nvhls::set_random_seed();
   testbench my_testbench("my_testbench");
   sc_report_handler::set_actions(SC_ERROR, SC_DISPLAY);
   sc_start();

@@ -24,6 +24,7 @@
 #include <deque>
 using namespace::std;
 #include <testbench/Pacer.h>
+#include <testbench/nvhls_rand.h>
 
 typedef deque<int> Fifo;
 
@@ -208,6 +209,7 @@ SC_MODULE (testbench) {
 
 int sc_main(int argc, char *argv[])
 {
+    nvhls::set_random_seed();
     testbench my_testbench("my_testbench");
     sc_start();
     cout << "CMODEL PASS" << endl;

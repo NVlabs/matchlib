@@ -15,6 +15,7 @@
  */
 #include <stdio.h>
 #include <match_scverify.h>
+#include <testbench/nvhls_rand.h>
 
 #include "ArbitratedScratchpadDPTop.h"
 
@@ -54,6 +55,8 @@ bool check_response(DATA_TYPE port_read_out[kNumReadPorts], bool port_read_out_v
 }
 
 CCS_MAIN (int argc, char *argv[]) {
+
+  nvhls::set_random_seed();
 
   Address read_address[kNumReadPorts];
   bool read_req_valid[kNumReadPorts];

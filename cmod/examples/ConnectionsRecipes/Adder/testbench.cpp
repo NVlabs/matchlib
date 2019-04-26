@@ -20,6 +20,7 @@
 
 #define NVHLS_VERIFY_BLOCKS (Adder)
 #include <nvhls_verify.h>
+#include <testbench/nvhls_rand.h>
 
 #include <deque>
 using namespace::std;
@@ -200,6 +201,7 @@ SC_MODULE (testbench) {
 
 int sc_main(int argc, char *argv[])
 {
+    nvhls::set_random_seed();
     testbench my_testbench("my_testbench");
     sc_start();
     cout << "CMODEL PASS" << endl;

@@ -17,6 +17,7 @@
 #include <systemc.h>
 #include <nvhls_connections.h>
 #include <fifo.h>
+#include <testbench/nvhls_rand.h>
 
 #define NVHLS_VERIFY_BLOCKS (ArbiterModule)
 #include <nvhls_verify.h>
@@ -188,6 +189,7 @@ SC_MODULE (testbench) {
 
 int sc_main(int argc, char *argv[])
 {
+  nvhls::set_random_seed();
   testbench my_testbench("my_testbench");
   sc_report_handler::set_actions(SC_ERROR, SC_DISPLAY);
   sc_start();

@@ -16,6 +16,7 @@
 #include "Counter.h"
 #include <systemc.h>
 #include <mc_scverify.h>  // needed for scverify to work
+#include <testbench/nvhls_rand.h>
 
 
 SC_MODULE(testbench) {
@@ -73,6 +74,7 @@ SC_MODULE(testbench) {
 
 
 int sc_main(int argc, char *argv[]) {
+  nvhls::set_random_seed();
   testbench my_testbench("my_testbench");
   sc_report_handler::set_actions (SC_ID_LOGIC_X_TO_BOOL_,SC_DO_NOTHING);
   sc_start();

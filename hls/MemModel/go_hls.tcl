@@ -43,7 +43,7 @@ foreach WORDSIZE $WORDSIZE_LIST {
             	solution file add $tb_file -type C++ -exclude true
             }
             puts "WordSize=$WORDSIZE Banks=$BANKS NumEntries=$NUM_ENTRIES"
-            options set Input/CompilerFlags "-D_SYNTHESIS_ -DHLS_ALGORITHMICC $HLS_CATAPULT_FLAG -DWORDSIZE=$WORDSIZE -DNBANKS=$BANKS -DNUM_ENTRIES=$NUM_ENTRIES"
+            options set Input/CompilerFlags "-D_SYNTHESIS_ -DHLS_ALGORITHMICC $HLS_CATAPULT_FLAG -DWORDSIZE=$WORDSIZE -DNBANKS=$BANKS -DNUM_ENTRIES=$NUM_ENTRIES -DRAND_SEED=$env(SEED) -DCONN_RAND_STALL"
             go analyze
             solution library add mgc_sample-065nm-dw_beh_dc -- -rtlsyntool DesignCompiler -vendor Sample -technology 065nm -Designware Yes
             solution library add ram_sample-065nm-singleport_beh_dc
