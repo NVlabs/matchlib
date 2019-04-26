@@ -60,16 +60,20 @@ SC_MODULE(Host) {
   std::queue<sc_uint<Cfg::dataWidth> > dataQ;
 
   SC_CTOR(Host) : reset_bar("reset_bar"), clk("clk") {
-    SC_CTHREAD(run_wr_source, clk.pos());
+    SC_THREAD(run_wr_source);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
 
-    SC_CTHREAD(run_wr_sink, clk.pos());
+    SC_THREAD(run_wr_sink);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
 
-    SC_CTHREAD(run_rd_source, clk.pos());
+    SC_THREAD(run_rd_source);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
 
-    SC_CTHREAD(run_rd_sink, clk.pos());
+    SC_THREAD(run_rd_sink);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
   }
 

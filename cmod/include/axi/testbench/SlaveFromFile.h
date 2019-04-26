@@ -99,10 +99,12 @@ template <typename axiCfg> class SlaveFromFile : public sc_module {
       validReadAddresses.push_back(addr);
     }
 
-    SC_CTHREAD(run_rd, clk.pos());
+    SC_THREAD(run_rd);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
 
-    SC_CTHREAD(run_wr, clk.pos());
+    SC_THREAD(run_wr);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
   }
 

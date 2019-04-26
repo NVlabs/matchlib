@@ -67,10 +67,12 @@ class Slave : public sc_module {
 
   SC_CTOR(Slave)
       : if_rd("if_rd"), if_wr("if_wr"), reset_bar("reset_bar"), clk("clk") {
-    SC_CTHREAD(run_rd, clk.pos());
+    SC_THREAD(run_rd);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
 
-    SC_CTHREAD(run_wr, clk.pos());
+    SC_THREAD(run_wr);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
   }
 

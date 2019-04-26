@@ -3047,7 +3047,8 @@ class Bypass : public sc_module {
     SC_METHOD(BypassMux);
     sensitive << enq.msg << state.msg << full;
 
-    SC_CTHREAD(Seq, clk.pos());
+    SC_THREAD(Seq);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
   }
 
@@ -3175,7 +3176,8 @@ class Pipeline : public sc_module {
     SC_METHOD(DeqMsg);
     sensitive << state.msg;
 
-    SC_CTHREAD(Seq, clk.pos());
+    SC_THREAD(Seq);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
   }
 
@@ -3320,7 +3322,8 @@ class BypassBuffered : public sc_module {
     SC_METHOD(FullNext);
     sensitive << enq.val << deq.rdy << full << head << tail;
 
-    SC_CTHREAD(Seq, clk.pos());
+    SC_THREAD(Seq);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
 
     // Needed so that DeqMsg always has a good tail value
@@ -3538,7 +3541,8 @@ class Buffer : public sc_module {
     SC_METHOD(FullNext);
     sensitive << enq.val << deq.rdy << full << head << tail;
 
-    SC_CTHREAD(Seq, clk.pos());
+    SC_THREAD(Seq);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
 
     // Needed so that DeqMsg always has a good tail value
@@ -3827,7 +3831,8 @@ class OutNetwork : public sc_module {
     SC_METHOD(TieToHigh);
     sensitive << clk.pos();
 
-    SC_CTHREAD(SetState, clk.pos());
+    SC_THREAD(SetState);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
   }
 
@@ -3981,7 +3986,8 @@ class InNetworkCredit : public sc_module {
     SC_METHOD(AssignCreditVal);
     sensitive << deq.val << deq.rdy << credits;
 
-    SC_CTHREAD(UpdateCredit, clk.pos());
+    SC_THREAD(UpdateCredit);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
   }
 
@@ -4172,10 +4178,12 @@ class OutNetworkCredit : public sc_module {
     SC_METHOD(AssignCreditRdy);
     sensitive << deq.val << deq.rdy << credits;
 
-    SC_CTHREAD(UpdateCredit, clk.pos());
+    SC_THREAD(UpdateCredit);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
 
-    SC_CTHREAD(SetState, clk.pos());
+    SC_THREAD(SetState);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);
   }
 
@@ -4381,7 +4389,8 @@ class Sink : public sc_module {
       clk("clk"),
       rst("rst"),
       in("in") {
-    SC_CTHREAD(DoSink, clk.pos());
+    SC_THREAD(DoSink);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);    
   }
   static const unsigned int width = 0;
@@ -4421,7 +4430,8 @@ class DummySink : public sc_module {
       clk("clk"),
       rst("rst"),
       in("in") {
-    SC_CTHREAD(DoSink, clk.pos());
+    SC_THREAD(DoSink);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);    
   }
   static const unsigned int width = 0;
@@ -4461,7 +4471,8 @@ class DummySource : public sc_module {
       clk("clk"),
       rst("rst"),
       out("out") {
-    SC_CTHREAD(DoSource, clk.pos());
+    SC_THREAD(DoSource);
+    sensitive << clk.pos();
     async_reset_signal_is(rst, false);    
   }
   static const unsigned int width = 0;

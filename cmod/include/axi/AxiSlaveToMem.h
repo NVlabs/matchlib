@@ -69,7 +69,8 @@ class AxiSlaveToMem : public sc_module {
 
   SC_CTOR(AxiSlaveToMem)
       : if_rd("if_rd"), if_wr("if_wr"), reset_bar("reset_bar"), clk("clk") {
-    SC_CTHREAD(run, clk.pos());
+    SC_THREAD(run);
+    sensitive << clk.pos();
     async_reset_signal_is(reset_bar, false);
   }
 
