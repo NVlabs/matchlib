@@ -22,12 +22,6 @@
 // adder2: inputs a and b; output sum=a+b_val?b:0
 // forward progress even if b is not present, use 0
 
-#ifndef __SYNTHESIS__
-#define DCOUT(x) cout << x;
-#else
-#define DCOUT(x)
-#endif
-
 SC_MODULE(Adder2)
 {
     public:

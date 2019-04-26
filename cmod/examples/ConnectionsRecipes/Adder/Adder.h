@@ -22,12 +22,6 @@
 // adder: inputs a and b; output sum=a+b
 // forward progress only after a and b read, and sum written
 
-#ifndef __SYNTHESIS__
-#define DCOUT(x) cout << x;
-#else
-#define DCOUT(x)
-#endif
-
 SC_MODULE(Adder)
 {
     public:
