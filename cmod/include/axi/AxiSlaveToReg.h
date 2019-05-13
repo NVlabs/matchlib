@@ -174,7 +174,12 @@ class AxiSlaveToReg : public sc_module {
               }
             }
           }
-          reg[regAddr] = axiData;
+#pragma hls_unroll yes
+          for (int i=0; i<numReg; i++) { // More verbose, but this is the preferred coding style for HLS
+            if (i == regAddr) {
+              reg[i] = axiData;
+            }
+          }
           CDCOUT(sc_time_stamp() << " " << name() << " Wrote to local reg:"
                         << " axi_addr=" << hex << axiWrAddr.to_int64()
                         << " reg_addr=" << regAddr.to_int64()
