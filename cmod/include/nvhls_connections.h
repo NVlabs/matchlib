@@ -50,7 +50,7 @@
 #ifdef CONNECTIONS_SIM_ONLY
 #include <vector>
 #include <testbench/Pacer.h>
-#include <tlm.h> // NATE ADDED TLM
+#include <tlm.h>
 #endif
 
 /**
@@ -97,6 +97,7 @@
  *       incoming msg has arrived.
  *       - Buffer: Added a FIFO inside a channel.
  */
+
 namespace Connections {
 
 // Analogous to Mentor Catapult's abstraction settings, but also used to loosely and tightly define bit ordering of ports and channels
@@ -216,6 +217,8 @@ template <typename Message, connections_port_t port_marshall_type = AUTO_PORT>
 class Pipeline;
 template <typename Message, unsigned int NumEntries, connections_port_t port_marshall_type = AUTO_PORT>
 class Buffer;
+
+class Connections_BA_abs;
 }
 
 // Declarations used in the Marshaller
@@ -320,10 +323,16 @@ public:
     }
 
     std::vector<Blocking_abs*> tracked;
+    std::vector<Connections_BA_abs*> tracked_annotate;
   
     void add(Blocking_abs* c)
     {
         tracked.push_back(c);
+    }
+    
+    void add_annotate(Connections_BA_abs* c)
+    {
+        tracked_annotate.push_back(c);
     }
 
     void remove(Blocking_abs* c)
@@ -340,6 +349,21 @@ public:
         NVHLS_ASSERT(0);
     }
 
+    void remove_annotate(Connections_BA_abs* c)
+    {
+        for (std::vector<Connections_BA_abs*>::iterator it = tracked_annotate.begin(); it!=tracked_annotate.end(); ++it)
+        {
+            if (*it == c) 
+            {
+                tracked_annotate.erase(it);
+                return;
+            }
+        }
+
+        assert(0);
+    }
+
+    
     void run(bool value) {
         sim_clk.post_delay();  // align to occur just after the cycle
 
@@ -998,11 +1022,16 @@ class InBlocking <Message, SYN_PORT> : public InBlocking_Ports_abs<Message> {
 
   // Bind to Combinational
   void Bind(Combinational<Message, MARSHALL_PORT>& rhs) {
+#ifdef CONNECTIONS_SIM_ONLY
+    this->msg(rhs.out_msg);
+    this->val(rhs.out_val);
+    this->rdy(rhs.out_rdy);
+    rhs.out_bound = true;
+    rhs.out_ptr = this;
+#else
     this->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.in_bound = true;
 #endif
   }
   
@@ -1011,7 +1040,7 @@ class InBlocking <Message, SYN_PORT> : public InBlocking_Ports_abs<Message> {
   void Bind(InBlocking<Message, DIRECT_PORT>& rhs) {
     DirectToMarshalledInPort<Message> *dynamic_d2mport;
 
-    dynamic_d2mport = new DirectToMarshalledInPort<Message>("dynamic_d2mport");
+    dynamic_d2mport = new DirectToMarshalledInPort<Message>(sc_gen_unique_name("dynamic_d2mport"));
     dynamic_d2mport->msg(rhs.msg);
     this->msg(dynamic_d2mport->msgbits);
 
@@ -1026,14 +1055,19 @@ class InBlocking <Message, SYN_PORT> : public InBlocking_Ports_abs<Message> {
   void Bind(Combinational<Message, DIRECT_PORT>& rhs) {
     DirectToMarshalledInPort<Message> *dynamic_d2mport;
 
-    dynamic_d2mport = new DirectToMarshalledInPort<Message>("dynamic_d2mport");
-    dynamic_d2mport->msg(rhs.msg);
+    dynamic_d2mport = new DirectToMarshalledInPort<Message>(sc_gen_unique_name("dynamic_d2mport"));
     this->msg(dynamic_d2mport->msgbits);
 
+#ifdef CONNECTIONS_SIM_ONLY
+    dynamic_d2mport->msg(rhs.out_msg);
+    this->val(rhs.out_val);
+    this->rdy(rhs.out_rdy);
+    rhs.out_bound = true;
+    rhs.out_ptr = this;
+#else
+    dynamic_d2mport->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.in_bound = true;
 #endif
   }
 
@@ -1042,16 +1076,18 @@ class InBlocking <Message, SYN_PORT> : public InBlocking_Ports_abs<Message> {
     TLMToDirectOutPort<Message> *dynamic_tlm2d_port;
     Combinational<Message, DIRECT_PORT> *dynamic_comb;
 
-    dynamic_tlm2d_port = new TLMToDirectOutPort<Message>("dynamic_tlm2d_port", rhs.fifo);
-    dynamic_comb = new Combinational<Message, DIRECT_PORT>("dynamic_comb");
+    dynamic_tlm2d_port = new TLMToDirectOutPort<Message>(sc_gen_unique_name("dynamic_tlm2d_port"), rhs.fifo);
+    dynamic_comb = new Combinational<Message, DIRECT_PORT>(sc_gen_unique_name("dynamic_comb"));
 
     // Bind the marshaller to combinational
     this->Bind(*dynamic_comb);
-    dynamic_tlm2d_port->val(dynamic_comb->val);
-    dynamic_tlm2d_port->rdy(dynamic_comb->rdy);
-    dynamic_tlm2d_port->msg(dynamic_comb->msg);
+    dynamic_tlm2d_port->val(dynamic_comb->in_val);
+    dynamic_tlm2d_port->rdy(dynamic_comb->in_rdy);
+    dynamic_tlm2d_port->msg(dynamic_comb->in_msg);
 
-    dynamic_comb->out_bound = true;
+    // Bound but no ptr indicates a cosim interface
+    dynamic_comb->in_bound = true;
+    dynamic_comb->in_ptr = 0;
   }
 #endif // CONNECTIONS_SIM_ONLY
 
@@ -1138,11 +1174,16 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
 
   // Bind to Combinational
   void Bind(Combinational<Message, MARSHALL_PORT>& rhs) {
+#ifdef CONNECTIONS_SIM_ONLY
+    this->msg(rhs.out_msg);
+    this->val(rhs.out_val);
+    this->rdy(rhs.out_rdy);
+    rhs.out_bound = true;
+    rhs.out_ptr = this;
+#else
     this->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.in_bound = true;
 #endif
   }
 
@@ -1165,7 +1206,7 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
   void Bind(InBlocking<Message, DIRECT_PORT>& rhs) {
     DirectToMarshalledInPort<Message> *dynamic_d2mport;
 
-    dynamic_d2mport = new DirectToMarshalledInPort<Message>("dynamic_d2mport");
+    dynamic_d2mport = new DirectToMarshalledInPort<Message>(sc_gen_unique_name("dynamic_d2mport"));
     dynamic_d2mport->msg(rhs.msg);
     this->msg(dynamic_d2mport->msgbits);
 
@@ -1180,14 +1221,19 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
   void Bind(Combinational<Message, DIRECT_PORT>& rhs) {
     DirectToMarshalledInPort<Message> *dynamic_d2mport;
 
-    dynamic_d2mport = new DirectToMarshalledInPort<Message>("dynamic_d2mport");
-    dynamic_d2mport->msg(rhs.msg);
+    dynamic_d2mport = new DirectToMarshalledInPort<Message>(sc_gen_unique_name("dynamic_d2mport"));
     this->msg(dynamic_d2mport->msgbits);
 
+#ifdef CONNECTIONS_SIM_ONLY
+    dynamic_d2mport->msg(rhs.out_msg);
+    this->val(rhs.out_val);
+    this->rdy(rhs.out_rdy);
+    rhs.out_bound = true;
+    rhs.out_ptr = this;
+#else
+    dynamic_d2mport->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.in_bound = true;
 #endif
   }
 
@@ -1196,18 +1242,18 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
     TLMToDirectOutPort<Message> *dynamic_tlm2d_port;
     Combinational<Message, DIRECT_PORT> *dynamic_comb;
 
-    dynamic_tlm2d_port = new TLMToDirectOutPort<Message>("dynamic_tlm2d_port", rhs.fifo);
-    dynamic_comb = new Combinational<Message, DIRECT_PORT>("dynamic_comb");
+    dynamic_tlm2d_port = new TLMToDirectOutPort<Message>(sc_gen_unique_name("dynamic_tlm2d_port"), rhs.fifo);
+    dynamic_comb = new Combinational<Message, DIRECT_PORT>(sc_gen_unique_name("dynamic_comb"));
 
     // Bind the marshaller to combinational
     this->Bind(*dynamic_comb);
-    dynamic_tlm2d_port->val(dynamic_comb->val);
-    dynamic_tlm2d_port->rdy(dynamic_comb->rdy);
-    dynamic_tlm2d_port->msg(dynamic_comb->msg);
+    dynamic_tlm2d_port->val(dynamic_comb->in_val);
+    dynamic_tlm2d_port->rdy(dynamic_comb->in_rdy);
+    dynamic_tlm2d_port->msg(dynamic_comb->in_msg);
 
-    #ifdef CONNECTIONS_SIM_ONLY
-    dynamic_comb->out_bound = true;
-    #endif
+    // Bound but no ptr indicates a cosim interface
+    dynamic_comb->in_bound = true;
+    dynamic_comb->in_ptr = 0;
   }
 #endif // CONNECTIONS_SIM_ONLY
 
@@ -1292,11 +1338,16 @@ class InBlocking <Message, DIRECT_PORT> : public InBlocking_SimPorts_abs<Message
 
   // Bind to Combinational
   void Bind(Combinational<Message, DIRECT_PORT>& rhs) {
+#ifdef CONNECTIONS_SIM_ONLY
+    this->msg(rhs.out_msg);
+    this->val(rhs.out_val);
+    this->rdy(rhs.out_rdy);
+    rhs.out_bound = true;
+    rhs.out_ptr = this;
+#else
     this->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.in_bound = true;
 #endif
   }
 
@@ -1805,11 +1856,16 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
 
   // Bind to Combinational Marshall Port
   void Bind(Combinational<Message, MARSHALL_PORT>& rhs) {
+#ifdef CONNECTIONS_SIM_ONLY
+    this->msg(rhs.in_msg);
+    this->val(rhs.in_val);
+    this->rdy(rhs.in_rdy);
+    rhs.in_bound = true;
+    rhs.in_ptr = this;
+#else
     this->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.out_bound = true;
 #endif
   }
 
@@ -1817,7 +1873,7 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
 #ifndef __SYNTHESIS__  
   void Bind(OutBlocking<Message, DIRECT_PORT>& rhs) {
     MarshalledToDirectOutPort<Message> *dynamic_m2dport;
-    dynamic_m2dport = new MarshalledToDirectOutPort<Message>("dynamic_m2dport");
+    dynamic_m2dport = new MarshalledToDirectOutPort<Message>(sc_gen_unique_name("dynamic_m2dport"));
 
 #ifdef CONNECTIONS_SIM_ONLY
     rhs.disable_spawn();
@@ -1833,16 +1889,21 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
   void Bind(Combinational<Message, DIRECT_PORT>& rhs) {
     MarshalledToDirectOutPort<Message> *dynamic_m2dport;
 
-    dynamic_m2dport = new MarshalledToDirectOutPort<Message>("dynamic_m2dport");
+    dynamic_m2dport = new MarshalledToDirectOutPort<Message>(sc_gen_unique_name("dynamic_m2dport"));
     this->msg(dynamic_m2dport->msgbits);
-    dynamic_m2dport->msg(rhs.msg);
-    dynamic_m2dport->val(rhs.val);
-    
-    this->val(rhs.val);
-    this->rdy(rhs.rdy);
     
 #ifdef CONNECTIONS_SIM_ONLY
-    rhs.out_bound = true;
+    dynamic_m2dport->msg(rhs.in_msg);
+    dynamic_m2dport->val(rhs.in_val);
+    this->val(rhs.in_val);
+    this->rdy(rhs.in_rdy);
+    rhs.in_bound = true;
+    rhs.in_ptr = this;
+#else
+    dynamic_m2dport->msg(rhs.msg);
+    dynamic_m2dport->val(rhs.val);
+    this->val(rhs.val);
+    this->rdy(rhs.rdy);
 #endif
   }
 
@@ -1851,16 +1912,18 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
     DirectToTLMInPort<Message> *dynamic_d2tlm_port;
     Combinational<Message, DIRECT_PORT> *dynamic_comb;
     
-    dynamic_d2tlm_port = new DirectToTLMInPort<Message>("dynamic_d2tlm_port", rhs.fifo);
-    dynamic_comb = new Combinational<Message, DIRECT_PORT>("dynamic_comb");
+    dynamic_d2tlm_port = new DirectToTLMInPort<Message>(sc_gen_unique_name("dynamic_d2tlm_port"), rhs.fifo);
+    dynamic_comb = new Combinational<Message, DIRECT_PORT>(sc_gen_unique_name("dynamic_comb"));
 
     // Bind the marshaller to combinational
     this->Bind(*dynamic_comb);
-    dynamic_d2tlm_port->val(dynamic_comb->val);
-    dynamic_d2tlm_port->rdy(dynamic_comb->rdy);
-    dynamic_d2tlm_port->msg(dynamic_comb->msg);
+    dynamic_d2tlm_port->val(dynamic_comb->out_val);
+    dynamic_d2tlm_port->rdy(dynamic_comb->out_rdy);
+    dynamic_d2tlm_port->msg(dynamic_comb->out_msg);
     
-    dynamic_comb->in_bound = true;
+    // Bound but no ptr indicates a cosim interface
+    dynamic_comb->out_bound = true;
+    dynamic_comb->out_ptr = 0;
   }
 
 #endif // CONNECTIONS_SIM_ONLY
@@ -1952,11 +2015,16 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
 
   // Bind to Combinational Marshall Port
   void Bind(Combinational<Message, MARSHALL_PORT>& rhs) {
+#ifdef CONNECTIONS_SIM_ONLY
+    this->msg(rhs.in_msg);
+    this->val(rhs.in_val);
+    this->rdy(rhs.in_rdy);
+    rhs.in_bound = true;
+    rhs.in_ptr = this;
+#else
     this->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.out_bound = true;
 #endif
   }
 
@@ -1964,7 +2032,7 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
 #ifndef __SYNTHESIS__  
   void Bind(OutBlocking<Message, DIRECT_PORT>& rhs) {
     MarshalledToDirectOutPort<Message> *dynamic_m2dport;
-    dynamic_m2dport = new MarshalledToDirectOutPort<Message>("dynamic_m2dport");
+    dynamic_m2dport = new MarshalledToDirectOutPort<Message>(sc_gen_unique_name("dynamic_m2dport"));
 
 #ifdef CONNECTIONS_SIM_ONLY
     rhs.disable_spawn();
@@ -1980,15 +2048,21 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
   void Bind(Combinational<Message, DIRECT_PORT>& rhs) {
     MarshalledToDirectOutPort<Message> *dynamic_m2dport;
 
-    dynamic_m2dport = new MarshalledToDirectOutPort<Message>("dynamic_m2dport");
+    dynamic_m2dport = new MarshalledToDirectOutPort<Message>(sc_gen_unique_name("dynamic_m2dport"));
     this->msg(dynamic_m2dport->msgbits);
+
+#ifdef CONNECTIONS_SIM_ONLY
+    dynamic_m2dport->msg(rhs.in_msg);
+    dynamic_m2dport->val(rhs.in_val);
+    this->val(rhs.in_val);
+    this->rdy(rhs.in_rdy);
+    rhs.in_bound = true;
+    rhs.in_ptr = this;
+#else
     dynamic_m2dport->msg(rhs.msg);
     dynamic_m2dport->val(rhs.val);
-    
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.out_bound = true;
 #endif
   }
 
@@ -1997,16 +2071,18 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
     DirectToTLMInPort<Message> *dynamic_d2tlm_port;
     Combinational<Message, DIRECT_PORT> *dynamic_comb;
     
-    dynamic_d2tlm_port = new DirectToTLMInPort<Message>("dynamic_d2tlm_port", rhs.fifo);
-    dynamic_comb = new Combinational<Message, DIRECT_PORT>("dynamic_comb");
+    dynamic_d2tlm_port = new DirectToTLMInPort<Message>(sc_gen_unique_name("dynamic_d2tlm_port"), rhs.fifo);
+    dynamic_comb = new Combinational<Message, DIRECT_PORT>(sc_gen_unique_name("dynamic_comb") );
 
     // Bind the marshaller to combinational
     this->Bind(*dynamic_comb);
-    dynamic_d2tlm_port->val(dynamic_comb->val);
-    dynamic_d2tlm_port->rdy(dynamic_comb->rdy);
-    dynamic_d2tlm_port->msg(dynamic_comb->msg);
-
-    dynamic_comb->in_bound = true;
+    dynamic_d2tlm_port->val(dynamic_comb->out_val);
+    dynamic_d2tlm_port->rdy(dynamic_comb->out_rdy);
+    dynamic_d2tlm_port->msg(dynamic_comb->out_msg);
+    
+    // Bound but no ptr indicates a cosim interface
+    dynamic_comb->out_bound = true;
+    dynamic_comb->out_ptr = 0;
   }
 
 #endif // CONNECTIONS_SIM_ONLY
@@ -2081,11 +2157,16 @@ class OutBlocking <Message, DIRECT_PORT> : public OutBlocking_SimPorts_abs<Messa
   
   // Bind to Combinational
   void Bind(Combinational<Message, DIRECT_PORT>& rhs) {
+#ifdef CONNECTIONS_SIM_ONLY
+    this->msg(rhs.in_msg);
+    this->val(rhs.in_val);
+    this->rdy(rhs.in_rdy);
+    rhs.in_bound = true;
+    rhs.in_ptr = this;
+#else
     this->msg(rhs.msg);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.out_bound = true;
 #endif
   }
 
@@ -2110,12 +2191,19 @@ class OutBlocking <Message, DIRECT_PORT> : public OutBlocking_SimPorts_abs<Messa
 
     dynamic_d2mport = new DirectToMarshalledOutPort<Message>("dynamic_d2mport");
     this->msg(dynamic_d2mport->msg);
-    dynamic_d2mport->msgbits(rhs.msg);
-    
+
+#ifdef CONNECTIONS_SIM_ONLY
+    dynamic_d2mport->msg(rhs.in_msg);
+    dynamic_d2mport->val(rhs.in_val);
+    this->val(rhs.in_val);
+    this->rdy(rhs.in_rdy);
+    rhs.in_bound = true;
+    rhs.in_ptr = this;
+#else
+    dynamic_d2mport->msg(rhs.msg);
+    dynamic_d2mport->val(rhs.val);
     this->val(rhs.val);
     this->rdy(rhs.rdy);
-#ifdef CONNECTIONS_SIM_ONLY
-    rhs.out_bound = true;
 #endif
   }
 #endif // __SYNTHESIS__
@@ -2273,6 +2361,37 @@ class Out<Message, TLM_PORT> : public OutBlocking<Message, TLM_PORT> {
 // Combinational MARSHALL_PORT
 //------------------------------------------------------------------------
 
+#ifdef CONNECTIONS_SIM_ONLY
+template <typename Message>
+class BA_Message {
+ public:
+  Message m;
+  unsigned long ready_cycle;
+ };
+ 
+ class Connections_BA_abs : public sc_module {
+ public:
+   
+ Connections_BA_abs() : sc_module(sc_module_name(sc_gen_unique_name("chan_ba")))
+     {}
+   
+   explicit Connections_BA_abs(const char* name) : sc_module(sc_module_name(name))
+     {}
+
+   virtual void annotate(unsigned long latency, unsigned int capacity) {
+     NVHLS_ASSERT(0);
+   }
+
+   virtual const char *src_name() {
+     NVHLS_ASSERT(0);
+   }
+   
+   virtual const char *dest_name() {
+     NVHLS_ASSERT(0);
+   }
+ };
+#endif
+
 template <typename Message>
 class Combinational_abs {
   // Abstract class
@@ -2341,6 +2460,7 @@ class Combinational_abs {
   // Full
 //  bool Full() { return !rdy.read(); }
 };
+ 
 template <typename Message>
 class Combinational_Ports_abs : public Combinational_abs<Message> {
  public:
@@ -2453,33 +2573,98 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 
 
 template <typename Message, connections_port_t port_marshall_type>
-class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
+class Combinational_SimPorts_abs
+#ifdef CONNECTIONS_SIM_ONLY
+  : public Combinational_abs<Message>,
+    public Connections_BA_abs,
+    public Blocking_abs
+#else
+  : public Combinational_Ports_abs<Message>
+#endif
+{
+#ifdef CONNECTIONS_SIM_ONLY
+  SC_HAS_PROCESS(Combinational_SimPorts_abs);
+#endif
+
   // Abstract class
  protected:
   // Default constructor
   Combinational_SimPorts_abs()
-    : Combinational_Ports_abs<Message>()
 #ifdef CONNECTIONS_SIM_ONLY
-        , out_bound(false), in_bound(false)
-        , sim_out(sc_gen_unique_name("sim_out")), sim_in(sc_gen_unique_name("sim_in"))
+    : Combinational_abs<Message>()
+
+    , Connections_BA_abs(sc_gen_unique_name("comb_ba"))
+    
+    //, in_msg(sc_gen_unique_name("comb_in_msg"))
+    , in_val(sc_gen_unique_name("comb_in_val"))
+    , in_rdy(sc_gen_unique_name("comb_in_rdy"))
+    //, out_msg(sc_gen_unique_name("comb_out_msg"))
+    , out_val(sc_gen_unique_name("comb_out_val"))
+    , out_rdy(sc_gen_unique_name("comb_out_rdy"))
+    
+    , current_cycle(0)
+    , latency(0)
+    
+    , out_bound(false), in_bound(false)
+    , sim_out(sc_gen_unique_name("sim_out")), sim_in(sc_gen_unique_name("sim_in"))
+#else
+    : Combinational_Ports_abs<Message>()
 #endif
-    {}
+    {
+#ifdef CONNECTIONS_SIM_ONLY
+      Init_SIM("comb");
+#endif  
+    }
 
   // Constructor
   explicit Combinational_SimPorts_abs(const char* name)
-    : Combinational_Ports_abs<Message>(name)
 #ifdef CONNECTIONS_SIM_ONLY
-       ,out_bound(false), in_bound(false)
-       ,sim_out(ccs_concat(name,"sim_out")), sim_in(ccs_concat(name, "sim_in"))
+    : Combinational_abs<Message>(name)
+    
+    , Connections_BA_abs(ccs_concat(name, "comb_BA"))
+    
+    //, in_msg(ccs_concat(name, "comb_in_msg"))
+    , in_val(ccs_concat(name, "comb_in_val"))
+    , in_rdy(ccs_concat(name, "comb_in_rdy"))
+    //, out_msg(ccs_concat(name, "comb_out_msg"))
+    , out_val(ccs_concat(name, "comb_out_val"))
+    , out_rdy(ccs_concat(name, "comb_out_rdy"))
+    
+    , current_cycle(0)
+    , latency(0)
+    
+    , out_bound(false), in_bound(false)
+    , sim_out(ccs_concat(name,"sim_out")), sim_in(ccs_concat(name, "sim_in"))
+#else
+    : Combinational_Ports_abs<Message>(name)
 #endif
-    {}
+    {
+#ifdef CONNECTIONS_SIM_ONLY
+      Init_SIM("comb");
+#endif  
+    }
   
  public:
-	
+  
+#ifdef CONNECTIONS_SIM_ONLY
+  //sc_signal<MsgBits> in_msg;
+  sc_signal<bool>    in_val;
+  sc_signal<bool>    in_rdy;
+  //sc_signal<MsgBits> out_msg;
+  sc_signal<bool>    out_val;
+  sc_signal<bool>    out_rdy;
+  unsigned long current_cycle;
+  unsigned long latency;
+  tlm::circular_buffer< BA_Message<Message> > b;
+#endif
+  
   // Reset
   void ResetRead() {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! out_bound); */
+    
     sim_in.Reset();
+    Reset_SIM();
 #else
     Combinational_Ports_abs<Message>::ResetRead();
 #endif
@@ -2487,7 +2672,11 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 
   void ResetWrite() {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! in_bound); */
+    
     sim_out.Reset();
+    
+    Reset_SIM();
 #else
     Combinational_Ports_abs<Message>::ResetWrite();
 #endif
@@ -2497,6 +2686,8 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 #pragma design modulario < in >
   Message Pop() {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! out_bound); */
+    
     return sim_in.Pop();
 #else
     return Combinational_Ports_abs<Message>::Pop();
@@ -2507,6 +2698,8 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 #pragma design modulario < in >
   Message Peek() {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! out_bound); */
+    
     return sim_in.Peek();
 #else
     return Combinational_Ports_abs<Message>::Peek();
@@ -2517,6 +2710,8 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 #pragma design modulario < in >
   bool PopNB(Message& data) {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! out_bound); */
+    
     return sim_in.PopNB(data);
 #else
     return Combinational_Ports_abs<Message>::PopNB(data);
@@ -2531,6 +2726,8 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 #pragma design modulario < out >
   void Push(const Message& m) {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! in_bound); */
+    
     sim_out.Push(m);
 #else
     Combinational_Ports_abs<Message>::Push(m);
@@ -2541,6 +2738,8 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 #pragma design modulario < out >
   bool PushNB(const Message& m) {
 #ifdef CONNECTIONS_SIM_ONLY
+    /* assert(! in_bound); */
+    
     return sim_out.PushNB(m);
 #else
     return Combinational_Ports_abs<Message>::PushNB(m);
@@ -2553,11 +2752,235 @@ class Combinational_SimPorts_abs : public Combinational_Ports_abs<Message> {
 
 #ifdef CONNECTIONS_SIM_ONLY
  public:
+  OutBlocking_Ports_abs<Message> *in_ptr;
+  InBlocking_Ports_abs<Message> *out_ptr;
+  
   bool out_bound, in_bound;
+  
+  inline bool is_bypass() {
+    return (latency == 0);
+  }
+    
+  void annotate(unsigned long latency, unsigned int capacity) {
+    this->latency = latency;
+    assert(! (latency > 0 && capacity == 0)); // latency > 0 but capacity == 0 is not supported.
+    if(capacity > 0) {
+      this->b.resize(capacity);
+    } else {
+      this->b.resize(1);
+    }
+  }
+  
+  const char *src_name() {
+    if(in_bound) {
+      if(in_ptr)
+	return in_ptr->val.name();
+      else
+	return "COSIM_INTERFACE";
+    } else {
+      return "UNBOUND";
+    }
+  }
+  
+  const char *dest_name() {
+    if(out_bound) {
+      if(out_ptr)
+	return out_ptr->val.name();
+      else
+	return "COSIM_INTERFACE";
+    } else {
+      return "UNBOUND";
+    }
+  }
   
  protected:
   OutBlocking<Message,port_marshall_type> sim_out;
   InBlocking<Message,port_marshall_type> sim_in;
+
+  bool data_val;
+  bool val_set_by_api;
+  bool rdy_set_by_api;
+  
+  void Init_SIM(const char* name) {
+    data_val = false;
+    val_set_by_api = false;
+    rdy_set_by_api = false;
+    Reset_SIM();
+    Connections::conManager.add(this);
+    Connections::conManager.add_annotate(this);
+  }
+  
+  void Reset_SIM() {
+    current_cycle = 0;
+    
+    data_val = false;
+    
+    while(! b.is_empty()) { b.read(); }
+  }
+  
+// Although this code is being used only for simulation now, it could be
+// synthesized if pre/post are used instead of spawned threads.
+// Keep mudulario pragmas here to preserve that option
+
+#pragma design modulario < out >
+  void receive(const bool& stall) {
+    if (stall) {
+      in_rdy.write(false);
+      rdy_set_by_api = false;
+    } else {
+      in_rdy.write(true);
+      rdy_set_by_api = true;
+    }
+  }
+
+#pragma design modulario < in >
+  bool received(Message& data) {
+    if (in_val.read())
+      {
+	/* MsgBits mbits = in_msg.read(); */
+	/* Marshaller<WMessage::width> marshaller(mbits); */
+	/* WMessage result; */
+	/* result.Marshall(marshaller); */
+	/* data = result.val; */
+	data = read_msg();
+	return true;
+    }
+
+    // not valid
+    // randomize data
+    //memset(&data, random(), sizeof(data));
+    //if (!data_val)
+    //    memset(&data, 0, sizeof(data));
+    return false;
+  }
+  
+#pragma design modulario < in >
+  bool transmitted() { 	return out_rdy.read(); }
+
+#pragma design modulario < out >
+  void transmit_data(const Message& m) {
+    /* Marshaller<WMessage::width> marshaller; */
+    /* WMessage wm(m); */
+    /* wm.Marshall(marshaller); */
+    /* MsgBits bits = marshaller.GetResult(); */
+    /* out_msg.write(bits); */
+    write_msg(m);
+  }
+
+#pragma design modulario < out >
+  void transmit_val(const bool& vald) {
+    if (vald) {
+      out_val.write(true);
+      val_set_by_api = true;
+    } else {
+      out_val.write(false);
+      val_set_by_api = false;
+
+      //corrupt and transmit data
+      //memset(&data_buf, random(), sizeof(data_buf));
+      //transmit_data(data_buf);
+    }
+  }
+
+  bool Pre() {
+    if(is_bypass()) return true; // TODO: return false to deregister.
+    
+    // Input
+    if (rdy_set_by_api != in_rdy.read())
+    {
+        // something has changed the value of the signal not through API
+        // killing spawned threads;
+        return false;
+    }
+    
+    if(!b.is_full()) {
+      Message m;
+      if(received(m)) {
+	BA_Message<Message> bam;
+	bam.m = m;
+	assert(latency > 0);
+	bam.ready_cycle = current_cycle + latency;
+	b.write(bam);
+      }
+    }
+
+    // Output
+    if(!b.is_empty()) {
+      if(transmitted() && val_set_by_api) {
+	b.read(); // pop
+      }
+    }
+    return true;
+  }
+
+  bool Post() {
+    current_cycle++; // Increment to next cycle.
+    
+    if(is_bypass()) return true; // TODO: return false to deregister.
+    
+    // Input
+    receive(b.is_full());
+
+    // Output
+    if (val_set_by_api != out_val.read())
+    {
+        // something has changed the value of the signal not through API
+        // killing spawned threads;
+        return false;
+    }
+    if(! b.is_empty() && (b.read_data().ready_cycle <= current_cycle)) {
+      transmit_val(true);
+      transmit_data(b.read_data().m); // peek
+    } else {
+      transmit_val(false);
+    }
+    return true;
+  }
+
+  void FillBuf_SIM(const Message& m) {
+    BA_Message<Message> bam;
+    bam.m = m;
+    bam.ready_cycle = current_cycle + latency;
+    assert(! b.is_full());
+    b.write(bam);
+  }
+
+  bool Empty_SIM() {
+    return b.is_empty();
+  }
+
+  bool Full_SIM() {
+    return b.is_full();
+  }
+
+  void Push_SIM(const Message& m) {
+    while (Full_SIM()) {
+      wait();
+    }
+    FillBuf_SIM(m);
+  }
+
+  // If sim accurate mode is enabled, we use our own abstract declarations of these
+  // since Combinational_Ports_abs includes sc_signal rdy/val signals, which
+  // SimPorts may differentiate into in_rdy/in_val. There may be a better way to
+  // factor this further, but SimPorts also takes over Push/Pop etc for sim accurate mode
+  // already so we aren't strongly dependent on Combinational_Ports_abs.
+  
+ protected:
+  virtual void reset_msg() {
+    NVHLS_ASSERT(0);
+  }
+  virtual Message read_msg() {
+    Message m;
+    NVHLS_ASSERT(0);
+    return m;
+  }
+  virtual void write_msg(const Message &m) {
+    NVHLS_ASSERT(0);
+  }
+  virtual void invalidate_msg() {
+    NVHLS_ASSERT(0);
+  }
 #endif
 };
 
@@ -2650,27 +3073,67 @@ class Combinational <Message, SYN_PORT> : public Combinational_Ports_abs<Message
  
 template <typename Message>
 class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs<Message, MARSHALL_PORT> {
+  #ifdef CONNECTIONS_SIM_ONLY
+  SC_HAS_PROCESS(Combinational);
+  #endif
+  
  public:
   // Interface
   typedef Wrapped<Message> WMessage;
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
+#ifdef CONNECTIONS_SIM_ONLY
+  sc_signal<MsgBits> in_msg;
+  sc_signal<MsgBits> out_msg;
+#else
   sc_signal<MsgBits> msg;
-
- Combinational() : Combinational_SimPorts_abs<Message, MARSHALL_PORT>(),
-                    msg(sc_gen_unique_name("comb_msg"))
-#ifdef CONNECTIONS_SIM_ONLY
-                    ,dummyPortManager(sc_gen_unique_name("dummyPortManager"), this->sim_in, this->sim_out, *this)
 #endif
-    {}
+
+ Combinational() : Combinational_SimPorts_abs<Message, MARSHALL_PORT>()
+#ifdef CONNECTIONS_SIM_ONLY
+    ,in_msg(sc_gen_unique_name("comb_in_msg"))
+    ,out_msg(sc_gen_unique_name("comb_out_msg"))
+    ,dummyPortManager(sc_gen_unique_name("dummyPortManager"), this->sim_in, this->sim_out, *this)
+#else
+    ,msg(sc_gen_unique_name("comb_msg"))
+#endif
+    {
+#ifdef CONNECTIONS_SIM_ONLY
+      //SC_METHOD(do_bypass);
+      declare_method_process(do_bypass_handle, sc_gen_unique_name("do_bypass"), SC_CURRENT_USER_MODULE, do_bypass);
+      this->sensitive << in_msg << this->in_val << this->out_rdy;
+#endif
+    }
   
-  explicit Combinational(const char* name) : Combinational_SimPorts_abs<Message, MARSHALL_PORT>(name),
-                                             msg(ccs_concat(name, "msg"))
-#ifdef CONNECTIONS_SIM_ONLY
-    ,dummyPortManager(ccs_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
-#endif
-    {}
+  explicit Combinational(const char* name) : Combinational_SimPorts_abs<Message, MARSHALL_PORT>(name)
 
+#ifdef CONNECTIONS_SIM_ONLY
+    ,in_msg(ccs_concat(name, "comb_in_msg"))
+    ,out_msg(ccs_concat(name, "comb_out_msg"))
+    ,dummyPortManager(ccs_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
+#else
+    ,msg(ccs_concat(name, "msg"))
+#endif
+    {
+#ifdef CONNECTIONS_SIM_ONLY
+      //SC_METHOD(do_bypass);
+      declare_method_process(do_bypass_handle, sc_gen_unique_name("do_bypass"), SC_CURRENT_USER_MODULE, do_bypass);
+      this->sensitive << in_msg << this->in_val << this->out_rdy;
+#endif
+    }
+
+  //void do_bypass() { Combinational_SimPorts_abs<Message,MARSHALL_PORT>::do_bypass(); }
+
+#ifdef CONNECTIONS_SIM_ONLY
+  void do_bypass() {
+    if(! this->is_bypass()) return;
+    out_msg.write(in_msg.read());
+    //write_msg(read_msg());
+    this->out_val.write(this->in_val.read());
+    this->in_rdy.write(this->out_rdy.read());
+  }
+#endif  
+  
   // Parent functions, to get around Catapult virtual function bug.
   void ResetRead() { return Combinational_SimPorts_abs<Message,MARSHALL_PORT>::ResetRead(); }
   void ResetWrite() { return Combinational_SimPorts_abs<Message,MARSHALL_PORT>::ResetWrite(); }
@@ -2687,11 +3150,19 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
   
  protected:
   void reset_msg() {
+#ifdef CONNECTIONS_SIM_ONLY
+    out_msg.write(0);
+#else
     msg.write(0);
+#endif
   }
   
   Message read_msg() {
+#ifdef CONNECTIONS_SIM_ONLY
+    MsgBits mbits = in_msg.read();
+#else
     MsgBits mbits = msg.read();
+#endif    
     Marshaller<WMessage::width> marshaller(mbits);
     WMessage result;
     result.Marshall(marshaller);
@@ -2703,14 +3174,22 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
     WMessage wm(m);
     wm.Marshall(marshaller);
     MsgBits bits = marshaller.GetResult();
+#ifdef CONNECTIONS_SIM_ONLY
+    out_msg.write(bits);
+#else
     msg.write(bits);
+#endif
   }
 
   void invalidate_msg() {
       MsgBits dc_bits;
+#ifdef CONNECTIONS_SIM_ONLY
+      out_msg.write(dc_bits);
+#else
       msg.write(dc_bits);
+#endif
   }
-  
+
 #ifdef CONNECTIONS_SIM_ONLY
  protected:
     class DummyPortManager : public sc_module {
@@ -2729,21 +3208,7 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
     {
         if (!parent.in_bound)
         {
-            in(parent);
-        } else {
-            sc_signal<MsgBits>* dummy_in_msg = new sc_signal<MsgBits>;
-            sc_signal<bool>* dummy_in_val = new sc_signal<bool>;
-            sc_signal<bool>* dummy_in_rdy = new sc_signal<bool>;
-
-            in.msg(*dummy_in_msg);
-            in.val(*dummy_in_val);
-            in.rdy(*dummy_in_rdy);
-
-            in.disable_spawn();
-        }
-        if (!parent.out_bound)
-        {
-            out(parent);
+	  out(parent);
         } else {
             sc_signal<MsgBits>* dummy_out_msg = new sc_signal<MsgBits>;
             sc_signal<bool>* dummy_out_val = new sc_signal<bool>;
@@ -2755,7 +3220,20 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
             
             out.disable_spawn();
         }
+        if (!parent.out_bound)
+        {
+	  in(parent);
+        } else {
+            sc_signal<MsgBits>* dummy_in_msg = new sc_signal<MsgBits>;
+            sc_signal<bool>* dummy_in_val = new sc_signal<bool>;
+            sc_signal<bool>* dummy_in_rdy = new sc_signal<bool>;
 
+            in.msg(*dummy_in_msg);
+            in.val(*dummy_in_val);
+            in.rdy(*dummy_in_rdy);
+
+            in.disable_spawn();
+        }
     }
 
     } dummyPortManager;
@@ -2765,25 +3243,61 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
  
 template <typename Message>
 class Combinational <Message, DIRECT_PORT> : public Combinational_SimPorts_abs<Message, DIRECT_PORT> {
+#ifdef CONNECTIONS_SIM_ONLY
+  SC_HAS_PROCESS(Combinational);
+#endif
+
  public:
   // Interface
+#ifdef CONNECTIONS_SIM_ONLY
+  sc_signal<Message> in_msg;
+  sc_signal<Message> out_msg;
+#else
   sc_signal<Message> msg;
-
- Combinational() : Combinational_SimPorts_abs<Message, DIRECT_PORT>(),
-                    msg(sc_gen_unique_name("comb_msg"))
-#ifdef CONNECTIONS_SIM_ONLY
-                    ,dummyPortManager(sc_gen_unique_name("dummyPortManager"), this->sim_in, this->sim_out, *this)
 #endif
-    {}
-  
-  explicit Combinational(const char* name) : Combinational_SimPorts_abs<Message, DIRECT_PORT>(name),
-                                            msg(ccs_concat(name, "msg"))
-#ifdef CONNECTIONS_SIM_ONLY
-                    ,dummyPortManager(ccs_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
-#endif
-    {}
 
+ Combinational() : Combinational_SimPorts_abs<Message, DIRECT_PORT>()
+#ifdef CONNECTIONS_SIM_ONLY
+    ,in_msg(sc_gen_unique_name("comb_in_msg"))
+    ,out_msg(sc_gen_unique_name("comb_out_msg"))
+    ,dummyPortManager(sc_gen_unique_name("dummyPortManager"), this->sim_in, this->sim_out, *this)
+#else
+    ,msg(sc_gen_unique_name("comb_msg"))
+#endif
+    {
+#ifdef CONNECTIONS_SIM_ONLY
+      //SC_METHOD(do_bypass);
+      declare_method_process(do_bypass_handle, sc_gen_unique_name("do_bypass"), SC_CURRENT_USER_MODULE, do_bypass);
+      this->sensitive << in_msg << this->in_val << this->out_rdy;
+#endif
+    }
   
+  explicit Combinational(const char* name) : Combinational_SimPorts_abs<Message, DIRECT_PORT>(name)
+#ifdef CONNECTIONS_SIM_ONLY
+    ,in_msg(ccs_concat(name, "comb_in_msg"))
+    ,out_msg(ccs_concat(name, "comb_out_msg"))
+    ,dummyPortManager(ccs_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
+#else
+    ,msg(ccs_concat(name, "msg"))
+#endif
+    {
+#ifdef CONNECTIONS_SIM_ONLY
+      //SC_METHOD(do_bypass);
+      declare_method_process(do_bypass_handle, sc_gen_unique_name("do_bypass"), SC_CURRENT_USER_MODULE, do_bypass);
+      this->sensitive << in_msg << this->in_val << this->out_rdy;
+#endif
+    }
+
+#ifdef CONNECTIONS_SIM_ONLY
+  void do_bypass() {
+    if(! this->is_bypass()) return;
+    out_msg.write(in_msg.read());
+    //write_msg(read_msg());
+    this->out_val.write(this->in_val.read());
+    this->in_rdy.write(this->out_rdy.read());
+  }
+#endif  
+
   // Parent functions, to get around Catapult virtual function bug.
   void ResetRead() { return Combinational_SimPorts_abs<Message,DIRECT_PORT>::ResetRead(); }
   void ResetWrite() { return Combinational_SimPorts_abs<Message,DIRECT_PORT>::ResetWrite(); }
@@ -2801,24 +3315,41 @@ class Combinational <Message, DIRECT_PORT> : public Combinational_SimPorts_abs<M
  protected:
   void reset_msg() {
     Message dc;
+#ifdef CONNECTIONS_SIM_ONLY
+    out_msg.write(dc);
+#else
     msg.write(dc);
+#endif
   }
   
   Message read_msg() {
-    return msg.read();
+#ifdef CONNECTIONS_SIM_ONLY
+  return in_msg.read();
+#else
+  return msg.read();
+#endif
   }
   
   void write_msg(const Message &m) {
-    msg.write(m);
+#ifdef CONNECTIONS_SIM_ONLY
+  out_msg.write(m);
+#else
+  msg.write(m);
+#endif
   }
 
   void invalidate_msg() {
       Message dc;
+#ifdef CONNECTIONS_SIM_ONLY
+      out_msg.write(dc);
+#else
       msg.write(dc);
+#endif
   }
 
 #ifdef CONNECTIONS_SIM_ONLY
  protected:
+
     class DummyPortManager : public sc_module {
         SC_HAS_PROCESS(DummyPortManager);
     private:
@@ -2835,21 +3366,7 @@ class Combinational <Message, DIRECT_PORT> : public Combinational_SimPorts_abs<M
     {
         if (!parent.in_bound)
         {
-            in(parent);
-        } else {
-            sc_signal<Message>* dummy_in_msg = new sc_signal<Message>;
-            sc_signal<bool>* dummy_in_val = new sc_signal<bool>;
-            sc_signal<bool>* dummy_in_rdy = new sc_signal<bool>;
-
-            in.msg(*dummy_in_msg);
-            in.val(*dummy_in_val);
-            in.rdy(*dummy_in_rdy);
-
-            in.disable_spawn();
-        }
-        if (!parent.out_bound)
-        {
-            out(parent);
+	  out(parent);
         } else {
             sc_signal<Message>* dummy_out_msg = new sc_signal<Message>;
             sc_signal<bool>* dummy_out_val = new sc_signal<bool>;
@@ -2861,7 +3378,20 @@ class Combinational <Message, DIRECT_PORT> : public Combinational_SimPorts_abs<M
             
             out.disable_spawn();
         }
+        if (!parent.out_bound)
+        {
+	  in(parent);
+        } else {
+            sc_signal<Message>* dummy_in_msg = new sc_signal<Message>;
+            sc_signal<bool>* dummy_in_val = new sc_signal<bool>;
+            sc_signal<bool>* dummy_in_rdy = new sc_signal<bool>;
 
+            in.msg(*dummy_in_msg);
+            in.val(*dummy_in_val);
+            in.rdy(*dummy_in_rdy);
+
+            in.disable_spawn();
+        }
     }
 
     } dummyPortManager;
@@ -4311,7 +4841,6 @@ class InBuffered : public InBlocking<Message, port_marshall_type> {
   explicit InBuffered(const char* name) : InBlocking<Message, port_marshall_type>(name), fifo() {}
 
   void Reset() {
-    //InBlocking_abs<Message>::Reset();
     InBlocking<Message,port_marshall_type>::Reset();
     fifo.reset();
   }
@@ -4346,7 +4875,6 @@ class OutBuffered : public OutBlocking<Message, port_marshall_type> {
   explicit OutBuffered(const char* name) : OutBlocking<Message, port_marshall_type>(name), fifo() {}
 
   void Reset() {
-    //OutBlocking_abs<Message>::Reset();
     OutBlocking<Message,port_marshall_type>::Reset();
     fifo.reset();
   }

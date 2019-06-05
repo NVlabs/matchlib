@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -13,15 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Integration tests with a set of existing units.
 
-DIRS = Counter ConnectionsRecipes/Adder ConnectionsRecipes/Adder2 ConnectionsRecipes/Adder3 MemModel
+include ../../../cmod_Makefile
 
-.PHONY: all $(DIRS)
+all: sim_adder3
 
-all: $(DIRS)
+# Location of rapidjson
+RAPIDJSON_HOME ?= ../../../../rapidjson
 
-$(DIRS):
-	$(MAKE) -C $@ clean 
-	$(MAKE) -C $@ 
+# = instead of += to avoid -DCONN_RAND_STALL
+USER_FLAGS = -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM -DAUTO_PORT=MARSHALL_PORT
+run:
+	./sim_adder3
+
+sim_adder3: $(wildcard *.h) $(wildcard *.cpp)
+	$(CC) -o sim_adder3 $(CFLAGS) $(USER_FLAGS) -I../Adder2 -I../../../include -I${RAPIDJSON_HOME}/include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+
+sim_clean:
+	rm -rf *.o sim_*
 
