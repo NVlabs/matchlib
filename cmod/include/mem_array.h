@@ -136,6 +136,15 @@ class mem_array_sep {
       }
     }
   }
+
+  template<unsigned int Size>
+  void Marshall(Marshaller<Size>& m) {
+    for (unsigned i = 0; i < NumBanks; i++) {
+      for (unsigned j = 0; j < NumByteEnables* NumEntriesPerBank; j++) {
+        m & bank[i][j];
+      }
+    }
+  } 
 };
 
 

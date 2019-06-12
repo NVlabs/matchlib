@@ -181,6 +181,16 @@ class FIFO {
   FifoIdx get_head(BankIdx bidx = 0) { return head[bidx]; }
   FifoIdx get_tail(BankIdx bidx = 0) { return tail[bidx]; }
 
+  template<unsigned int Size>
+  void Marshall(Marshaller<Size>& m) {
+    for (unsigned i = 0; i < NumBanks; i++) {
+      m & head[i];
+      m & tail[i];
+      m & last_action_was_push[i];
+    }
+    m & fifo_body;
+  }
+
 };  // end FIFO class
 
 template <typename DataType, unsigned int NumBanks>
