@@ -705,8 +705,10 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
       wait();
     } while (val.read() != true);
     rdy.write(false);
-    
-    return read_msg();
+
+    Message m;
+    read_msg(m);
+    return m;
   }
 
 // Peek
@@ -717,7 +719,9 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
       wait();
     }
     
-    return read_msg();
+    Message m;
+    read_msg(m);
+    return m;
   }
 
 // PopNB
@@ -728,15 +732,13 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
       wait();
       rdy.write(false);
     }
-    data = read_msg();
+    read_msg(data);
     return val.read();
   }
   
  protected:
-  virtual Message read_msg() {
-    Message m;
+  virtual void read_msg(Message &m) {
     NVHLS_ASSERT(0);
-    return m;
   }
 };
 
@@ -858,7 +860,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   bool received(Message& data) {
     if (this->val.read())
     {
-    data = read_msg();
+    read_msg(data);
     return true;
     }
 
@@ -923,10 +925,8 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 #endif
   
  protected:
-  virtual Message read_msg() {
-    Message m;
+  virtual void read_msg(Message &m) {
     NVHLS_ASSERT(0);
-    return m;
   }
 };
 
@@ -1114,12 +1114,12 @@ class InBlocking <Message, SYN_PORT> : public InBlocking_Ports_abs<Message> {
   }
 
  protected:
-  Message read_msg() {
+  void read_msg(Message &m) {
     MsgBits mbits = msg.read();
     Marshaller<WMessage::width> marshaller(mbits);
     WMessage result;
     result.Marshall(marshaller);
-    return result.val;
+    m = result.val;
   }
 };  
 
@@ -1280,12 +1280,12 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
   }
 
  protected:
-  Message read_msg() {
+  void read_msg(Message &m) {
     MsgBits mbits = msg.read();
     Marshaller<WMessage::width> marshaller(mbits);
     WMessage result;
     result.Marshall(marshaller);
-    return result.val;
+    m = result.val;
   }
 };  
 
@@ -1358,8 +1358,8 @@ class InBlocking <Message, DIRECT_PORT> : public InBlocking_SimPorts_abs<Message
   }
   
  protected:
-  Message read_msg() {
-    return msg.read();
+  void read_msg(Message &m) {
+    m = msg.read();
   }
 };  
 
@@ -1445,8 +1445,8 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
 #endif
   
  protected:
-  Message read_msg() {
-    return i_fifo->peek();
+  void read_msg(Message &m) {
+    m = i_fifo->peek();
   }
 };
 
@@ -2503,7 +2503,9 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
       wait();
     } while (val.read() != true);
     rdy.write(false);
-    return read_msg();
+    Message m;
+    read_msg(m);
+    return m;
   }
 
 // Peek
@@ -2512,7 +2514,9 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
     while (!val.read()) {
       wait();
     }
-    return read_msg();
+    Message m;
+    read_msg(m);
+    return m;
   }
 
 // PopNB
@@ -2521,7 +2525,7 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
     rdy.write(true);
     wait();
     rdy.write(false);
-    data = read_msg();
+    read_msg(data);
     return val.read();
   }
 
@@ -2558,10 +2562,8 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
     virtual void reset_msg() {
       NVHLS_ASSERT(0);
     }
-    virtual Message read_msg() {
-      Message m;
+    virtual void read_msg(Message &m) {
       NVHLS_ASSERT(0);
-      return m;
     }
     virtual void write_msg(const Message &m) {
       NVHLS_ASSERT(0);
@@ -2842,7 +2844,7 @@ class Combinational_SimPorts_abs
 	/* WMessage result; */
 	/* result.Marshall(marshaller); */
 	/* data = result.val; */
-	data = read_msg();
+	read_msg(data);
 	return true;
     }
 
@@ -2970,10 +2972,8 @@ class Combinational_SimPorts_abs
   virtual void reset_msg() {
     NVHLS_ASSERT(0);
   }
-  virtual Message read_msg() {
-    Message m;
+  virtual void read_msg(Message &m) {
     NVHLS_ASSERT(0);
-    return m;
   }
   virtual void write_msg(const Message &m) {
     NVHLS_ASSERT(0);
@@ -3048,12 +3048,12 @@ class Combinational <Message, SYN_PORT> : public Combinational_Ports_abs<Message
     msg.write(0);
   }
   
-  Message read_msg() {
+  void read_msg(Message &m) {
     MsgBits mbits = msg.read();
     Marshaller<WMessage::width> marshaller(mbits);
     WMessage result;
     result.Marshall(marshaller);
-    return result.val;
+    m = result.val;
   }
   
   void write_msg(const Message &m) {
@@ -3157,7 +3157,7 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
 #endif
   }
   
-  Message read_msg() {
+  void read_msg(Message &m) {
 #ifdef CONNECTIONS_SIM_ONLY
     MsgBits mbits = in_msg.read();
 #else
@@ -3166,7 +3166,7 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
     Marshaller<WMessage::width> marshaller(mbits);
     WMessage result;
     result.Marshall(marshaller);
-    return result.val;
+    m = result.val;
   }
   
   void write_msg(const Message &m) {
@@ -3322,11 +3322,11 @@ class Combinational <Message, DIRECT_PORT> : public Combinational_SimPorts_abs<M
 #endif
   }
   
-  Message read_msg() {
+  void read_msg(Message &m) {
 #ifdef CONNECTIONS_SIM_ONLY
-  return in_msg.read();
+    m = in_msg.read();
 #else
-  return msg.read();
+    m = msg.read();
 #endif
   }
   
@@ -3453,14 +3453,16 @@ class Combinational <Message, TLM_PORT> : public Combinational_Ports_abs<Message
 
  protected:
     void reset_msg() {
+      NVHLS_ASSERT(0);
     }
-    Message read_msg() {
-      Message m;
-      return m;
+    void read_msg(Message &m) {
+      NVHLS_ASSERT(0);
     }
     void write_msg(const Message &m) {
+      NVHLS_ASSERT(0);
     }
     void invalidate_msg() {
+      NVHLS_ASSERT(0);
     }
 
  public:
