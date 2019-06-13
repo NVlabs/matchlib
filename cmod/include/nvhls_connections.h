@@ -32,7 +32,11 @@
 #include <iomanip>
 #endif
 
-#if !defined(__SYNTHESIS__) && defined(CONNECTIONS_ACCURATE_SIM)
+#if defined(CONNECTIONS_ACCURATE_SIM) && defined(CONNECTIONS_FAST_SIM)
+#error "Both CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM are defined. Define one or the other."
+#endif
+
+#if !defined(__SYNTHESIS__) && (defined(CONNECTIONS_ACCURATE_SIM) || defined(CONNECTIONS_FAST_SIM))
 #define CONNECTIONS_SIM_ONLY
 #ifndef SC_INCLUDE_DYNAMIC_PROCESSES
 #error \
@@ -164,9 +168,16 @@ enum connections_port_t {SYN_PORT = 0, MARSHALL_PORT = 1, DIRECT_PORT = 2, TLM_P
 #elif !defined(CONNECTIONS_SIM_ONLY)
 #define AUTO_PORT MARSHALL_PORT
 #else
-#define AUTO_PORT TLM_PORT
-#endif // defined(__SYNTHESIS__)
 
+// Switch if we are in CONNECTIONS_SIM_ONLY
+#if defined(CONNECTIONS_FAST_SIM)
+#define AUTO_PORT TLM_PORT
+#else
+#define AUTO_PORT MARSHALL_PORT
+#endif
+ 
+#endif // defined(__SYNTHESIS__)
+ 
 #endif // ifndef AUTO_PORT
 
 
@@ -2778,7 +2789,7 @@ class Combinational_SimPorts_abs
       if(in_ptr)
 	return in_ptr->val.name();
       else
-	return "COSIM_INTERFACE";
+	return "TLM_INTERFACE";
     } else {
       return "UNBOUND";
     }
@@ -2789,7 +2800,7 @@ class Combinational_SimPorts_abs
       if(out_ptr)
 	return out_ptr->val.name();
       else
-	return "COSIM_INTERFACE";
+	return "TLM_INTERFACE";
     } else {
       return "UNBOUND";
     }

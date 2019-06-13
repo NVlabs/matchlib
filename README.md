@@ -73,10 +73,11 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `SC_INCLUDE_DYNAMIC_PROCESSES` - Set to enable SystemC dynamic processes.
 * `__SYNTHESIS__` - Set by Catapult during the HLS flow (but not during sc_verify).
 * `_SYNTHESIS_` - Flag to set when calling the HLS tool during both HLS and sc_verify.
-* `AUTO_PORT` - Set Connections simulation port type (legal options are TLM_PORT, DIRECT_PORT, MARSHALL_PORT, SYN_PORT, from least to most accurate). If unset, defaults to TLM_PORT for simulation and alwaays sets to SYN_PORT for HLS, unless if FORCE_AUTO_PORT is set.
+* `AUTO_PORT` - Set Connections simulation port type (legal options are TLM_PORT, DIRECT_PORT, MARSHALL_PORT, SYN_PORT, from least to most accurate). If unset, defaults to SYN_PORT for synthesis, MARSHALL_PORT for CONNECTIONS_ACCURATE_SIM, and TLM_PORT for CONNNECTIONS_FAST_SIM. Always sets to SYN_PORT for HLS, unless if FORCE_AUTO_PORT is set. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM is favored over this flag.
 * `FORCE_AUTO_PORT` - Like AUTO_PORT, but forces to a set port type for HLS too.
 * `CONNECTIONS_ACCURATE_SIM` - Set to enable sim-accurate mode in SystemC simulation of the Connections library. This can be used to accurately estimate the performance of SystemC designs before HLS.
-* `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode.  It should be disabled during HLS.
+* `CONNECTIONS_FAST_SIM` - Set to enable fast sim mode in SystemC simulation of the Connections library. This reduces simulation runtime at the cost of cycle accuracy and I/O port fidelity. In particular, the simulation becomes event driven, and a TLM fifo replaces ports and combinational conncetions.
+* `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode.  It should be disabled during HLS. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM automatically sets this.
 * `CONN_RAND_STALL` - Set to enable random stall injection in Connections library.
 * `CONNECTIONS_ASSERT_ON_QUERY` - Set to display a message when Connections features not supported by the tool are used. Specifically, it is used for Empty(), Peek(), and Full() checks in Connections with the Catapult tool.
 * `DISABLE_PACER` - Set to disable the injection of additional stalls from the pacer logic.

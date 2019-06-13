@@ -33,7 +33,7 @@
 
 namespace nvhls {
 
-#ifdef CONNECTIONS_SIM_ONLY
+#ifdef CONNECTIONS_ACCURATE_SIM
   
   void __annotate_vector(std::vector<Connections::Connections_BA_abs*> &v, const std::string &root_name, rapidjson::Document &d) {
     // Check if array exists, if not add it.
@@ -176,13 +176,14 @@ namespace nvhls {
  *      buffered paths capacity will exceed latency.
  *      
  *      Back annotation will only work with CONNECTIONS_ACCURATE_SIM define enabled, and
- *      in MARSHALL_PORT or DIRECT_PORT modes. It will not work in TLM_PORT or SYN_PORT modes.
- *      Additionally, it is dependent on RapidJSON as a git submodule to read and write JSON
- *      file format.
+ *      in MARSHALL_PORT or DIRECT_PORT modes. It will not work in TLM_PORT (CONNECTIONS_FAST_SIM)
+ *      or SYN_PORT modes. Additionally, it is dependent on RapidJSON as a git submodule to read
+ *      and write JSON file format.
  *
  *      In the base_name.output.json, a list of combinational names and connecting ports is given.
  *      UNBOUND indicates a Combinational channel that hasn't been Bind()'d on one or more ports,
- *      while COSIM_INTERFACE indicates a channel that is along a cosimulation wrapper interface.
+ *      while TLM_INTERFACE indicates a channel that is along a TLM_PORT interface in cosimulation
+ *      cases.
  *
  * \par A Simple Example
  * \code
