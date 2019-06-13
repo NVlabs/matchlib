@@ -288,6 +288,11 @@ class FIFO<DataType, 1, 1> {
     {
         valid = false;
     }
+    template<unsigned int Size>
+    void Marshall(Marshaller<Size>& m) {
+      m & valid;
+      m & data;
+    }
 };
 /**
  * \brief Specialization for single entry and NumBanks for QoR optimization 
@@ -353,6 +358,13 @@ class FIFO<DataType, 1, NumBanks> {
       #pragma hls_unroll yes
       for(unsigned i=0; i<NumBanks; i++) {
         valid[i] = false;
+      }
+    }
+    template<unsigned int Size>
+    void Marshall(Marshaller<Size>& m) {
+      for (unsigned i = 0; i < NumBanks; i++) {
+        m & valid[i];
+        m & data[i];
       }
     }
 };
