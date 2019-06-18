@@ -21,6 +21,7 @@
 #include <nvhls_connections.h>
 #include <nvhls_assert.h>
 #include <nvhls_message.h>
+#include <nvhls_module.h>
 #include <axi/axi4_encoding.h>
 #include <axi/axi4_configs.h>
 
@@ -281,7 +282,7 @@ class axi4 {
       RChan r;    // slave to master
 
       chan(const char *name)
-          : ar(ccs_concat(name, "_ar")), r(ccs_concat(name, "_r")){};
+          : ar(nvhls_concat(name, "_ar")), r(nvhls_concat(name, "_r")){};
 
       // TODO: Implement AXI protocol checker
     }; // read::chan
@@ -298,7 +299,7 @@ class axi4 {
       RPort r;
 
       master(const char *name)
-          : ar(ccs_concat(name, "_ar")), r(ccs_concat(name, "_r")) {}
+          : ar(nvhls_concat(name, "_ar")), r(nvhls_concat(name, "_r")) {}
 
       void reset() {
         ar.Reset();
@@ -330,7 +331,7 @@ class axi4 {
       RPort r;
 
       slave(const char *name)
-          : ar(ccs_concat(name, "_ar")), r(ccs_concat(name, "_r")) {}
+          : ar(nvhls_concat(name, "_ar")), r(nvhls_concat(name, "_r")) {}
 
       void reset() {
         ar.Reset();
@@ -375,9 +376,9 @@ class axi4 {
       BChan b;    // slave to master
 
       chan(const char *name)
-          : aw(ccs_concat(name, "_aw")),
-            w(ccs_concat(name, "_w")),
-            b(ccs_concat(name, "_b")){};
+          : aw(nvhls_concat(name, "_aw")),
+            w(nvhls_concat(name, "_w")),
+            b(nvhls_concat(name, "_b")){};
 
       // TODO: Implement AXI protocol checker
     };  // write::chan
@@ -396,9 +397,9 @@ class axi4 {
       BPort b;
 
       master(const char *name)
-          : aw(ccs_concat(name, "_aw")),
-            w(ccs_concat(name, "_w")),
-            b(ccs_concat(name, "_b")) {}
+          : aw(nvhls_concat(name, "_aw")),
+            w(nvhls_concat(name, "_w")),
+            b(nvhls_concat(name, "_b")) {}
 
       void reset() {
         aw.Reset();
@@ -438,9 +439,9 @@ class axi4 {
       AddrPayload stored_waddr;
 
       slave(const char *name)
-          : aw(ccs_concat(name, "_aw")),
-            w(ccs_concat(name, "_w")),
-            b(ccs_concat(name, "_b")),
+          : aw(nvhls_concat(name, "_aw")),
+            w(nvhls_concat(name, "_w")),
+            b(nvhls_concat(name, "_b")),
             got_waddr(false) {}
 
       void reset() {

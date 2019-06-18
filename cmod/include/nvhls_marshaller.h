@@ -20,10 +20,65 @@
 #define NVHLS_MARSHALLER_H_
 
 #include <systemc.h>
+
+#ifdef HLS_CATAPULT
 #include <ccs_types.h>
 #include <ccs_p2p.h>
+#endif
+
 #include <nvhls_assert.h>
 #include <nvhls_message.h>
+
+
+
+//------------------------------------------------------------------------
+// Marshaller casting functions
+
+/**
+ * \brief nvhls_cast_type_to_vector: Converts a datatype to sc_lv<>.
+ * \ingroup Marshaller
+ *
+ * Marshalling depends on casting primitive and sc/ac daa types to
+ * sc_lv bitvectors. For HLS_CATAPULT mode, type_to_vector() and
+ * vector_to_type() functions are used from Catapult's libraries.
+ * However, for other HLS tools the user must manually implement
+ * these casts for the stub functions provided if the Marshaller
+ * is called.
+ *
+ * Defining AUTO_PORT=TLM_PORT or DIRECT_PORT for SystemC simulations
+ * skips Marshalling, as does CONNECTIONS_FAST_SIM mode, and thus
+ * casting does not need to be provided for those cases. However,
+ * casting definition is required for all HLS runs.
+ *
+ */
+#ifdef HLS_CATAPULT
+
+template<typename A, int vec_width>
+void nvhls_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
+  type_to_vector(data, length, vec);
+}
+
+template<typename A, int vec_width>
+void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
+  vector_to_type(vec, is_signed, data);
+}
+
+#else
+
+template<typename A, int vec_width>
+void nvhls_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
+  // Primitive type conversion to and from sc_lv types must be provided!
+  NVHLS_ASSERT(0);
+}
+
+template<typename A, int vec_width>
+void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
+  // Primitive type conversion to and from sc_lv types must be provided!
+  NVHLS_ASSERT(0);
+}
+
+#endif
+
 
 //------------------------------------------------------------------------
 // Marshaller
@@ -94,12 +149,12 @@ class Marshaller {
     CMOD_ASSERT(cur_idx + FieldSize <= Size);
     if (is_marshalling) {
       sc_lv<FieldSize> bits;
-      type_to_vector(d, FieldSize, bits);
+      nvhls_cast_type_to_vector(d, FieldSize, bits);
       glob.range(cur_idx + FieldSize - 1, cur_idx) = bits;
       cur_idx += FieldSize;
     } else {
       sc_lv<FieldSize> bits = glob.range(cur_idx + FieldSize - 1, cur_idx);
-      vector_to_type(bits, false, &d);
+      nvhls_cast_vector_to_type(bits, false, &d);
       cur_idx += FieldSize;
     }
   }

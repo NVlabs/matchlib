@@ -24,6 +24,14 @@
 #include <nvhls_marshaller.h>
 #include <nvhls_message.h>
 
+/**
+ * \brief nvhls_concat define: Concatenate two strings, separate with an underscore.
+ * \ingroup nvhls_module
+ *
+ * Useful for concatenating two strings to derive a module name.
+ */
+#define nvhls_concat(s1,s2) (std::string(s1) + "_" + std::string(s2)).c_str()
+
 namespace match {
 /**
  * \brief Matchlib Module class: a wrapper of sc_module with tracing and stats support. 

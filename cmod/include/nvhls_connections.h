@@ -21,10 +21,10 @@
 #define NVHLS_CONNECTIONS_H_
 
 #include <systemc.h>
-#include <modular_io.h>
 #include <nvhls_packet.h>
 #include <nvhls_assert.h>
 #include <nvhls_marshaller.h>
+#include <nvhls_module.h>
 #include <fifo.h>
 #include <ccs_p2p.h>
 
@@ -523,9 +523,9 @@ public:
 
   // Constructor
   explicit TLMToDirectOutPort(const char* name, tlm::tlm_fifo<Message> &fifo)
-      : val(ccs_concat(name, "val")),
-        rdy(ccs_concat(name, "rdy")),
-	msg(ccs_concat(name, "msg")) {
+      : val(nvhls_concat(name, "val")),
+        rdy(nvhls_concat(name, "rdy")),
+	msg(nvhls_concat(name, "msg")) {
     Init_SIM(name, fifo);
   }
 
@@ -580,9 +580,9 @@ public:
 
   // Constructor
   explicit DirectToTLMInPort (const char* name, tlm::tlm_fifo<Message> &fifo)
-      : val(ccs_concat(name, "val")),
-        rdy(ccs_concat(name, "rdy")),
-	msg(ccs_concat(name, "msg")) {
+      : val(nvhls_concat(name, "val")),
+        rdy(nvhls_concat(name, "rdy")),
+	msg(nvhls_concat(name, "msg")) {
     Init_SIM(name, fifo);
   }
 
@@ -698,8 +698,8 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
   // Constructor
   explicit InBlocking_Ports_abs(const char* name)
     : InBlocking_abs<Message>(name),
-    val(ccs_concat(name, "val")),
-    rdy(ccs_concat(name, "rdy"))
+    val(nvhls_concat(name, "val")),
+    rdy(nvhls_concat(name, "rdy"))
       {}
 
  public:
@@ -987,7 +987,7 @@ class InBlocking <Message, SYN_PORT> : public InBlocking_Ports_abs<Message> {
                  msg(sc_gen_unique_name("in_msg")) {}
   
   explicit InBlocking(const char* name) : InBlocking_Ports_abs<Message>(name),
-                                          msg(ccs_concat(name, "msg")) {}
+                                          msg(nvhls_concat(name, "msg")) {}
 
 // Pop
 #pragma design modulario < in >
@@ -1148,7 +1148,7 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
     msg(sc_gen_unique_name("in_msg")) {}
   
   explicit InBlocking(const char* name) : InBlocking_SimPorts_abs<Message>(name),
-    msg(ccs_concat(name, "msg")) {}
+    msg(nvhls_concat(name, "msg")) {}
 
   // Reset read
   void Reset() {
@@ -1311,7 +1311,7 @@ class InBlocking <Message, DIRECT_PORT> : public InBlocking_SimPorts_abs<Message
       {}
   
   explicit InBlocking(const char* name) : InBlocking_SimPorts_abs<Message>(name),
-    msg(ccs_concat(name, "msg"))
+    msg(nvhls_concat(name, "msg"))
       {}
   
   // Reset read
@@ -1390,7 +1390,7 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
       }
   
   explicit InBlocking(const char* name) : InBlocking_abs<Message>(name),
-    i_fifo(ccs_concat(name, "i_fifo"))
+    i_fifo(nvhls_concat(name, "i_fifo"))
       {
 #ifdef CONN_RAND_STALL
 	Init_SIM(name);
@@ -1603,8 +1603,8 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
   // Constructor
   explicit OutBlocking_Ports_abs(const char* name)
     : OutBlocking_abs<Message>(name),
-    val(ccs_concat(name, "val")),
-    rdy(ccs_concat(name, "rdy"))
+    val(nvhls_concat(name, "val")),
+    rdy(nvhls_concat(name, "rdy"))
       {}
   
  public:
@@ -1822,7 +1822,7 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
                  msg(sc_gen_unique_name("out_msg")) {}
   
   explicit OutBlocking(const char* name) : OutBlocking_Ports_abs<Message>(name),
-    msg(ccs_concat(name, "msg")) {}
+    msg(nvhls_concat(name, "msg")) {}
 
   // Reset write
   virtual void Reset() {
@@ -1995,7 +1995,7 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
     msg(sc_gen_unique_name("out_msg")) {}
   
   explicit OutBlocking(const char* name) : OutBlocking_SimPorts_abs<Message>(name),
-    msg(ccs_concat(name, "msg")) {}
+    msg(nvhls_concat(name, "msg")) {}
 
   // Reset write
   void Reset() {
@@ -2136,7 +2136,7 @@ class OutBlocking <Message, DIRECT_PORT> : public OutBlocking_SimPorts_abs<Messa
       {}
   
   explicit OutBlocking(const char* name) : OutBlocking_SimPorts_abs<Message>(name),
-    msg(ccs_concat(name, "msg"))
+    msg(nvhls_concat(name, "msg"))
       {}
   
   // Reset write
@@ -2252,7 +2252,7 @@ class OutBlocking <Message, TLM_PORT> : public OutBlocking_abs<Message> {
       {}
   
   explicit OutBlocking(const char* name) : OutBlocking_abs<Message>(name),
-    o_fifo(ccs_concat(name,"o_fifo"))
+    o_fifo(nvhls_concat(name,"o_fifo"))
       {}
   
   // Reset write
@@ -2395,10 +2395,12 @@ class BA_Message {
 
    virtual const char *src_name() {
      NVHLS_ASSERT(0);
+     return 0;
    }
    
    virtual const char *dest_name() {
      NVHLS_ASSERT(0);
+     return 0;
    }
  };
 #endif
@@ -2491,8 +2493,8 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
   // Constructor
   explicit Combinational_Ports_abs(const char* name)
     : Combinational_abs<Message>(name),
-    val(ccs_concat(name, "val")),
-    rdy(ccs_concat(name, "rdy")) 
+    val(nvhls_concat(name, "val")),
+    rdy(nvhls_concat(name, "rdy")) 
       {}
 
  public:
@@ -2634,20 +2636,20 @@ class Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
     : Combinational_abs<Message>(name)
     
-    , Connections_BA_abs(ccs_concat(name, "comb_BA"))
+    , Connections_BA_abs(nvhls_concat(name, "comb_BA"))
     
-    //, in_msg(ccs_concat(name, "comb_in_msg"))
-    , in_val(ccs_concat(name, "comb_in_val"))
-    , in_rdy(ccs_concat(name, "comb_in_rdy"))
-    //, out_msg(ccs_concat(name, "comb_out_msg"))
-    , out_val(ccs_concat(name, "comb_out_val"))
-    , out_rdy(ccs_concat(name, "comb_out_rdy"))
+    //, in_msg(nvhls_concat(name, "comb_in_msg"))
+    , in_val(nvhls_concat(name, "comb_in_val"))
+    , in_rdy(nvhls_concat(name, "comb_in_rdy"))
+    //, out_msg(nvhls_concat(name, "comb_out_msg"))
+    , out_val(nvhls_concat(name, "comb_out_val"))
+    , out_rdy(nvhls_concat(name, "comb_out_rdy"))
     
     , current_cycle(0)
     , latency(0)
     
     , out_bound(false), in_bound(false)
-    , sim_out(ccs_concat(name,"sim_out")), sim_in(ccs_concat(name, "sim_in"))
+    , sim_out(nvhls_concat(name,"sim_out")), sim_in(nvhls_concat(name, "sim_in"))
 #else
     : Combinational_Ports_abs<Message>(name)
 #endif
@@ -3010,7 +3012,7 @@ class Combinational <Message, SYN_PORT> : public Combinational_Ports_abs<Message
     {}
   
   explicit Combinational(const char* name) : Combinational_Ports_abs<Message>(name),
-                                             msg(ccs_concat(name, "msg"))
+                                             msg(nvhls_concat(name, "msg"))
     {}
 
 
@@ -3119,11 +3121,11 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
   explicit Combinational(const char* name) : Combinational_SimPorts_abs<Message, MARSHALL_PORT>(name)
 
 #ifdef CONNECTIONS_SIM_ONLY
-    ,in_msg(ccs_concat(name, "comb_in_msg"))
-    ,out_msg(ccs_concat(name, "comb_out_msg"))
-    ,dummyPortManager(ccs_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
+    ,in_msg(nvhls_concat(name, "comb_in_msg"))
+    ,out_msg(nvhls_concat(name, "comb_out_msg"))
+    ,dummyPortManager(nvhls_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
 #else
-    ,msg(ccs_concat(name, "msg"))
+    ,msg(nvhls_concat(name, "msg"))
 #endif
     {
 #ifdef CONNECTIONS_SIM_ONLY
@@ -3285,11 +3287,11 @@ class Combinational <Message, DIRECT_PORT> : public Combinational_SimPorts_abs<M
   
   explicit Combinational(const char* name) : Combinational_SimPorts_abs<Message, DIRECT_PORT>(name)
 #ifdef CONNECTIONS_SIM_ONLY
-    ,in_msg(ccs_concat(name, "comb_in_msg"))
-    ,out_msg(ccs_concat(name, "comb_out_msg"))
-    ,dummyPortManager(ccs_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
+    ,in_msg(nvhls_concat(name, "comb_in_msg"))
+    ,out_msg(nvhls_concat(name, "comb_out_msg"))
+    ,dummyPortManager(nvhls_concat(name, "dummyPortManager"), this->sim_in, this->sim_out, *this)
 #else
-    ,msg(ccs_concat(name, "msg"))
+    ,msg(nvhls_concat(name, "msg"))
 #endif
     {
 #ifdef CONNECTIONS_SIM_ONLY
@@ -3420,7 +3422,7 @@ class Combinational <Message, TLM_PORT> : public Combinational_Ports_abs<Message
 
   
   explicit Combinational(const char* name) : Combinational_Ports_abs<Message>(name)
-                    ,fifo(ccs_concat(name, "fifo"), 1) {}
+                    ,fifo(nvhls_concat(name, "fifo"), 1) {}
 
   // Reset
   void ResetRead() { 
@@ -3499,7 +3501,7 @@ class StateSignal<Message, SYN_PORT> {
   
  StateSignal() : msg("msg") {}
 
- StateSignal(sc_module_name name) : msg(ccs_concat(name, "_msg")) { }
+ StateSignal(sc_module_name name) : msg(nvhls_concat(name, "_msg")) { }
   
   void reset_state() {
     msg.write(0);
@@ -3517,7 +3519,7 @@ class StateSignal<Message, MARSHALL_PORT> {
   
  StateSignal() : msg("msg") {}
 
- StateSignal(sc_module_name name) : msg(ccs_concat(name, "_msg")) { }
+ StateSignal(sc_module_name name) : msg(nvhls_concat(name, "_msg")) { }
   
   void reset_state() {
     msg.write(0);
@@ -3532,7 +3534,7 @@ class StateSignal<Message, DIRECT_PORT> {
   
  StateSignal() : msg("msg") {}
 
- StateSignal(sc_module_name name) : msg(ccs_concat(name, "_msg")) { }
+ StateSignal(sc_module_name name) : msg(nvhls_concat(name, "_msg")) { }
 
   void reset_state() {
     Message dc;

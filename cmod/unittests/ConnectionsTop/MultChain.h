@@ -39,8 +39,8 @@ class MultChain : public sc_module {
 
   MultChain(sc_module_name name) :
     sc_module(name),
-    clk(ccs_concat(name, "clk")),
-    rst(ccs_concat(name, "rst")),
+    clk(nvhls_concat(name, "clk")),
+    rst(nvhls_concat(name, "rst")),
     in_("in_"),
     out("out")
   {
