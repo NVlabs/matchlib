@@ -67,7 +67,7 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 
 # Preprocessor Macro Definitions
 
-* `HLS_CATAPULT` - If enabled, NVINT is defined as ac_int.  If disabled, NVINT is defined as sc_int.
+* `HLS_CATAPULT` - Select if Catapult is selected as the HLS target. Catapult header files will not be included if not set. If enabled, NVINT is defined as ac_int.  If disabled, NVINT is defined as sc_int. NOTE: Currently MatchLib only supports Catapult, so HLS_CATAPULT must be set.
 * `HLS_ALGORITHMICC` - Set to enable AlgorithmicC-specific optimizations in the code.
 * `HLS_STRATUS` - Set to indicate that HLS is being performed with Stratus tool. This disables Catapult-specific flags and optimizations like the use of ac_types. This feature is not fully tested.
 * `SC_INCLUDE_DYNAMIC_PROCESSES` - Set to enable SystemC dynamic processes.
