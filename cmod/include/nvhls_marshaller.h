@@ -69,6 +69,9 @@ template<typename A, int vec_width>
 void nvhls_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
   // Primitive type conversion to and from sc_lv types must be provided!
   NVHLS_ASSERT(0);
+#ifdef __SYNTHESIS__ // NVHLS_ASSERT is transparent in SYNTHESIS, so protect against SYNTHESIS
+#error "Must provide a definition for nvhls_cast_type_to_vector and nvhls_cast_vector_to_type when not running in Catapult mode!"
+#endif
 }
 
 /**
@@ -92,6 +95,9 @@ template<typename A, int vec_width>
 void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
   // Primitive type conversion to and from sc_lv types must be provided!
   NVHLS_ASSERT(0);
+#ifdef __SYNTHESIS__ // NVHLS_ASSERT is transparent in SYNTHESIS, so protect against SYNTHESIS
+#error "Must provide a definition for nvhls_cast_type_to_vector and nvhls_cast_vector_to_type when not running in Catapult mode!"
+#endif
 }
 
 #endif
