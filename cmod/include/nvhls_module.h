@@ -82,7 +82,9 @@ class Module : public sc_module, public nvhls_message {
   // Interface in/out
   sc_in_clk clk;
   sc_in<bool> rst;
+#ifndef __SYNTHESIS__
   sc_attr_base* module_indicator;
+#endif
 
   Module() : sc_module(sc_gen_unique_name("module")), clk("clk"), rst("rst") {
 #ifndef __SYNTHESIS__

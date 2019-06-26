@@ -31,7 +31,9 @@ class mem_array {
   mem_array() {
     T value;
     for (unsigned i = 0; i < N; i++) {
+#ifndef SLEC_CPC
       data[i] = value;
+#endif
     }
   }
 };
@@ -97,7 +99,9 @@ class mem_array_sep {
     Slice_t value;
     for (unsigned i = 0; i < NumBanks; i++) {
       for (unsigned j = 0; j < NumByteEnables* NumEntriesPerBank; j++) {
+#ifndef SLEC_CPC
         bank[i][j] = value;
+#endif
       }
     }
   }

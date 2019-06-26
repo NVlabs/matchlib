@@ -175,8 +175,10 @@ class Scratchpad : public sc_module {
       // Bank response crossbar
       crossbar<T, N, N>(bank_rsps_data, bank_rsps_valid, bank_dst_lane,
                         load_rsp.data, load_rsps_valid);
-      load_rsp.valids = load_rsps_valid;  // sc_lv to bool conversion
-
+      #pragma hls_unroll yes
+      for (int i = 0; i < N; i++) {
+        load_rsp.valids[i] = load_rsps_valid[i];  // sc_lv to bool conversion
+      }
       // Write client responses
       if (is_load) {
         cli_rsp.Push(load_rsp);

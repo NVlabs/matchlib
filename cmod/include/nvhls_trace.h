@@ -97,12 +97,14 @@ class Tracer {
   bool fatal_;
 #endif
  public:
-  explicit Tracer(std::ostream* o = NULL)
 #ifndef __SYNTHESIS__
+  explicit Tracer(std::ostream* o = NULL)
       : ostr_(o),
         trace_level_(0),
         cur_level_(0),
         fatal_(false)
+#else
+  explicit Tracer()
 #endif
   {
 #ifndef __SYNTHESIS__
