@@ -94,6 +94,7 @@ class mem_array_sep {
 
   typedef Slice_t BankType[NumEntriesPerBank*NumByteEnables];
   nvhls::nv_array<BankType, NumBanks> bank;
+  static const int width =  NumEntries * WordWidth;
 
   mem_array_sep() {
     Slice_t value;

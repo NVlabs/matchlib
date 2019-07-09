@@ -78,6 +78,7 @@ class FIFO {
   // FifoLen is number of entries in each bank
   mem_array_sep<DataType, FifoLen * NumBanks, NumBanks> fifo_body;
   bool last_action_was_push[NumBanks];
+  static const int width =  mem_array_sep<DataType, FifoLen * NumBanks, NumBanks>::width + 2 * NumBanks * AddrWidth + NumBanks; 
 
   // Function to do modulo increment of pointer
   FifoIdx ModIncr(FifoIdx curr_idx) {
@@ -237,6 +238,7 @@ class FIFO<DataType, 1, 1> {
     bool valid;
 
  public:
+    static const int width =  Wrapped<DataType>::width + 1; 
     typedef NVUINTW(1) T;  //redundant
 
     FIFO() {reset();}
@@ -306,6 +308,7 @@ template <typename DataType, unsigned int NumBanks>
 class FIFO<DataType, 1, NumBanks> {  
     DataType data[NumBanks];
     bool     valid[NumBanks];
+    static const int width =  NumBanks * Wrapped<DataType>::width + NumBanks; 
 
  public:
     static const int BankSelWidth =
