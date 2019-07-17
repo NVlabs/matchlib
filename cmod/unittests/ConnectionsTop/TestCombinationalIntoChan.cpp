@@ -63,7 +63,7 @@ class TestHarnessBlocking : public sc_module {
 
       SC_THREAD(src_tick);
       sensitive << clk.posedge_event();
-      async_reset_signal_is(rst, false);
+      NVHLS_NEG_RESET_SIGNAL_IS(rst);
     }
 
     void line_trace() {

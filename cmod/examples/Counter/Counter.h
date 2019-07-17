@@ -37,7 +37,7 @@ SC_MODULE(Counter) {
         inc("inc") {
         SC_THREAD(increment);
         sensitive << clk.pos();
-        reset_signal_is(rst, false);
+        NVHLS_NEG_RESET_SIGNAL_IS(rst);
     }
 
     private:

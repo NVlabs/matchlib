@@ -86,6 +86,7 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `SKIP_LV2TYPE` - Set to enable complex types to be stored as logic vectors in certain design-specific cases.
 * `COV_ENABLE` - Set to enable coverage collection with CTC.
 * `NVHLS_VERIFY_ISVCSMX` - Set for standalone VCS-MX co-simulations of SystemC with Catapult-generated RTL. Do not use in SystemC simulation or Catapult sc_verify.
+* `ENABLE_SYNC_RESET` - Enables synchronous, active-low reset instead of asynchronous, active-low reset in MatchLib.
 
 # Questions and Contributions
 

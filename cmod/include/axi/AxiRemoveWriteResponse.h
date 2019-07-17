@@ -90,15 +90,15 @@ class AxiRemoveWriteResponse : public sc_module {
 
     SC_THREAD(axi_read_ar);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
 
     SC_THREAD(axi_read_r);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
 
     SC_THREAD(axi_write);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
  private:

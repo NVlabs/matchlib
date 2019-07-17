@@ -500,7 +500,7 @@ SC_MODULE(Source) {
         ref(ref_) {
     SC_THREAD(run);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 };
 
@@ -563,7 +563,7 @@ SC_MODULE(Dest) {
         ref(ref_) {
     SC_THREAD(run);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 };
 

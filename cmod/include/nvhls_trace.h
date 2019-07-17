@@ -62,7 +62,7 @@ class Flusher {
  *       : match::Module(name_) {
  *     SC_THREAD(Process);
  *     sensitive << clk.pos();
- *     async_reset_signal_is(rst, false);
+ *     NVHLS_NEG_RESET_SIGNAL_IS(rst);
  * 
  *     this->SetTraceLevel(2); // Set trace level
  *   }

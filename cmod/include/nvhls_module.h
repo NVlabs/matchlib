@@ -20,6 +20,26 @@
 #include <map>
 #endif
 
+/**
+ * \brief ENABLE_SYNC_RESET define: Select synchronous or asynchronous reset.
+ * \ingroup nvhls_module
+ *
+ * Matchlib uses asynchronous, active-low reset by default. Defining ENABLE_SYNC_RESET
+ * will use synchronous, active-low reset instead.
+ * The macros NVHLS_NEG_RESET_SIGNAL_IS() and NVHLS_POS_RESET_SIGNAL_IS() can be used
+ * in place of SystemC's reset_signal_is() and async_reset_signal_is() so that
+ * ENABLE_SYNC_RESET can select type.
+ *
+ * Active-low and -high are separate macros, in case module code assumes a priority.
+ */
+#if defined(ENABLE_SYNC_RESET)
+#define NVHLS_NEG_RESET_SIGNAL_IS(port) reset_signal_is(port,false)
+#define NVHLS_POS_RESET_SIGNAL_IS(port) reset_signal_is(port,true)
+#else // defined(ENABLE_SYNC_RESET)
+#define NVHLS_NEG_RESET_SIGNAL_IS(port) async_reset_signal_is(port,false)
+#define NVHLS_POS_RESET_SIGNAL_IS(port) async_reset_signal_is(port,true)
+#endif // defined(ENABLE_SYNC_RESET)
+
 #include <nvhls_trace.h>
 #include <nvhls_marshaller.h>
 #include <nvhls_message.h>

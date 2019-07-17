@@ -95,7 +95,7 @@ public:
   WHVCRouterBase(sc_module_name name_) : sc_module(name_) {
     SC_THREAD(process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   // Function to receive credits from the consumers

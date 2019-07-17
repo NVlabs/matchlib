@@ -89,7 +89,7 @@ class serializer : public sc_module {
         out_flit("out_flit") {
     SC_THREAD(Process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   };
 };
 
@@ -225,7 +225,7 @@ class serializer<
         out_flit("out_flit") {
     SC_THREAD(Process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 };
 
@@ -298,7 +298,7 @@ class serializer<Packet<PacketDataWidth, DestWidthPerHop, MaxHops, 0>,
         out_flit("out_flit") {
     SC_THREAD(Process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 };
 
@@ -377,7 +377,7 @@ class deserializer : public sc_module {
         in_flit("in_flit") {
     SC_THREAD(Process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   };
 };
 
@@ -575,7 +575,7 @@ class deserializer<
         in_flit("in_flit") {
     SC_THREAD(Process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 };
 
@@ -645,7 +645,7 @@ class deserializer<
         in_flit("in_flit") {
     SC_THREAD(Process);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   };
 };
 

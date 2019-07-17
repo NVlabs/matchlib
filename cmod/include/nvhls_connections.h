@@ -237,6 +237,7 @@ SpecialWrapperIfc(Connections::In);
 SpecialWrapperIfc(Connections::Out);
 
 namespace Connections {
+
 #ifdef CONNECTIONS_SIM_ONLY
 
 // Always enable __CONN_RAND_STALL_FEATURE, but stalling itself is
@@ -3804,7 +3805,7 @@ class Bypass : public sc_module {
 
     SC_THREAD(Seq);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   // Combinational logic
@@ -3933,7 +3934,7 @@ class Pipeline : public sc_module {
 
     SC_THREAD(Seq);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   // Combinational logic
@@ -4079,7 +4080,7 @@ class BypassBuffered : public sc_module {
 
     SC_THREAD(Seq);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
 
     // Needed so that DeqMsg always has a good tail value
     tail.write(0);
@@ -4298,7 +4299,7 @@ class Buffer : public sc_module {
 
     SC_THREAD(Seq);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
 
     // Needed so that DeqMsg always has a good tail value
     tail.write(0);
@@ -4588,7 +4589,7 @@ class OutNetwork : public sc_module {
 
     SC_THREAD(SetState);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void AssignMsg() {
@@ -4743,7 +4744,7 @@ class InNetworkCredit : public sc_module {
 
     SC_THREAD(UpdateCredit);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void AssignMsg() {
@@ -4935,11 +4936,11 @@ class OutNetworkCredit : public sc_module {
 
     SC_THREAD(UpdateCredit);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
 
     SC_THREAD(SetState);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void AssignMsg() {
@@ -5144,7 +5145,7 @@ class Sink : public sc_module {
       in("in") {
     SC_THREAD(DoSink);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);    
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);    
   }
   static const unsigned int width = 0;
   template <unsigned int Size>
@@ -5185,7 +5186,7 @@ class DummySink : public sc_module {
       in("in") {
     SC_THREAD(DoSink);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);    
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);    
   }
   static const unsigned int width = 0;
   template <unsigned int Size>
@@ -5226,7 +5227,7 @@ class DummySource : public sc_module {
       out("out") {
     SC_THREAD(DoSource);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);    
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);    
   }
   static const unsigned int width = 0;
   template <unsigned int Size>

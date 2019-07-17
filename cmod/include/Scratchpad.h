@@ -111,7 +111,7 @@ class Scratchpad : public sc_module {
   Scratchpad(sc_module_name name_) : sc_module(name_) {
     SC_THREAD(run);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
     //DCOUT("Capacity (bytes): " << CAPACITY_IN_BYTES << ", banks: " << N
     //                           << ", addr width: " << ADDR_WIDTH << endl);
   }

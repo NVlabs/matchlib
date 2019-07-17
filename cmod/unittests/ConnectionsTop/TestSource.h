@@ -52,7 +52,7 @@ class TestSourceBlocking : public sc_module {
       msgs(data)
   {
     SC_CTHREAD(tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void tick() {
@@ -124,7 +124,7 @@ class TestSourceNonBlocking : public sc_module {
       msgs(data)
   {
     SC_CTHREAD(tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void tick() {
@@ -196,7 +196,7 @@ class TestSourceBuffered : public sc_module {
       msgs(data)
   {
     SC_CTHREAD(tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void tick() {

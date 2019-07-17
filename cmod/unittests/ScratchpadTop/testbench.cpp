@@ -118,11 +118,11 @@ SC_MODULE (TbIO) {
   {
     SC_THREAD(source);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);  
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);  
     
     SC_THREAD(sink);
     sensitive << clk.pos();
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }  
 };
 

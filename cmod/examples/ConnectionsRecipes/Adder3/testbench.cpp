@@ -84,7 +84,7 @@ SC_MODULE (Source) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        async_reset_signal_is(rst, false);
+        NVHLS_NEG_RESET_SIGNAL_IS(rst);
     }
 };
 
@@ -149,7 +149,7 @@ SC_MODULE (Dest) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        async_reset_signal_is(rst, false);
+        NVHLS_NEG_RESET_SIGNAL_IS(rst);
     }
 };
 

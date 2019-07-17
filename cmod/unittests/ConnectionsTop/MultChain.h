@@ -45,7 +45,7 @@ class MultChain : public sc_module {
     out("out")
   {
     SC_CTHREAD(Tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
 protected:

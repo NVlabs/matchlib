@@ -52,7 +52,7 @@ class TestSinkBlocking : public sc_module {
       count(0)
   {
     SC_CTHREAD(tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void tick() {
@@ -130,7 +130,7 @@ class TestSinkNonBlocking : public sc_module {
       count(0)
   {
     SC_CTHREAD(tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void tick() {
@@ -212,7 +212,7 @@ class TestSinkBuffered : public sc_module {
       msgs(data)
   {
     SC_CTHREAD(tick, clk.pos());
-    async_reset_signal_is(rst, false);
+    NVHLS_NEG_RESET_SIGNAL_IS(rst);
   }
 
   void tick() {
