@@ -17,6 +17,7 @@
 #define __COUNTER_H__
 
 #include <systemc.h>
+#include <nvhls_module.h>
 
 SC_MODULE(Counter) {
     public:
