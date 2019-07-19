@@ -324,10 +324,17 @@ class ArbitratedCrossbar {
     DataDest input_data[NumInputs];
     bool input_valid[NumInputs];
     bool input_consumed[NumInputs];
-
+#pragma hls_unroll yes
+    for (unsigned i = 0; i < NumInputs; i++) {
+      input_data[i] = BitsToType<DataDest>(0);
+    }
     DataType output_data[NumOutputs];
     bool output_valid[NumOutputs];
     bool output_ready[NumOutputs];
+#pragma hls_unroll yes
+    for (unsigned i = 0; i < NumOutputs; i++) {
+      output_data[i] = BitsToType<DataType>(0);
+    }
 
     if (LenInputBuffer > 0) {
 // If lane is ready and input data is valid, write to it

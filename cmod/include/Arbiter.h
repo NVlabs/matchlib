@@ -77,7 +77,7 @@ class Arbiter {
         Arbiter() { reset(); };
 
         // reset the state
-        inline void reset() { next = ~0; }
+        inline void reset() { next = ~static_cast<Mask>(0); }
 
         // picks the next element
         // input : valid mask
@@ -87,23 +87,23 @@ class Arbiter {
             if (valid == 0) {
               return 0;
             }
-            UnrolledMask unrolled_valid = 0;
+            UnrolledMask unrolled_valid = static_cast<UnrolledMask>(0);
             unrolled_valid =
                 nvhls::set_slc(unrolled_valid, nvhls::get_slc<size_ - 1>(valid, 1), 0) |
                 nvhls::set_slc(unrolled_valid, valid, size_ - 1);
 
-            UnrolledMask unrolled_next = 0;
-            NVUINTW(size_ - 1) temp = ~0;
+            UnrolledMask unrolled_next = static_cast<UnrolledMask>(0);
+            NVUINTW(size_ - 1) temp = ~static_cast<NVUINTW(size_ - 1)>(0);
             unrolled_next = nvhls::set_slc(unrolled_next, next, size_ - 1) |
                 nvhls::set_slc(unrolled_next, temp, 0);
 
             UnrolledMask priority(unrolled_next & unrolled_valid);
 
             NVUINTW(log_unrolled_size) first_one_idx, num_zeros;
-            UnrolledMask unrolled_choice = 0;
+            UnrolledMask unrolled_choice = static_cast<UnrolledMask>(0);
 
-            Mask choice = 0;
-            Mask choice_temp = 0;
+            Mask choice = static_cast<Mask>(0);
+            Mask choice_temp = static_cast<Mask>(0);
             if (priority != 0) {
                 first_one_idx = nvhls::leading_ones<UNROLLED_SIZE, UnrolledMask,
                               NVUINTW(log_unrolled_size)>(priority);
@@ -112,7 +112,6 @@ class Arbiter {
                 NVUINTW(size_ - 1)
                     temp2 = (nvhls::get_slc<UNROLLED_SIZE - size_>(unrolled_choice, size_)) |
                     (nvhls::get_slc<size_ - 1>(unrolled_choice, 0));
-                // cout << UNROLLED_SIZE - size_ << " " << size_ << endl;
                 choice = nvhls::set_slc(choice_temp, temp2, 1);
 
                 if (first_one_idx != (size_ - 1)) {
@@ -122,11 +121,11 @@ class Arbiter {
                         next[i] = next[i + 1] | choice[i + 1];
                     }
                 } else {
-                    next = ~0;
+                    next = ~static_cast<Mask>(0);
                 }
             }
             // assert valid!=0  =>  (valid&choice)!=0
-            NVHLS_ASSERT(valid!=0); 
+            // NVHLS_ASSERT(valid!=0); 
             return choice;
         }
 };
@@ -149,9 +148,9 @@ class Arbiter<1, Roundrobin> {
         // picks the next element
         Mask pick(const Mask& valid) {
             if (valid !=0) {
-                return 1;
+                return static_cast<Mask>(1);
             } else {
-                return 0; 
+                return static_cast<Mask>(0); 
             }
         }
 };
@@ -178,7 +177,7 @@ class Arbiter<size_, Static> {
         // output : select mask
         // side effect : updates internal state of next select
         Mask pick(const Mask& valid) {
-            Mask select = 0;
+            Mask select = static_cast<Mask>(0);
             NVUINTW(log_size) first_one_idx;
             if (valid != 0) {
                 first_one_idx =

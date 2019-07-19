@@ -666,7 +666,7 @@ void deserializer<
     if (in_flit.PopNB(flit_reg)) {
       // First flit
       if (flit_reg.flit_id.isHeader()) {
-        buffer.dest = flit_reg.data;
+        buffer.dest = static_cast<NVUINTW(packet_t::dest_width)> (flit_reg.data);
         buffer.data = nvhls::get_slc<header_data_width>(flit_reg.data, packet_t::dest_width);
         num_flits_received = 0;
       } else {

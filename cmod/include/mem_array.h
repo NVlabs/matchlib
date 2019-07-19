@@ -87,10 +87,12 @@ class mem_array_sep {
   static const unsigned int WordWidth = WData_t::width;
   static const unsigned int SliceWidth = WordWidth/NumByteEnables;
   typedef NVUINTW(nvhls::index_width<NumEntriesPerBank>::val) LocalIndex;
+  typedef NVUINTW(nvhls::index_width<NumEntriesPerBank*NumByteEnables>::val) LocalSliceIndex;
   typedef NVUINTW(nvhls::index_width<NumBanks>::val) BankIndex;
   typedef sc_lv<WordWidth> Data_t;
   typedef sc_lv<SliceWidth> Slice_t;
   typedef NVUINTW(NumByteEnables) WriteMask;
+  typedef NVUINTW(nvhls::index_width<NumByteEnables>::val) ByteEnableIndex;
 
   typedef Slice_t BankType[NumEntriesPerBank*NumByteEnables];
   nvhls::nv_array<BankType, NumBanks> bank;
@@ -117,15 +119,18 @@ class mem_array_sep {
   }
 
   T read(LocalIndex idx, BankIndex bank_sel=0) {
-    Data_t read_data = 0;
+    Data_t read_data = static_cast<Data_t>(0);
     #pragma hls_unroll yes
     for (int i = 0; i < NumByteEnables; i++) {
-      read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][idx * NumByteEnables + i];
+      LocalSliceIndex local_slice_index = idx * NumByteEnables + i;
+      NVHLS_ASSERT_MSG(bank_sel<=NumBanks, "bank index out of bounds");
+      NVHLS_ASSERT_MSG(idx<=NumEntriesPerBank, "local index out of bounds");
+      read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
     } 
     return BitsToType<T>(read_data);
   }
 
-  void write(LocalIndex idx, BankIndex bank_sel, T val, WriteMask write_mask=~0, bool wce=1) {
+  void write(LocalIndex idx, BankIndex bank_sel, T val, WriteMask write_mask=~static_cast<WriteMask>(0), bool wce=1) {
     Slice_t tmp[NumByteEnables];
     Data_t write_data = TypeToBits<T>(val);
     #pragma hls_unroll yes
@@ -136,7 +141,10 @@ class mem_array_sep {
       #pragma hls_unroll yes
       for (int i = 0; i < NumByteEnables; i++) {
         if (write_mask[i] == 1) {
-          bank[bank_sel][idx* NumByteEnables +i] = tmp[i];
+          LocalSliceIndex local_slice_index = idx * NumByteEnables + i;
+          NVHLS_ASSERT_MSG(bank_sel<=NumBanks, "bank index out of bounds");
+          NVHLS_ASSERT_MSG(idx<=NumEntriesPerBank, "local index out of bounds");
+          bank[bank_sel][local_slice_index] = tmp[i];
         }
       }
     }

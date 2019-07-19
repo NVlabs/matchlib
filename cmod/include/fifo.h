@@ -110,9 +110,8 @@ class FIFO {
   // Function to pop data from FIFO
   DataType pop(BankIdx bidx = 0) {
     NVHLS_ASSERT(!isEmpty(bidx));
-    DataType rd_data;
     FifoIdx head_local = head[bidx];
-    rd_data = fifo_body.read(head_local, bidx);
+    DataType rd_data = fifo_body.read(head_local, bidx);
     head[bidx] = ModIncr(head_local);
     last_action_was_push[bidx] = false;
     return rd_data;
