@@ -98,8 +98,12 @@ class ArbitratedCrossbar {
     #endif
     template <unsigned int Size>
     void Marshall(Marshaller<Size>& m) {
+    #ifdef SKIP_LV2TYPE
+      m& data_dest;
+    #else
       m& data;
       m& dest;
+    #endif
     }
   };
 
