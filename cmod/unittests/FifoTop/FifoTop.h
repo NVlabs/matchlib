@@ -33,7 +33,7 @@
 #endif
 
 
-#define MemWord_t NVUINTC(WORD_WIDTH)
+typedef NVUINTC(WORD_WIDTH) MemWord_t; 
 
 
 enum FifoOp {

@@ -176,6 +176,7 @@ class serializer<
   static const int header_data_width = flit_t::data_width - packet_t::dest_width;
   // num_flits indicates number of data flits. route flits are not counted
   static const int num_flits = (((packet_t::data_width-header_data_width) % flit_t::data_width) == 0) ? ((packet_t::data_width-header_data_width) / flit_t::data_width) : ((packet_t::data_width-header_data_width) / flit_t::data_width+1) ;
+  static const int log_num_flits = nvhls::index_width<num_flits+1>::val;
   Connections::In<packet_t> in_packet;
   Connections::Out<flit_t> out_flit;
   enum { width = 0 };
@@ -183,7 +184,7 @@ class serializer<
   void Process() {
     in_packet.Reset();
     out_flit.Reset();
-    int num = 0;
+    NVUINTW(log_num_flits) num = 0;
     packet_t packet_reg;
     wait();
     while (1) {
@@ -201,13 +202,15 @@ class serializer<
         flit_reg.packet_id = packet_reg.packet_id;
         if (num == num_flits) {
           flit_reg.flit_id.set(FlitId2bit::TAIL);
+          int num_minus_one = num - 1;
           flit_reg.data = nvhls::get_slc(
-              packet_reg.data, packet_t::data_width - 1, (num - 1) * flit_t::data_width + header_data_width);
+              packet_reg.data, packet_t::data_width - 1, num_minus_one * flit_t::data_width + header_data_width);
           num = 0;
         } else {
           flit_reg.flit_id.set(FlitId2bit::BODY);
+          int num_minus_one = num - 1;
         flit_reg.data = nvhls::get_slc<flit_t::data_width>(
-              packet_reg.data, (num - 1) * flit_t::data_width + header_data_width);
+              packet_reg.data, num_minus_one * flit_t::data_width + header_data_width);
           num++;
         }
       }
