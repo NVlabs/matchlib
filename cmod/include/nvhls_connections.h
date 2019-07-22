@@ -1842,13 +1842,9 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
   bool PushNB(const Message& m, const bool& do_wait = true) {
     val.write(true);
     write_msg(m);
-    //if (do_wait) {
-      wait();
-      val.write(false);
-      //MsgBits dc_bits;
-      //msg.write(dc_bits);
-      invalidate_msg();
-      //}
+    wait();
+    val.write(false);
+    invalidate_msg();
     return rdy.read();
   }
 
@@ -2186,8 +2182,13 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
   }
 
   void invalidate_msg() {
-      MsgBits dc_bits;
-      msg.write(dc_bits);
+    // Only allow message invalidation of not going through SLEC design check,
+    // since this is assigning to an uninitilized variable, but intentional in
+    // HLS for x-prop.
+#ifndef SLEC_CPC    
+    MsgBits dc_bits;
+    msg.write(dc_bits);
+#endif
   }
 };  
 
@@ -2331,8 +2332,13 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
   }
 
   void invalidate_msg() {
-      MsgBits dc_bits;
-      msg.write(dc_bits);
+    // Only allow message invalidation of not going through SLEC design check,
+    // since this is assigning to an uninitilized variable, but intentional in
+    // HLS for x-prop.
+#ifndef SLEC_CPC    
+    MsgBits dc_bits;
+    msg.write(dc_bits);
+#endif
   }
 };  
 
@@ -3289,8 +3295,13 @@ class Combinational <Message, SYN_PORT> : public Combinational_Ports_abs<Message
   }
 
   void invalidate_msg() {
-      MsgBits dc_bits;
-      msg.write(dc_bits);
+    // Only allow message invalidation of not going through SLEC design check,
+    // since this is assigning to an uninitilized variable, but intentional in
+    // HLS for x-prop.
+#ifndef SLEC_CPC    
+    MsgBits dc_bits;
+    msg.write(dc_bits);
+#endif
   }
 };  
 
@@ -3406,12 +3417,17 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
   }
 
   void invalidate_msg() {
-      MsgBits dc_bits;
+    // Only allow message invalidation of not going through SLEC design check,
+    // since this is assigning to an uninitilized variable, but intentional in
+    // HLS for x-prop.
+#ifndef SLEC_CPC    
+    MsgBits dc_bits;
 #ifdef CONNECTIONS_SIM_ONLY
-      out_msg.write(dc_bits);
-#else
-      msg.write(dc_bits);
-#endif
+    out_msg.write(dc_bits);
+#else // ifdef CONNECTIONS_SIM_ONLY
+    msg.write(dc_bits);
+#endif // ifdef CONNECTIONS_SIM_ONLY
+#endif // ifndef SLEC_CPC
   }
 
 #ifdef CONNECTIONS_SIM_ONLY
