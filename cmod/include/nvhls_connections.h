@@ -394,6 +394,37 @@ void set_sim_clk(sc_clock* clk_ptr)
 #endif
 }
 
+class ResetChecker {
+ protected:
+  bool is_reset;
+#ifndef __SYNTHESIS__  
+  const char *parent_name;
+#endif
+  
+ public:
+ ResetChecker(const char *parent_name_)
+   : is_reset(false)
+#ifndef __SYNTHESIS__
+    ,parent_name(parent_name_)
+#endif
+  {}
+  
+  void reset() {
+    is_reset = true;
+  }
+  
+  void check() {
+#ifndef __SYNTHESIS__
+    if(!is_reset) {
+      // FIXME add warning here
+      SC_REPORT_ERROR(parent_name, "Port or channel wasn't reset!");
+      is_reset = true;
+    }
+#endif // ifndef __SYNTHESIS__
+  }
+};
+ 
+
 #ifdef CONNECTIONS_SIM_ONLY
 // this is an abstract class for both blocking connections
 // it is used to allow a containter of pointers to any blocking connection
@@ -713,19 +744,25 @@ class InBlocking_abs {
 
   // Protected because generic abstract class
  protected:
+
+  ResetChecker read_reset_check;
   
   // Default constructor
  InBlocking_abs()
+   :
 #ifdef CONNECTONS_SIM_ONLY
-   : Blocking_abs()
+   Blocking_abs(),
 #endif
+    read_reset_check(sc_gen_unique_name("in"))
     {}
 
   // Constructor
   explicit InBlocking_abs(const char* name)
+    :
 #ifdef CONNECTONS_SIM_ONLY
-    : Blocking_abs()
+    Blocking_abs(),
 #endif
+    read_reset_check(name)
     {}
   
  public:
@@ -785,12 +822,14 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
  public:
   // Reset read
   virtual void Reset() {
+    this->read_reset_check.reset();
     rdy.write(false);
   }
 
 // Pop
 #pragma design modulario < in >
   Message Pop() {
+    this->read_reset_check.check();
     do {
       rdy.write(true);
       wait();
@@ -805,6 +844,8 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
 // Peek
 #pragma design modulario < in >
   Message Peek() {
+    this->read_reset_check.check();
+    
     QUERY_CALL();
     while (!val.read()) {
       wait();
@@ -818,6 +859,8 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
 // PopNB
 #pragma design modulario < in >
   bool PopNB(Message& data, const bool& do_wait = true) {
+    this->read_reset_check.check();
+    
     rdy.write(true);
     if (do_wait) {
       wait();
@@ -862,6 +905,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   // Reset read
   void Reset() {
 #ifdef CONNECTIONS_SIM_ONLY
+    this->read_reset_check.reset();
     Reset_SIM();
 #else
     InBlocking_Ports_abs<Message>::Reset();
@@ -872,6 +916,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 #pragma design modulario < in >
   Message Pop() {
 #ifdef CONNECTIONS_SIM_ONLY
+    this->read_reset_check.check();
     return Pop_SIM();
 #else
     return InBlocking_Ports_abs<Message>::Pop();
@@ -888,6 +933,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 #pragma design modulario < in >
   bool PopNB(Message& data, const bool& do_wait = true) {
 #ifdef CONNECTIONS_SIM_ONLY
+    this->read_reset_check.check();
     if (Empty_SIM()) {
       Message m;
       data = m;
@@ -1590,6 +1636,7 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
   
   // Reset read
   void Reset() {
+    this->read_reset_check.reset();
     Message temp;
     while (i_fifo->nb_get(temp));
   }
@@ -1597,6 +1644,7 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
 // Pop
 #pragma design modulario < in >
   Message Pop() {
+    this->read_reset_check.check();
 #ifdef __CONN_RAND_STALL_FEATURE
     while((local_rand_stall_override ? local_rand_stall_enable : rand_stall_enable) && post_pacer->tic()) { wait(); }
 #endif
@@ -1606,12 +1654,14 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
 // Peek
 #pragma design modulario < in >
   Message Peek() {
+    this->read_reset_check.check();
     return i_fifo->peek();
   }
 
 // PopNB
 #pragma design modulario < in >
   bool PopNB(Message& data, const bool& do_wait = true) {
+    this->read_reset_check.check();
 #ifdef __CONN_RAND_STALL_FEATURE
     if((local_rand_stall_override ? local_rand_stall_enable : rand_stall_enable) && post_pacer->tic()) { return false; }
 #endif
@@ -1758,18 +1808,25 @@ class OutBlocking_abs {
   
   // Protected because abstract class
  protected:
+
+  ResetChecker write_reset_check;
+  
   // Default constructor
  OutBlocking_abs()
+   :
 #ifdef CONNECTIONS_SIM_ONLY
-   : Blocking_abs()
+  Blocking_abs(),
 #endif
+  write_reset_check(sc_gen_unique_name("out"))
     {}
   
   // Constructor
   explicit OutBlocking_abs(const char* name)
+    :
 #ifdef CONNECTIONS_SIM_ONLY
-    : Blocking_abs()
+  Blocking_abs(),
 #endif
+  write_reset_check(name)
     {}
   
  public:
@@ -1822,6 +1879,7 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
 
   // Reset write
   void Reset() {
+    this->write_reset_check.reset();
     val.write(false);
     reset_msg();
   }
@@ -1829,6 +1887,7 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
+    this->write_reset_check.check();
     do {
       val.write(true);
       write_msg(m);
@@ -1840,6 +1899,7 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m, const bool& do_wait = true) {
+    this->write_reset_check.check();
     val.write(true);
     write_msg(m);
     wait();
@@ -1890,6 +1950,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
   // Reset write
   void Reset() {
 #ifdef CONNECTIONS_SIM_ONLY
+    this->write_reset_check.reset();
     Reset_SIM();
 #else
     OutBlocking_Ports_abs<Message>::Reset();
@@ -1900,6 +1961,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
 #pragma design modulario < out >
   void Push(const Message& m) {
 #ifdef CONNECTIONS_SIM_ONLY
+    this->write_reset_check.check();
     return Push_SIM(m);
 #else
     OutBlocking_Ports_abs<Message>::Push(m);
@@ -1910,6 +1972,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
 #pragma design modulario < out >
   bool PushNB(const Message& m, const bool& do_wait = true) {
 #ifdef CONNECTIONS_SIM_ONLY
+    this->write_reset_check.check();
     if (Full_SIM()) {
       return false;
     } else {
@@ -2474,12 +2537,13 @@ class OutBlocking <Message, TLM_PORT> : public OutBlocking_abs<Message> {
   
   // Reset write
   void Reset() {
-    // TODO: Do we need to reset anything here?
+    this->write_reset_check.reset();
   }
 
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
+    this->write_reset_check.check();
     o_fifo->put(m);
     wait(sc_core::SC_ZERO_TIME);
   }
@@ -2487,6 +2551,7 @@ class OutBlocking <Message, TLM_PORT> : public OutBlocking_abs<Message> {
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m, const bool& do_wait = true) {
+    this->write_reset_check.check();
     return o_fifo->nb_put(m);
   }
 
@@ -2626,13 +2691,19 @@ template <typename Message>
 class Combinational_abs {
   // Abstract class
  protected:
+  ResetChecker read_reset_check, write_reset_check;
+  
   // Default constructor
   Combinational_abs()
-    {
-    }
+    : read_reset_check("comb"),
+      write_reset_check("comb")
+  {
+  }
 
   // Constructor
   explicit Combinational_abs(const char* name)
+    : read_reset_check(name),
+      write_reset_check(name)
   {
   }
 
@@ -2716,11 +2787,13 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 
  public:
   // Reset
-  void ResetRead() { 
+  void ResetRead() {
+    this->read_reset_check.reset();
     rdy.write(false); 
   }
 
   void ResetWrite() {
+    this->write_reset_check.reset();
     val.write(false);
     reset_msg();
   }
@@ -2728,6 +2801,7 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 // Pop
 #pragma design modulario < in >
   Message Pop() {
+    this->read_reset_check.check();
     do {
       rdy.write(true);
       wait();
@@ -2741,6 +2815,7 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 // Peek
 #pragma design modulario < in >
   Message Peek() {
+    this->read_reset_check.check();
     while (!val.read()) {
       wait();
     }
@@ -2752,6 +2827,7 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 // PopNB
 #pragma design modulario < in >
   bool PopNB(Message& data) {
+    this->read_reset_check.check();
     rdy.write(true);
     wait();
     rdy.write(false);
@@ -2766,6 +2842,7 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
+    this->write_reset_check.check();
     do {
       val.write(true);
       write_msg(m);
@@ -2777,6 +2854,7 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m) {
+    this->write_reset_check.check();
     val.write(true);
     write_msg(m);
     wait();
@@ -2894,6 +2972,8 @@ class Combinational_SimPorts_abs
   void ResetRead() {
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! out_bound); */
+
+    this->read_reset_check.reset();
     
     sim_in.Reset();
     Reset_SIM();
@@ -2905,6 +2985,8 @@ class Combinational_SimPorts_abs
   void ResetWrite() {
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! in_bound); */
+
+    this->write_reset_check.reset();
     
     sim_out.Reset();
     
@@ -2920,6 +3002,8 @@ class Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! out_bound); */
     
+    this->read_reset_check.check();
+
     return sim_in.Pop();
 #else
     return Combinational_Ports_abs<Message>::Pop();
@@ -2932,6 +3016,8 @@ class Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! out_bound); */
     
+    this->read_reset_check.check();
+
     return sim_in.Peek();
 #else
     return Combinational_Ports_abs<Message>::Peek();
@@ -2944,6 +3030,8 @@ class Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! out_bound); */
     
+    this->read_reset_check.check();
+
     return sim_in.PopNB(data);
 #else
     return Combinational_Ports_abs<Message>::PopNB(data);
@@ -2960,6 +3048,8 @@ class Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! in_bound); */
     
+    this->write_reset_check.check();
+
     sim_out.Push(m);
 #else
     Combinational_Ports_abs<Message>::Push(m);
@@ -2972,6 +3062,8 @@ class Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
     /* assert(! in_bound); */
     
+    this->write_reset_check.check();
+
     return sim_out.PushNB(m);
 #else
     return Combinational_Ports_abs<Message>::PushNB(m);
@@ -3652,42 +3744,48 @@ class Combinational <Message, TLM_PORT> : public Combinational_Ports_abs<Message
                     ,fifo(nvhls_concat(name, "fifo"), 1) {}
 
   // Reset
-  void ResetRead() { 
+  void ResetRead() {
+    this->read_reset_check.reset();
     Message temp;
     while (fifo.nb_get(temp));
   }
 
   void ResetWrite() {
-    // TODO: Do anything here?
+    this->write_reset_check.reset();
   }
 
 // Pop
 #pragma design modulario < in >
   Message Pop() {
+    this->read_reset_check.check();
     return fifo.get();
   }
 
 // Peek
 #pragma design modulario < in >
   Message Peek() {
+    this->read_reset_check.check();
     return fifo.peek();
   }
 
 // PopNB
 #pragma design modulario < in >
   bool PopNB(Message& data) {
+    this->read_reset_check.check();
     return fifo.nb_get(data);
   }
 
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
+    this->write_reset_check.check();
     fifo.put(m);
   }
 
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m) {
+    this->write_reset_check.check();
     return fifo.nb_put(m);
   }
 
