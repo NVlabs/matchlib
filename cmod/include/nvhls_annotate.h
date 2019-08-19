@@ -148,7 +148,7 @@ namespace nvhls {
     std::string root_name = std::string(root.name()) + ".";
     assert(root_name.length() > 1); // Should be something other than just "."
 
-    __annotate_vector(Connections::conManager.tracked_annotate, root_name, d);
+    __annotate_vector(Connections::get_conManager().tracked_annotate, root_name, d);
     
     // Output DOM to file
     std::ofstream ofs((base_name + "output.json").c_str());

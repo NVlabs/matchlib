@@ -52,7 +52,7 @@ namespace nvhls {
  *
  */
 
-int set_random_seed() {
+inline int set_random_seed() {
   unsigned int seed = time(NULL);
 #ifdef RAND_SEED  
   seed = (RAND_SEED);

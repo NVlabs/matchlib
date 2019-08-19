@@ -245,87 +245,21 @@ namespace Connections {
 // rand_stall_enable() or by CONN_RAND_STALL
 #define __CONN_RAND_STALL_FEATURE
   
-#ifdef __CONN_RAND_STALL_FEATURE
-#ifdef CONN_RAND_STALL
-  bool rand_stall_enable = true;
-#else
-  bool rand_stall_enable = false;
-#endif // ifdef CONN_RAND_STALL
-#endif // ifdef __CONN_RAND_STALL_FEATURE
+template <class Dummy>
+struct clk_statics
+{
+    static const sc_time epsilon; 
+};
 
-#ifdef __CONN_RAND_STALL_FEATURE
-/**
- * \brief Enable global random stalling support.
- * \ingroup Connections
- *
- * Enable random stalling globally, valid in CONNECTIONS_ACCURATE_SIM and
- * CONNECTIONS_FAST_SIM modes. Random stalling is non engaged by default,
- * unless CONN_RAND_STALL is set.
- *
- * Random stalling is used to randomly stall In<> ports, creating random
- * back pressure in a design to assist catching latency-sentitive bugs.
- * 
- * Can also enable Connections::In<>.enable_local_rand_stall() to enable
- * on a per-port basis.
- *
- * \par A Simple Example
- * \code
- *      #include <nvhls_connections.h>
- *
- *      int sc_main(int argc, char *argv[])
- *      {
- *      ...
- *      Connections::enable_global_rand_stall();
- *      ...
- *      }
- * \endcode
- * \par
- *
- */
-  void enable_global_rand_stall() {
-    rand_stall_enable = true;
-  }
+template <class Dummy>
+const sc_time clk_statics<Dummy>::epsilon = sc_time(0.01, SC_NS);
 
-/**
- * \brief Disable global random stalling support.
- * \ingroup Connections
- *
- * Disable random stalling globally, valid in CONNECTIONS_ACCURATE_SIM and
- * CONNECTIONS_FAST_SIM modes. Random stalling is non engaged by default,
- * unless CONN_RAND_STALL is set.
- *
- * Random stalling is used to randomly stall In<> ports, creating random
- * back pressure in a design to assist catching latency-sentitive bugs.
- * 
- * Can also disable Connections::In<>.disable_local_rand_stall() to disable
- * on a per-port basis.
- *
- * \par A Simple Example
- * \code
- *      #include <nvhls_connections.h>
- *
- *      int sc_main(int argc, char *argv[])
- *      {
- *      ...
- *      Connections::disable_global_rand_stall();
- *      ...
- *      }
- * \endcode
- * \par
- *
- */
-  void disable_global_rand_stall() {
-    rand_stall_enable = false;
-  }
-#endif
-  
-class SimConnectionsClk
+class SimConnectionsClk : public clk_statics<void>
 {
     public:
-    SimConnectionsClk(): 
-        clk("default_sim_clk", 1, SC_NS, 0.5, 0, SC_NS, true), clk_ptr(&clk)
-    {
-    };
+    SimConnectionsClk()
+    : clk("default_sim_clk", 1, SC_NS, 0.5, 0, SC_NS, true), clk_ptr(&clk)
+    {};
 
     void set(sc_clock* clk_ptr_) { clk_ptr = clk_ptr_; }; // should we use a module that is binded instead?
 
@@ -359,8 +293,6 @@ class SimConnectionsClk
 
 
     private:
-    static const sc_time epsilon; 
-
     sc_clock  clk;
     sc_clock* clk_ptr;
 
@@ -383,14 +315,16 @@ class SimConnectionsClk
     }
 };
 
-const sc_time SimConnectionsClk::epsilon = sc_time(0.01, SC_NS);
-SimConnectionsClk sim_clk;
+SimConnectionsClk& get_sim_clk();
+class ConManager;
+ConManager& get_conManager();
+
 #endif
 
-void set_sim_clk(sc_clock* clk_ptr)
+inline void set_sim_clk(sc_clock* clk_ptr)
 {
 #ifdef CONNECTIONS_SIM_ONLY
-    sim_clk.set(clk_ptr);
+    get_sim_clk().set(clk_ptr);
 #endif
 }
 
@@ -446,7 +380,7 @@ public:
 
     std::vector<Blocking_abs*> tracked;
     std::vector<Connections_BA_abs*> tracked_annotate;
-  
+
     void add(Blocking_abs* c)
     {
         tracked.push_back(c);
@@ -487,24 +421,132 @@ public:
 
     
     void run(bool value) {
-        sim_clk.post_delay();  // align to occur just after the cycle
+        get_sim_clk().post_delay();  // align to occur just after the cycle
 
         while (1) {
             //Post();
             for (std::vector<Blocking_abs*>::iterator it=tracked.begin(); it!=tracked.end(); )
                 if ((*it)->Post()) ++it;
                     else tracked.erase(it);
-            sim_clk.post2pre_delay();
+            get_sim_clk().post2pre_delay();
             //Pre();
             for (std::vector<Blocking_abs*>::iterator it=tracked.begin(); it!=tracked.end(); )
                 if ((*it)->Pre()) ++it;
                     else tracked.erase(it);
-            sim_clk.pre2post_delay();      
+            get_sim_clk().pre2post_delay();      
         }
     }
 };
 
-ConManager conManager;
+// See: https://stackoverflow.com/questions/18860895/how-to-initialize-static-members-in-the-header
+template <class Dummy>
+struct ConManager_statics
+{
+     static SimConnectionsClk sim_clk;
+     static ConManager conManager;
+     static bool rand_stall_enable;
+};
+
+#ifdef __CONN_RAND_STALL_FEATURE
+#ifdef CONN_RAND_STALL
+template <class Dummy>
+bool ConManager_statics<Dummy>::rand_stall_enable = true;
+  //     static bool rand_stall_enable = true;
+#else
+template <class Dummy>
+bool ConManager_statics<Dummy>::rand_stall_enable = false;
+  //     static bool rand_stall_enable = false;
+#endif // ifdef CONN_RAND_STALL
+#endif // ifdef __CONN_RAND_STALL_FEATURE
+  
+template <class Dummy>
+SimConnectionsClk ConManager_statics<Dummy>::sim_clk;
+template <class Dummy>
+ConManager ConManager_statics<Dummy>::conManager;
+
+inline SimConnectionsClk& get_sim_clk()
+{
+  return ConManager_statics<void>::sim_clk;
+}
+
+inline ConManager& get_conManager()
+{
+  return ConManager_statics<void>::conManager;
+}
+
+inline bool& get_rand_stall_enable()
+{
+  return ConManager_statics<void>::rand_stall_enable;
+}
+
+#ifdef __CONN_RAND_STALL_FEATURE
+/**
+ * \brief Enable global random stalling support.
+ * \ingroup Connections
+ *
+ * Enable random stalling globally, valid in CONNECTIONS_ACCURATE_SIM and
+ * CONNECTIONS_FAST_SIM modes. Random stalling is non engaged by default,
+ * unless CONN_RAND_STALL is set.
+ *
+ * Random stalling is used to randomly stall In<> ports, creating random
+ * back pressure in a design to assist catching latency-sentitive bugs.
+ * 
+ * Can also enable Connections::In<>.enable_local_rand_stall() to enable
+ * on a per-port basis.
+ *
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_connections.h>
+ *
+ *      int sc_main(int argc, char *argv[])
+ *      {
+ *      ...
+ *      Connections::enable_global_rand_stall();
+ *      ...
+ *      }
+ * \endcode
+ * \par
+ *
+ */
+  inline void enable_global_rand_stall() {
+    ConManager_statics<void>::rand_stall_enable = true;
+    //rand_stall_enable = true;
+  }
+
+/**
+ * \brief Disable global random stalling support.
+ * \ingroup Connections
+ *
+ * Disable random stalling globally, valid in CONNECTIONS_ACCURATE_SIM and
+ * CONNECTIONS_FAST_SIM modes. Random stalling is non engaged by default,
+ * unless CONN_RAND_STALL is set.
+ *
+ * Random stalling is used to randomly stall In<> ports, creating random
+ * back pressure in a design to assist catching latency-sentitive bugs.
+ * 
+ * Can also disable Connections::In<>.disable_local_rand_stall() to disable
+ * on a per-port basis.
+ *
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_connections.h>
+ *
+ *      int sc_main(int argc, char *argv[])
+ *      {
+ *      ...
+ *      Connections::disable_global_rand_stall();
+ *      ...
+ *      }
+ * \endcode
+ * \par
+ *
+ */
+  inline void disable_global_rand_stall() {
+    ConManager_statics<void>::rand_stall_enable = false;
+    //rand_stall_enable = false;
+  }
+#endif
+
 #endif
 
 //------------------------------------------------------------------------
@@ -647,7 +689,7 @@ protected:
   // Initializer
   void Init_SIM(const char* name, tlm::tlm_fifo<Message> &fifo) {
     this->fifo = &fifo;
-    conManager.add(this);
+    get_conManager().add(this);
   }
 
   // Blocking_abs functions
@@ -704,7 +746,7 @@ protected:
   // Initializer
   void Init_SIM(const char* name, tlm::tlm_fifo<Message> &fifo) {
     this->fifo = &fifo;
-    conManager.add(this);
+    get_conManager().add(this);
   }
   
   bool Pre() {
@@ -950,7 +992,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 #ifdef CONNECTIONS_SIM_ONLY
   void disable_spawn()
   {
-    conManager.remove(this);
+    get_conManager().remove(this);
   }
 
   
@@ -1070,7 +1112,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   void Init_SIM(const char* name) {
     data_val = false;
     rdy_set_by_api = false;
-    conManager.add(this);
+    get_conManager().add(this);
 #ifdef __CONN_RAND_STALL_FEATURE
     double x = rand()%100;
     double y = rand()%100;
@@ -1118,7 +1160,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 
   bool Pre() {
 #ifdef __CONN_RAND_STALL_FEATURE
-    if ((local_rand_stall_override ? local_rand_stall_enable : rand_stall_enable) && pacer_stall) return true;
+    if ((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable()) && pacer_stall) return true;
 #endif
     if (rdy_set_by_api != this->rdy.read())
     {
@@ -1136,7 +1178,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 
 #ifdef __CONN_RAND_STALL_FEATURE
   bool Post() {
-    if((local_rand_stall_override ? local_rand_stall_enable : rand_stall_enable)) {
+    if((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable())) {
       if (post_pacer->tic()) 
 	{
 	  pacer_stall=true;
@@ -1646,7 +1688,7 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
   Message Pop() {
     this->read_reset_check.check();
 #ifdef __CONN_RAND_STALL_FEATURE
-    while((local_rand_stall_override ? local_rand_stall_enable : rand_stall_enable) && post_pacer->tic()) { wait(); }
+    while((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable()) && post_pacer->tic()) { wait(); }
 #endif
     return i_fifo->get();
   }
@@ -1663,7 +1705,7 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
   bool PopNB(Message& data, const bool& do_wait = true) {
     this->read_reset_check.check();
 #ifdef __CONN_RAND_STALL_FEATURE
-    if((local_rand_stall_override ? local_rand_stall_enable : rand_stall_enable) && post_pacer->tic()) { return false; }
+    if((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable()) && post_pacer->tic()) { return false; }
 #endif
     return i_fifo->nb_get(data);
   }
@@ -1987,7 +2029,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
 #ifdef CONNECTIONS_SIM_ONLY
   void disable_spawn()
   {
-    conManager.remove(this);
+    get_conManager().remove(this);
   } 
 
  protected:
@@ -1998,7 +2040,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
   void Init_SIM(const char* name) {
     data_val = false;
     val_set_by_api = false;
-    conManager.add(this);
+    get_conManager().add(this);
   }
 
   void Reset_SIM() {
@@ -3130,8 +3172,8 @@ class Combinational_SimPorts_abs
     val_set_by_api = false;
     rdy_set_by_api = false;
     Reset_SIM();
-    Connections::conManager.add(this);
-    Connections::conManager.add_annotate(this);
+    Connections::get_conManager().add(this);
+    Connections::get_conManager().add_annotate(this);
   }
   
   void Reset_SIM() {
