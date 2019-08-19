@@ -138,6 +138,9 @@ class TestHarness: public sc_module {
     }
 
     void reset() {
+      id.Reset();
+      route.Reset();
+
       std::cout << "@" << sc_time_stamp() <<" Asserting reset" << std::endl;
       rst.write(false);
       wait( 10);
@@ -150,7 +153,7 @@ class TestHarness: public sc_module {
       // HACK: fix this ???
       sc_lv<2> set_id = 1;
       sc_lv<4> set_route = 3;
-
+      
       id.Push(set_id);
       route.Push(set_route);
 
