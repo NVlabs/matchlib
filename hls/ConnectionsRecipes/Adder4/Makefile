@@ -13,15 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Integration tests with a set of existing units.
 
-DIRS = Counter ConnectionsRecipes/Adder ConnectionsRecipes/Adder2 ConnectionsRecipes/Adder3 ConnectionsRecipes/Adder4 MemModel
-
-.PHONY: all $(DIRS)
-
-all: $(DIRS)
-
-$(DIRS):
-	$(MAKE) -C $@ clean 
-	$(MAKE) -C $@ 
+include ../../hls_Makefile
 

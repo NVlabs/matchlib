@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Integration tests with a set of existing units.
 
-DIRS = Counter ConnectionsRecipes/Adder ConnectionsRecipes/Adder2 ConnectionsRecipes/Adder3 ConnectionsRecipes/Adder4 MemModel
+include ../../../cmod_Makefile
 
-.PHONY: all $(DIRS)
+all: sim_adder4
 
-all: $(DIRS)
+#USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
+run:
+	./sim_adder4
 
-$(DIRS):
-	$(MAKE) -C $@ clean 
-	$(MAKE) -C $@ 
+sim_adder4: $(wildcard *.h) $(wildcard *.cpp)
+	$(CC) -o sim_adder4 $(CFLAGS) $(USER_FLAGS) -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+
+sim_clean:
+	rm -rf *.o sim_*
 
