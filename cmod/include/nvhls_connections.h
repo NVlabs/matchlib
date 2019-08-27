@@ -445,18 +445,27 @@ struct ConManager_statics
      static SimConnectionsClk sim_clk;
      static ConManager conManager;
      static bool rand_stall_enable;
+     static bool rand_stall_print_debug_enable;
 };
 
 #ifdef __CONN_RAND_STALL_FEATURE
+
 #ifdef CONN_RAND_STALL
 template <class Dummy>
 bool ConManager_statics<Dummy>::rand_stall_enable = true;
-  //     static bool rand_stall_enable = true;
 #else
 template <class Dummy>
 bool ConManager_statics<Dummy>::rand_stall_enable = false;
-  //     static bool rand_stall_enable = false;
 #endif // ifdef CONN_RAND_STALL
+
+#ifdef CONN_RAND_STALL_PRINT_DEBUG
+template <class Dummy>
+bool ConManager_statics<Dummy>::rand_stall_print_debug_enable = true;
+#else
+template <class Dummy>
+bool ConManager_statics<Dummy>::rand_stall_print_debug_enable = false;
+#endif // ifdef CONN_RAND_STALL_PRINT_DEBUG
+
 #endif // ifdef __CONN_RAND_STALL_FEATURE
   
 template <class Dummy>
@@ -479,6 +488,11 @@ inline bool& get_rand_stall_enable()
   return ConManager_statics<void>::rand_stall_enable;
 }
 
+inline bool& get_rand_stall_print_debug_enable()
+{
+  return ConManager_statics<void>::rand_stall_print_debug_enable;
+}
+ 
 #ifdef __CONN_RAND_STALL_FEATURE
 /**
  * \brief Enable global random stalling support.
@@ -491,7 +505,7 @@ inline bool& get_rand_stall_enable()
  * Random stalling is used to randomly stall In<> ports, creating random
  * back pressure in a design to assist catching latency-sentitive bugs.
  * 
- * Can also enable Connections::In<>.enable_local_rand_stall() to enable
+ * Can also use Connections::In<>.enable_local_rand_stall() to enable
  * on a per-port basis.
  *
  * \par A Simple Example
@@ -510,7 +524,6 @@ inline bool& get_rand_stall_enable()
  */
   inline void enable_global_rand_stall() {
     ConManager_statics<void>::rand_stall_enable = true;
-    //rand_stall_enable = true;
   }
 
 /**
@@ -524,7 +537,7 @@ inline bool& get_rand_stall_enable()
  * Random stalling is used to randomly stall In<> ports, creating random
  * back pressure in a design to assist catching latency-sentitive bugs.
  * 
- * Can also disable Connections::In<>.disable_local_rand_stall() to disable
+ * Can also use Connections::In<>.disable_local_rand_stall() to disable
  * on a per-port basis.
  *
  * \par A Simple Example
@@ -543,8 +556,69 @@ inline bool& get_rand_stall_enable()
  */
   inline void disable_global_rand_stall() {
     ConManager_statics<void>::rand_stall_enable = false;
-    //rand_stall_enable = false;
   }
+
+
+/**
+ * \brief Enable global random stalling debug print statements.
+ * \ingroup Connections
+ *
+ * Enable random stalling print statements globally. Must already have
+ * global random stalling enabled.
+ *
+ * Print statements will report when stall is entered, exited, and cycle
+ * count in stall.
+ *
+ * Can also use Connections::In<>.enable_local_rand_stall_print_debug() to enable
+ * on a per-port basis.
+ *
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_connections.h>
+ *
+ *      int sc_main(int argc, char *argv[])
+ *      {
+ *      ...
+ *      Connections::enable_global_rand_stall();
+ *      Connections::enable_global_rand_stall_print_debug();
+ *      ...
+ *      }
+ * \endcode
+ * \par
+ *
+ */
+  inline void enable_global_rand_stall_print_debug() {
+    ConManager_statics<void>::rand_stall_print_debug_enable = true;
+  }
+
+/**
+ * \brief Disable global random stalling debug print statements.
+ * \ingroup Connections
+ *
+ * Disable random stalling print statements globally. Must already have
+ * global random stalling enabled.
+ *
+ * Can also use Connections::In<>.disable_local_rand_stall_print_debug() to enable
+ * on a per-port basis.
+ *
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_connections.h>
+ *
+ *      int sc_main(int argc, char *argv[])
+ *      {
+ *      ...
+ *      Connections::disable_global_rand_stall_print_debug();
+ *      ...
+ *      }
+ * \endcode
+ * \par
+ *
+ */
+  inline void disable_global_rand_stall_print_debug() {
+    ConManager_statics<void>::rand_stall_print_debug_enable = false;
+  }
+
 #endif
 
 #endif
@@ -795,8 +869,8 @@ class InBlocking_abs {
 #ifdef CONNECTONS_SIM_ONLY
    Blocking_abs(),
 #endif
-    read_reset_check(sc_gen_unique_name("in"))
-    {}
+   read_reset_check(sc_gen_unique_name("in"))
+   {}
 
   // Constructor
   explicit InBlocking_abs(const char* name)
@@ -1096,6 +1170,100 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   void cancel_local_rand_stall() {
     local_rand_stall_override = false;
   }
+
+
+  /**
+   * \brief Enable random stalling debug message support on an input port.
+   * \ingroup Connections
+   *
+   * Enable random stalling debug messages locally for an input port. Random stalling
+   * must already be enabled using CONN_RAND_STALL, enable_global_rand_stall(), or
+   * enable_local_rand_stall().
+   *
+   * Can also enable globally with enable_global_rand_stall_print_debug(). This command takes
+   * precendence over the global setting.
+   *
+   * \par A Simple Example
+   * \code
+   *      #include <nvhls_connections.h>
+   *
+   *      int sc_main(int argc, char *argv[])
+   *      {
+   *      ...
+   *      my_testbench.dut.my_input_port.enable_local_rand_stall_print_debug();
+   *      ...
+   *      }
+   * \endcode
+   * \par
+   *
+   */
+  void enable_local_rand_stall_print_debug() {
+    local_rand_stall_print_debug_override = true;
+    local_rand_stall_print_debug_enable = true;
+  }
+
+  /**
+   * \brief Disable random stalling debug message support on an input port.
+   * \ingroup Connections
+   *
+   * Disable random stalling debug message.
+   *
+   * Can also disable globally with disable_global_rand_stall_print_debug(). This command takes
+   * precendence over the global setting.
+   *
+   * \par A Simple Example
+   * \code
+   *      #include <nvhls_connections.h>
+   *
+   *      int sc_main(int argc, char *argv[])
+   *      {
+   *      ...
+   *      enable_global_rand_stall();
+   *      enable_global_rand_stall_print_debug();
+   *      my_testbench.dut.my_input_port.disable_local_rand_stall_print_debug();
+   *      ...
+   *      }
+   * \endcode
+   * \par
+   *
+   */
+  void disable_local_rand_stall_print_debug() {
+    local_rand_stall_print_debug_override = true;
+    local_rand_stall_print_debug_enable = false;
+  }
+  
+  /**
+   * \brief Remove a random stall debug message setting on an input port.
+   * \ingroup Connections
+   *
+   * Removes a random stall debug message setting for an input port.
+   *  Effectively cancels enable_local_rand_stall_print_debug() and disable_local_rand_stall_print_debug(),
+   * reverting to enable_global_rand_stall_print_debug() or disable_global_rand_stall_print_debug() settings. 
+   *
+   * \par A Simple Example
+   * \code
+   *      #include <nvhls_connections.h>
+   *
+   *      int sc_main(int argc, char *argv[])
+   *      {
+   *      ...
+   *      // globally enable rand stalling
+   *      enable_global_rand_stall();
+   *      enable_global_rand_stall_print_debug();
+   *      // locally disable rand stalling
+   *      my_testbench.dut.my_input_port.disable_local_rand_stall_print_debug();
+   *      ...
+   *      // cancel local rand stall directive, re-enabling global setting
+   *      // on this port
+   *      my_testbench.dut.my_input_port.cancel_local_rand_stall_print_debug();
+   *      }
+   * \endcode
+   * \par
+   *
+   */
+  void cancel_local_rand_stall_print_debug() {
+    local_rand_stall_print_debug_override = false;
+  }
 #endif // __CONN_RAND_STALL_FEATURE
 
  protected:
@@ -1107,6 +1275,9 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   bool pacer_stall;
   bool local_rand_stall_override;
   bool local_rand_stall_enable;
+  bool local_rand_stall_print_debug_override;
+  bool local_rand_stall_print_debug_enable;
+  unsigned long rand_stall_counter;
 #endif
 
   void Init_SIM(const char* name) {
@@ -1120,6 +1291,8 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
     pacer_stall = false;
     local_rand_stall_override = false;
     local_rand_stall_enable = false;
+    local_rand_stall_print_debug_override = false;
+    local_rand_stall_print_debug_enable = false;
 #endif
   }
 
@@ -1160,7 +1333,10 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 
   bool Pre() {
 #ifdef __CONN_RAND_STALL_FEATURE
-    if ((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable()) && pacer_stall) return true;
+    if ((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable()) && pacer_stall) {
+      ++rand_stall_counter;
+      return true;
+    }
 #endif
     if (rdy_set_by_api != this->rdy.read())
     {
@@ -1179,11 +1355,21 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 #ifdef __CONN_RAND_STALL_FEATURE
   bool Post() {
     if((local_rand_stall_override ? local_rand_stall_enable : get_rand_stall_enable())) {
-      if (post_pacer->tic()) 
-	{
-	  pacer_stall=true;
-	} else {
-        pacer_stall=false;
+      if (post_pacer->tic()) {
+	if((local_rand_stall_print_debug_override ? local_rand_stall_print_debug_enable : get_rand_stall_print_debug_enable()) && (!pacer_stall)) {
+	  std::string name = this->val.name();
+	  if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
+	  DCOUT("Entering random stall on port " << name << "." << endl);
+	  rand_stall_counter = 0;
+	}
+	pacer_stall=true;
+      } else {
+	if((local_rand_stall_print_debug_override ? local_rand_stall_print_debug_enable : get_rand_stall_print_debug_enable()) && (pacer_stall)) {
+	  std::string name = this->val.name();
+	  if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
+	  DCOUT("Exiting random stall on port " << name << ". Was stalled for " << rand_stall_counter << " cycles." << endl);
+	}
+	pacer_stall=false;
       }
     } else {
       pacer_stall = false;
@@ -1739,6 +1925,20 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
   void cancel_local_rand_stall() {
     local_rand_stall_override = false;
   }
+
+  void enable_local_rand_stall_print_debug() {
+    local_rand_stall_print_debug_override = true;
+    local_rand_stall_print_debug_enable = true;
+  }
+
+  void disable_local_rand_stall_print_debug() {
+    local_rand_stall_print_debug_override = true;
+    local_rand_stall_print_debug_enable = false;
+  }
+
+  void cancel_local_rand_stall_print_debug() {
+    local_rand_stall_print_debug_override = false;
+  }
 #endif // __CONN_RAND_STALL_FEATURE
   
  protected:
@@ -1748,6 +1948,8 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
   Pacer *post_pacer;
   bool local_rand_stall_override;
   bool local_rand_stall_enable;
+  bool local_rand_stall_print_debug_override;
+  bool local_rand_stall_print_debug_enable;
   
   void Init_SIM(const char* name) {
     double x = rand()%100;
@@ -1755,6 +1957,8 @@ class InBlocking <Message, TLM_PORT> : public InBlocking_abs<Message> {
     post_pacer = new Pacer(x/100, y/100);
     local_rand_stall_override = false;
     local_rand_stall_enable = false;
+    local_rand_stall_print_debug_override = false;
+    local_rand_stall_print_debug_enable = false;
   }
 #endif
   

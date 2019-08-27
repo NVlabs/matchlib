@@ -79,6 +79,7 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `CONNECTIONS_FAST_SIM` - Set to enable fast sim mode in SystemC simulation of the Connections library. This reduces simulation runtime at the cost of cycle accuracy and I/O port fidelity. In particular, the simulation becomes event driven, and a TLM fifo replaces ports and combinational conncetions.
 * `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode.  It should be disabled during HLS. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM automatically sets this.
 * `CONN_RAND_STALL` - Set to enable random stall injection in Connections library by default.
+* `CONN_RAND_STALL_PRINT_DEBUG` - Set to enable random stall print debug messages in Connections library by default.
 * `CONNECTIONS_ASSERT_ON_QUERY` - Set to display a message when Connections features not supported by the tool are used. Specifically, it is used for Empty(), Peek(), and Full() checks in Connections with the Catapult tool.
 * `DISABLE_PACER` - Set to disable the injection of additional stalls from the pacer logic.
 * `RAND_SEED` - Set to a number to use as a fixed seed for easier debugging with nvhls_rand.
