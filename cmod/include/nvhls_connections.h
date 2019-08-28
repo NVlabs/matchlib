@@ -1278,6 +1278,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   bool local_rand_stall_print_debug_override;
   bool local_rand_stall_print_debug_enable;
   unsigned long rand_stall_counter;
+  sc_process_b *actual_process_b;
 #endif
 
   void Init_SIM(const char* name) {
@@ -1293,10 +1294,15 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
     local_rand_stall_enable = false;
     local_rand_stall_print_debug_override = false;
     local_rand_stall_print_debug_enable = false;
+    actual_process_b = 0;
 #endif
   }
 
   void Reset_SIM() {
+#ifdef __CONN_RAND_STALL_FEATURE
+    actual_process_b = sc_core::sc_get_current_process_b();
+#endif
+      
     data_val = false;
   }
 
@@ -1359,7 +1365,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 	if((local_rand_stall_print_debug_override ? local_rand_stall_print_debug_enable : get_rand_stall_print_debug_enable()) && (!pacer_stall)) {
 	  std::string name = this->val.name();
 	  if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
-	  DCOUT("Entering random stall on port " << name << "." << endl);
+	  DCOUT("Entering random stall on port " << name << " in thread '" << actual_process_b->basename() << "'." << endl);
 	  rand_stall_counter = 0;
 	}
 	pacer_stall=true;
@@ -1367,7 +1373,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 	if((local_rand_stall_print_debug_override ? local_rand_stall_print_debug_enable : get_rand_stall_print_debug_enable()) && (pacer_stall)) {
 	  std::string name = this->val.name();
 	  if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
-	  DCOUT("Exiting random stall on port " << name << ". Was stalled for " << rand_stall_counter << " cycles." << endl);
+	  DCOUT("Exiting random stall on port " << name << " in thread '" << actual_process_b->basename() << "'. Was stalled for " << rand_stall_counter << " cycles." << endl);
 	}
 	pacer_stall=false;
       }
@@ -3362,6 +3368,31 @@ class Combinational_SimPorts_abs
       return "UNBOUND";
     }
   }
+
+  void enable_local_rand_stall() {
+    sim_in.enable_local_rand_stall();
+  }
+
+  void disable_local_rand_stall() {
+    sim_in.disable_local_rand_stall();
+  }
+
+  void cancel_local_rand_stall() {
+    sim_in.cancel_local_rand_stall();
+  }
+  
+  void enable_local_rand_stall_print_debug() {
+    sim_in.enable_local_rand_stall_print_debug();
+  }
+
+  void disable_local_rand_stall_print_debug() {
+    sim_in.disable_local_rand_stall_print_debug();
+  }
+
+  void cancel_local_rand_stall_print_debug() {
+    sim_in.cancel_local_rand_stall_print_debug();
+  }
+
   
  protected:
   OutBlocking<Message,port_marshall_type> sim_out;
