@@ -331,18 +331,20 @@ inline void set_sim_clk(sc_clock* clk_ptr)
 class ResetChecker {
  protected:
   bool is_reset;
-#ifndef __SYNTHESIS__  
-  const char *parent_name;
+#ifndef __SYNTHESIS__
+  const char *name;
+  bool is_val_name;
 #endif
   
  public:
- ResetChecker(const char *parent_name_)
+ ResetChecker(const char *name_)
    : is_reset(false)
 #ifndef __SYNTHESIS__
-    ,parent_name(parent_name_)
+    ,name(name_)
+    ,is_val_name(false)
 #endif
   {}
-  
+
   void reset() {
     is_reset = true;
   }
@@ -351,10 +353,26 @@ class ResetChecker {
 #ifndef __SYNTHESIS__
     if(!is_reset) {
       // FIXME add warning here
-      SC_REPORT_ERROR(parent_name, "Port or channel wasn't reset!");
+      std::string name = this->name;
+      if(is_val_name) {
+	if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
+      } else {
+	// Add in hierarchcy to name
+	name = std::string(sc_core::sc_get_current_process_b()->get_parent_object()->name()) + "." + this->name;
+      }
+      SC_REPORT_ERROR("NVHLS-101", ("Port or channel " + name + " wasn't reset! In thread or process '" \
+				    + std::string(sc_core::sc_get_current_process_b()->basename()) \
+				    + "'.").c_str());
       is_reset = true;
     }
 #endif // ifndef __SYNTHESIS__
+  }
+
+  void set_val_name(const char *name_) {
+#ifndef __SYNTHESIS__
+    name = name_;
+    is_val_name = true;
+#endif
   }
 };
  
@@ -869,7 +887,7 @@ class InBlocking_abs {
 #ifdef CONNECTONS_SIM_ONLY
    Blocking_abs(),
 #endif
-   read_reset_check(sc_gen_unique_name("in"))
+   read_reset_check("unnamed_in")
    {}
 
   // Constructor
@@ -926,14 +944,22 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
     : InBlocking_abs<Message>(),
     val(sc_gen_unique_name("in_val")),
     rdy(sc_gen_unique_name("in_rdy"))
-      {}
+      {
+#ifndef __SYNTHESIS__
+	this->read_reset_check.set_val_name(val.name());
+#endif
+      }
 
   // Constructor
   explicit InBlocking_Ports_abs(const char* name)
     : InBlocking_abs<Message>(name),
     val(nvhls_concat(name, "val")),
     rdy(nvhls_concat(name, "rdy"))
-      {}
+      {
+#ifndef __SYNTHESIS__
+	this->read_reset_check.set_val_name(val.name());
+#endif
+      }
 
  public:
   // Reset read
@@ -2069,7 +2095,7 @@ class OutBlocking_abs {
 #ifdef CONNECTIONS_SIM_ONLY
   Blocking_abs(),
 #endif
-  write_reset_check(sc_gen_unique_name("out"))
+  write_reset_check("unnamed_out")
     {}
   
   // Constructor
@@ -2118,14 +2144,22 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
    : OutBlocking_abs<Message>(),
     val(sc_gen_unique_name("out_val")),
     rdy(sc_gen_unique_name("out_rdy"))
-      {}
+      {
+#ifndef __SYNTHESIS__
+	this->write_reset_check.set_val_name(val.name());
+#endif
+      }
   
   // Constructor
   explicit OutBlocking_Ports_abs(const char* name)
     : OutBlocking_abs<Message>(name),
     val(nvhls_concat(name, "val")),
     rdy(nvhls_concat(name, "rdy"))
-      {}
+      {
+#ifndef __SYNTHESIS__
+	this->write_reset_check.set_val_name(val.name());
+#endif
+      }
   
  public:
 
@@ -2947,17 +2981,15 @@ class Combinational_abs {
   
   // Default constructor
   Combinational_abs()
-    : read_reset_check("comb"),
-      write_reset_check("comb")
-  {
-  }
+    : read_reset_check("unnamed_comb"),
+      write_reset_check("unnamed_comb")
+  {}
 
   // Constructor
   explicit Combinational_abs(const char* name)
     : read_reset_check(name),
       write_reset_check(name)
-  {
-  }
+  {}
 
  public:
   // Reset
@@ -3028,14 +3060,24 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
     : Combinational_abs<Message>(),
     val(sc_gen_unique_name("comb_val")),
     rdy(sc_gen_unique_name("comb_rdy"))
-      {}
+      {
+#ifndef __SYNTHESIS__
+	this->read_reset_check.set_val_name(val.name());
+	this->write_reset_check.set_val_name(val.name());
+#endif
+      }
 
   // Constructor
   explicit Combinational_Ports_abs(const char* name)
     : Combinational_abs<Message>(name),
     val(nvhls_concat(name, "val")),
     rdy(nvhls_concat(name, "rdy")) 
-      {}
+      {
+#ifndef __SYNTHESIS__
+	this->read_reset_check.set_val_name(val.name());
+	this->write_reset_check.set_val_name(val.name());
+#endif
+      }
 
  public:
   // Reset
