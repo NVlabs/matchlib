@@ -1391,7 +1391,11 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 	if((local_rand_stall_print_debug_override ? local_rand_stall_print_debug_enable : get_rand_stall_print_debug_enable()) && (!pacer_stall)) {
 	  std::string name = this->val.name();
 	  if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
-	  DCOUT("Entering random stall on port " << name << " in thread '" << actual_process_b->basename() << "'." << endl);
+	  if(actual_process_b) {
+	    DCOUT("Entering random stall on port " << name << " in thread '" << actual_process_b->basename() << "'." << endl);
+	  } else {
+	    DCOUT("Entering random stall on port " << name << " in UNKNOWN thread (port needs to be Reset to register thread)." << endl);
+	  }
 	  rand_stall_counter = 0;
 	}
 	pacer_stall=true;
@@ -1399,7 +1403,11 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
 	if((local_rand_stall_print_debug_override ? local_rand_stall_print_debug_enable : get_rand_stall_print_debug_enable()) && (pacer_stall)) {
 	  std::string name = this->val.name();
 	  if(name.substr(name.length() - 4,4) == "_val") { name.erase(name.length() - 4,4); }
-	  DCOUT("Exiting random stall on port " << name << " in thread '" << actual_process_b->basename() << "'. Was stalled for " << rand_stall_counter << " cycles." << endl);
+	  if(actual_process_b) {
+	    DCOUT("Exiting random stall on port " << name << " in thread '" << actual_process_b->basename() << "'. Was stalled for " << rand_stall_counter << " cycles." << endl);
+	  } else {
+	    DCOUT("Exiting random stall on port " << name << " in thread UNKNOWN thread (port needs to be Reset to register thread). Was stalled for " << rand_stall_counter << " cycles." << endl);
+	  }
 	}
 	pacer_stall=false;
       }
@@ -2960,6 +2968,10 @@ class BA_Message {
    virtual void annotate(unsigned long latency, unsigned int capacity) {
      NVHLS_ASSERT(0);
    }
+   
+   void disable_annotate() {
+     NVHLS_ASSERT(0);
+   }
 
    virtual const char *src_name() {
      NVHLS_ASSERT(0);
@@ -3210,6 +3222,7 @@ class Combinational_SimPorts_abs
     , latency(0)
     
     , out_bound(false), in_bound(false)
+    , in_str(0), out_str(0)
     , sim_out(sc_gen_unique_name("sim_out")), sim_in(sc_gen_unique_name("sim_in"))
 #else
     : Combinational_Ports_abs<Message>()
@@ -3238,6 +3251,7 @@ class Combinational_SimPorts_abs
     , latency(0)
     
     , out_bound(false), in_bound(false)
+    , in_str(0), out_str(0)
     , sim_out(nvhls_concat(name,"sim_out")), sim_in(nvhls_concat(name, "sim_in"))
 #else
     : Combinational_Ports_abs<Message>(name)
@@ -3374,6 +3388,7 @@ class Combinational_SimPorts_abs
   InBlocking_Ports_abs<Message> *out_ptr;
   
   bool out_bound, in_bound;
+  const char *in_str, *out_str;
   
   inline bool is_bypass() {
     return (latency == 0);
@@ -3388,9 +3403,15 @@ class Combinational_SimPorts_abs
       this->b.resize(1);
     }
   }
+
+  void disable_annotate() {
+    Connections::get_conManager().remove_annotate(this);
+  }
   
   const char *src_name() {
-    if(in_bound) {
+    if(in_str) {
+      return in_str;
+    } else if(in_bound) {
       if(in_ptr)
 	return in_ptr->val.name();
       else
@@ -3401,7 +3422,9 @@ class Combinational_SimPorts_abs
   }
   
   const char *dest_name() {
-    if(out_bound) {
+    if(out_str) {
+      return out_str;
+    } else if(out_bound) {
       if(out_ptr)
 	return out_ptr->val.name();
       else
