@@ -40,11 +40,10 @@ options set Input/SearchPath ". ../../cmod ../../cmod/include"
 solution options set Output OutputVerilog true
 solution options set Output/OutputVHDL false
 # Reset FFs
-solution options set Architectural/DefaultResetClearsAllRegs true
+solution options set Architectural/DefaultResetClearsAllRegs yes
 
 # General constrains. Please refer to tool ref manual for detailed descriptions.
 directive set -DESIGN_GOAL area
-directive set -OLD_SCHED false
 directive set -SPECULATE true
 directive set -MERGEABLE true
 directive set -REGISTER_THRESHOLD 256
@@ -68,14 +67,13 @@ directive set -START_FLAG {}
 directive set -BLOCK_SYNC none
 directive set -TRANSACTION_SYNC ready
 directive set -DATA_SYNC none
-directive set -RESET_CLEARS_ALL_REGS true
+directive set -RESET_CLEARS_ALL_REGS yes
 directive set -CLOCK_OVERHEAD 20.000000
-directive set -OPT_CONST_MULTS -1
-directive set -CSA 0
+directive set -OPT_CONST_MULTS use_library
 directive set -CHARACTERIZE_ROM false
 directive set -PROTOTYPE_ROM true
 directive set -ROM_THRESHOLD 64
-directive set -CLUSTER_INPUT_WIDTH_THRESHOLD 0
+directive set -CLUSTER_ADDTREE_IN_WIDTH_THRESHOLD 0
 directive set -CLUSTER_OPT_CONSTANT_INPUTS true
 directive set -CLUSTER_RTL_SYN false
 directive set -CLUSTER_FAST_MODE false
