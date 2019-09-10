@@ -1,0 +1,22 @@
+{
+    "channels": {
+        "a_comb_BA": {
+            "latency": 10,
+            "capacity": 2,
+            "src_name": "srca.x_out",
+            "dest_name": "adder.a_in"
+        },
+        "b_comb_BA": {
+            "latency": 2,
+            "capacity": 10,
+            "src_name": "srcb.x_out",
+            "dest_name": "adder.b_in"
+        },
+        "sum_comb_BA": {
+            "latency": 0,
+            "capacity": 0,
+            "src_name": "adder.sum_out",
+            "dest_name": "dest.sum_in"
+        }
+    }
+}

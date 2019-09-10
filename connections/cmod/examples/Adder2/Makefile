@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-include ../../../cmod_Makefile
+include ../../cmod_Makefile
 
 all: sim_adder2
 
@@ -23,7 +23,7 @@ run:
 	./sim_adder2
 
 sim_adder2: $(wildcard *.h) $(wildcard *.cpp)
-	$(CC) -o sim_adder2 $(CFLAGS) $(USER_FLAGS) -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+	$(CC) -o sim_adder2 $(CFLAGS) $(USER_FLAGS) -I../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*

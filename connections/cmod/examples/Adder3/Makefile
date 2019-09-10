@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,20 @@
 # limitations under the License.
 #
 
-include ../../../cmod_Makefile
+include ../../cmod_Makefile
 
-all: sim_adder2
+all: sim_adder3
 
-USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM -DCONN_RAND_STALL -DCONN_RAND_STALL_PRINT_DEBUG
+# Location of rapidjson
+RAPIDJSON_HOME ?= ../../../../rapidjson
+
+# = instead of += to avoid -DCONN_RAND_STALL
+USER_FLAGS = -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 run:
-	./sim_adder2
+	./sim_adder3
 
-sim_adder2: $(wildcard *.h) $(wildcard *.cpp)
-	$(CC) -o sim_adder2 $(CFLAGS) $(USER_FLAGS) -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+sim_adder3: $(wildcard *.h) $(wildcard *.cpp)
+	$(CC) -o sim_adder3 $(CFLAGS) $(USER_FLAGS) -I../Adder2 -I../../include -I${RAPIDJSON_HOME}/include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*

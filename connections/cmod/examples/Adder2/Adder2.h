@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __ADDER_H__
-#define __ADDER_H__
+#ifndef __ADDER2_H__
+#define __ADDER2_H__
 
 #include <systemc.h>
-#include <nvhls_module.h>
-#include <nvhls_connections.h>
+#include <connections/nvhls_connections.h>
 
-// adder: inputs a and b; output sum=a+b
-// forward progress only after a and b read, and sum written
+// adder2: inputs a and b; output sum=a+b_val?b:0
+// forward progress even if b is not present, use 0
 
-SC_MODULE(Adder)
+SC_MODULE(Adder2)
 {
     public:
         sc_in_clk     clk;
@@ -36,13 +35,14 @@ SC_MODULE(Adder)
 
         Connections::Out<Data> sum_out;
 
-        SC_HAS_PROCESS(Adder);
-        Adder(sc_module_name name_) : sc_module(name_),
+        SC_HAS_PROCESS(Adder2);
+        Adder2(sc_module_name name_) : sc_module(name_),
         a_in("a_in"), b_in("b_in"), sum_out("sum_out")
         {
             SC_THREAD (run); 
             sensitive << clk.pos(); 
-            NVHLS_NEG_RESET_SIGNAL_IS(rst);
+            //NVHLS_NEG_RESET_SIGNAL_IS(rst);
+	    async_reset_signal_is(rst,false);
         }
 
         void run()
@@ -58,7 +58,7 @@ SC_MODULE(Adder)
                 wait();
 
                 a=a_in.Pop();                   // no forward progress until a is received 
-                b=b_in.Pop();                   // no forward progress until b is received 
+                if (!b_in.PopNB(b)) b= zero;    // non-blocking read of b, otherwise set to zero
                 sum_out.Push(a + b);            // no forward progress until result is written out
             }
         }

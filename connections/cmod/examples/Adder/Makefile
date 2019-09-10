@@ -14,16 +14,16 @@
 # limitations under the License.
 #
 
-include ../../../cmod_Makefile
+include ../../cmod_Makefile
 
-all: sim_adder2
+all: sim_adder1
 
-USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM -DCONN_RAND_STALL -DCONN_RAND_STALL_PRINT_DEBUG
+USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 run:
-	./sim_adder2
+	./sim_adder1
 
-sim_adder2: $(wildcard *.h) $(wildcard *.cpp)
-	$(CC) -o sim_adder2 $(CFLAGS) $(USER_FLAGS) -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+sim_adder1: $(wildcard *.h) $(wildcard *.cpp)
+	$(CC) -o sim_adder1 $(CFLAGS) $(USER_FLAGS) -I../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*
