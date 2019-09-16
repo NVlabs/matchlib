@@ -1,94 +1,18 @@
-MatchLib
+Connections
 ========
-[![Build Status](https://travis-ci.org/NVlabs/matchlib.svg?branch=master)](https://travis-ci.org/NVlabs/matchlib)
-
-MatchLib is a SystemC/C++ library of commonly-used hardware functions and components that can
-be synthesized by most commercially-available HLS tools into RTL.
+Connections is a SystemC library implementing latency-insensitive channels for use by
+high-level synthesis tools.
 
 Doxygen-generated documentation can be found [here](https://NVlabs.github.io/matchlib/).
 Additional documentation on the Connections
 latency-insensitive channel implementation can be found in the [Connections Guide](doc/connections-guide.pdf).
 
-# Getting Started
-
-## Tool versions
-
-MatchLib is regressed against the following tool/dependency verions:
-
-* `gcc` - 4.9.3
-* `systemc` - 2.3.1
-* `boost` - 1.55.0
-* `doxygen` - 1.8.11
-* `make` - 3.82
-* `catapult` - 10.3
-* `vcs` - 2017.03-SP2-11
-* `verdi` - 2017.12-SP2-2
-* `rapidjson` - v1.1.0
-
-## Environment requirements
-
-Makefiles assume the appropriate definition of the following environment variables:
-
-* `BOOST_HOME`
-* `SYSTEMC_HOME`
-* `CATAPULT_HOME`
-* `VCS_HOME`
-* `NOVAS_INST_DIR`
-
-In addition, the boost and systemc library locations are expected to be in `LD_LIBRARY_PATH`.
-
-## Build and run
-
-### C++ compile and simulate
-    cd cmod/<module>
-    make
-    make run 
-
-### C++ compile and simulate all
-    cd cmod
-    make -f regress_Makefile
-
-# Directory structure
-
-* `cmod/include/*.h` contains header files for functions and classes from MatchLib
-* `cmod/<module>` sub-directories contain SystemC modules from MatchLib
-* `cmod/examples/<module>` sub-directories contain SystemC example modules
-* `cmod/unittests/<module>` sub-directories contain SystemC wrappers, testbenches and tests for various MatchLib functions, classes, and modules
-* `doc` contains Makefiles for building Doxygen-based documentation
-
-# Preprocessor Macro Definitions
-
-* `HLS_CATAPULT` - Select if Catapult is selected as the HLS target. Catapult header files will not be included if not set. If enabled, NVINT is defined as ac_int.  If disabled, NVINT is defined as sc_int. NOTE: Currently MatchLib only supports Catapult, so HLS_CATAPULT must be set.
-* `HLS_ALGORITHMICC` - Set to enable AlgorithmicC-specific optimizations in the code.
-* `HLS_STRATUS` - Set to indicate that HLS is being performed with Stratus tool. This disables Catapult-specific flags and optimizations like the use of ac_types. This feature is not fully tested.
-* `SC_INCLUDE_DYNAMIC_PROCESSES` - Set to enable SystemC dynamic processes.
-* `__SYNTHESIS__` - Set by Catapult during the HLS flow (but not during sc_verify).
-* `_SYNTHESIS_` - Flag to set when calling the HLS tool during both HLS and sc_verify.
-* `AUTO_PORT` - Set Connections simulation port type (legal options are TLM_PORT, DIRECT_PORT, MARSHALL_PORT, SYN_PORT, from least to most accurate). If unset, defaults to SYN_PORT for synthesis, MARSHALL_PORT for CONNECTIONS_ACCURATE_SIM, and TLM_PORT for CONNNECTIONS_FAST_SIM. Always sets to SYN_PORT for HLS, unless if FORCE_AUTO_PORT is set. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM is favored over this flag.
-* `FORCE_AUTO_PORT` - Like AUTO_PORT, but forces to a set port type for HLS too.
-* `CONNECTIONS_ACCURATE_SIM` - Set to enable sim-accurate mode in SystemC simulation of the Connections library. This can be used to accurately estimate the performance of SystemC designs before HLS.
-* `CONNECTIONS_FAST_SIM` - Set to enable fast sim mode in SystemC simulation of the Connections library. This reduces simulation runtime at the cost of cycle accuracy and I/O port fidelity. In particular, the simulation becomes event driven, and a TLM fifo replaces ports and combinational conncetions.
-* `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode.  It should be disabled during HLS. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM automatically sets this.
-* `CONN_RAND_STALL` - Set to enable random stall injection in Connections library by default.
-* `CONN_RAND_STALL_PRINT_DEBUG` - Set to enable random stall print debug messages in Connections library by default.
-* `CONNECTIONS_ASSERT_ON_QUERY` - Set to display a message when Connections features not supported by the tool are used. Specifically, it is used for Empty(), Peek(), and Full() checks in Connections with the Catapult tool.
-* `DISABLE_PACER` - Set to disable the injection of additional stalls from the pacer logic.
-* `RAND_SEED` - Set to a number to use as a fixed seed for easier debugging with nvhls_rand.
-* `DEBUG_LEVEL` - Set to control the amount of debug information printed to the command line during execution. In general, higher debug levels will enable debug information from additional modules.
-* `SKIP_LV2TYPE` - Set to enable complex types to be stored as logic vectors in certain design-specific cases.
-* `COV_ENABLE` - Set to enable coverage collection with CTC.
-* `NVHLS_VERIFY_ISVCSMX` - Set for standalone VCS-MX co-simulations of SystemC with Catapult-generated RTL. Do not use in SystemC simulation or Catapult sc_verify.
-* `ENABLE_SYNC_RESET` - Enables synchronous, active-low reset instead of asynchronous, active-low reset in MatchLib.
-
-# Questions and Contributions
-
-We welcome feedback and contributions from the open-source hardware community.
-If you have a question or problem, please file an issue on GitHub.
-To contribute bugfixes or new features, submit a pull request.
+Connections has been used as a component of the [MatchLib](https://github.com/NVlabs/matchlib) hardware component library.
+For more documentation about compiling and running Connections components, see the MatchLib documentation.
 
 # Contributors
 
-Originally part of the MatchLib project of [NVIDIA Research](https://research.nvidia.com).  
+Connections was originally part of the MatchLib project of [NVIDIA Research](https://research.nvidia.com).  
 
 Contributors to the initial open-source release (alphabetical): Jason Clemons, Christopher Fletcher, Davide Giri, Ben Keller, Brucek Khailany, Alicia Klinefelter, Evgeni Krimer, Hyoukjun Kwon, Ziyun Li, Michael Pellauer, Nathaniel Pinckney, Antonio Puglielli, Sophia Shao, Shreesha Srinath, Gopalakrishnan Srinivasan, Christopher Torng, Rangharajan Venkatesan, Sam Xi
 

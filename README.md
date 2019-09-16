@@ -64,6 +64,7 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `cmod/unittests/<module>` sub-directories contain SystemC wrappers, testbenches and tests for various MatchLib functions, classes, and modules
 * `hls/<module>` sub-directories contain HLS scripts for modules
 * `doc` contains Makefiles for building Doxygen-based documentation
+* `connections` factors out the Connections latency-insensitive channel library components
 
 # Preprocessor Macro Definitions
 
