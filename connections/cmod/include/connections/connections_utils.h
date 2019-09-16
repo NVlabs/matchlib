@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 //========================================================================
-// nvhls_connections_utils.h
+// connections_utils.h
 //
 // Define macros and typedefs to use within Connections. May be tool or
 // library dependent.
 //========================================================================
 
-#ifndef __CONNECTIONS__NVHLS_CONNECTIONS_UTILS_H_
-#define __CONNECTIONS__NVHLS_CONNECTIONS_UTILS_H_
+#ifndef __CONNECTIONS__CONNECTIONS_UTILS_H_
+#define __CONNECTIONS__CONNECTIONS_UTILS_H_
 
 #include <systemc>
 
@@ -65,7 +65,7 @@
 
 /**
  * \brief CONNECTIONS_CONCAT define: Concatenate two strings, separate with an underscore.
- * \ingroup nvhls_module
+ * \ingroup connections_module
  *
  * Useful for concatenating two strings to derive a module name.
  */
@@ -81,5 +81,5 @@ namespace Connections {
 
 }  // namespace Connections
 
-#endif  // __CONNECTIONS__NVHLS_CONNECTIONS_UTILS_H_
+#endif  // __CONNECTIONS__CONNECTIONS_UTILS_H_
 

@@ -18,10 +18,6 @@
 #include <systemc.h>
 #include <mc_scverify.h>
 
-//#define NVHLS_VERIFY_BLOCKS (Adder)
-//#include <nvhls_verify.h>
-//#include <testbench/nvhls_rand.h>
-
 #include <deque>
 using namespace::std;
 #include <connections/Pacer.h>
@@ -77,8 +73,7 @@ SC_MODULE (Source) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        //NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	async_reset_signal_is(rst,false);
+	      async_reset_signal_is(rst,false);
     }
 };
 
@@ -131,14 +126,12 @@ SC_MODULE (Dest) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        //NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	async_reset_signal_is(rst,false);
+	      async_reset_signal_is(rst,false);
     }
 };
 
 
 SC_MODULE (testbench) {
-    //NVHLS_DESIGN(Adder) adder;
     Adder adder;
     Source srca,srcb;
     Dest dest;
@@ -204,7 +197,6 @@ SC_MODULE (testbench) {
 
 int sc_main(int argc, char *argv[])
 {
-  //nvhls::set_random_seed();
     testbench my_testbench("my_testbench");
     sc_start();
     cout << "CMODEL PASS" << endl;

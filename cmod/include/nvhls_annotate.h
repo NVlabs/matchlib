@@ -17,6 +17,12 @@
 #ifndef NVHLS_ANNOTATE_H_
 #define NVHLS_ANNOTATE_H_
 
-#include "../../connections/cmod/include/connections/nvhls_annotate.h"
+#include "../../connections/cmod/include/connections/annotate.h"
+
+namespace nvhls {
+  void annotate_design(const sc_object &root, std::string base_name = "") {
+    Connections::annotate_design(root,base_name);
+  }
+}
 
 #endif // NVHLS_ANNOTATE_H_

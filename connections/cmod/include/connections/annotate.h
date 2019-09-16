@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 //========================================================================
-// nvhls_annotate.h
+// annotate.h
 //========================================================================
 
 
-#ifndef __CONNECTIONS__NVHLS_ANNOTATE_H__
-#define __CONNECTIONS__NVHLS_ANNOTATE_H__
+#ifndef __CONNECTIONS__ANNOTATE_H__
+#define __CONNECTIONS__ANNOTATE_H__
 
 #include <iostream>
 #include <string>
 
-#include "nvhls_connections.h"
+#include "connections.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/istreamwrapper.h>
 
-namespace nvhls {
+namespace Connections {
 
 #ifdef CONNECTIONS_ACCURATE_SIM
   
@@ -84,7 +84,6 @@ namespace nvhls {
       {
 	if(src_name.substr(src_name.length() - 4,4) == "_val") { src_name.erase(src_name.length() - 4,4); }
 	std::size_t pos = src_name.find(root_name);
-	//if(pos == std::string::npos) { NVHLS_ASSERT(0); } // Should be within module.
 	if(pos != std::string::npos) { src_name.erase(pos, root_name.length()); }
       }
       
@@ -92,7 +91,6 @@ namespace nvhls {
       {
 	if(dest_name.substr(dest_name.length() - 4,4) == "_val") { dest_name.erase(dest_name.length() - 4,4); }
 	std::size_t pos = dest_name.find(root_name);
-	//if(pos == std::string::npos) { NVHLS_ASSERT(0); } // Should be within module.
 	if(pos != std::string::npos) { dest_name.erase(pos, root_name.length()); }
       }
       
@@ -187,8 +185,8 @@ namespace nvhls {
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_connections.h>
- *      #include <connections/nvhls_annotate.h>
+ *      #include <connections/connections.h>
+ *      #include <connections/annotate.h>
  *
  *      ...
  *      // Add to sc_main, to annotate testbench DUT.
@@ -208,4 +206,4 @@ namespace nvhls {
 #endif
 };
 
-#endif // __CONNECTIONS__NVHLS_ANNOTATE_H__
+#endif // __CONNECTIONS__ANNOTATE_H__

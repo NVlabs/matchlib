@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 //========================================================================
-// nvhls_message.h
+// message.h
 //========================================================================
 
-#ifndef __CONNECTIONS__NVHLS_MESSAGE_H_
-#define __CONNECTIONS__NVHLS_MESSAGE_H_
+#ifndef __CONNECTIONS__MESSAGE_H_
+#define __CONNECTIONS__MESSAGE_H_
 
 #include <systemc.h>
 
@@ -30,10 +30,10 @@
  *      conversion to/from sc_lv without using the Marshaller, for DIRECT_MODE ports only. Example code:
  *
  * \code
- *      #include <connections/nvhls_connections.h>
- *      #include <connections/nvhls_message.h>
+ *      #include <connections/connections.h>
+ *      #include <connections/message.h>
  *
- *      class Foo : public nvhls_message {
+ *      class Foo : public message {
  *
  *        ...
  *
@@ -41,21 +41,25 @@
  * \endcode
  *
  */
-class nvhls_message {
+namespace Connections {
+
+class message {
  public:
-  friend inline bool operator==(const nvhls_message& lhs, const nvhls_message& rhs) {
+  friend inline bool operator==(const message& lhs, const message& rhs) {
     return false;
   }
 
-  inline friend std::ostream& operator<<(ostream& os, const nvhls_message& rhs)
+  inline friend std::ostream& operator<<(ostream& os, const message& rhs)
   {
-    os << "<unamed_nvhls_message>";
+    os << "<unnamed_message>";
     return os;
   }
 
-  inline friend void sc_trace(sc_core::sc_trace_file *& tf, const nvhls_message& rhs, const std::string& NAME) {
+  inline friend void sc_trace(sc_core::sc_trace_file *& tf, const message& rhs, const std::string& NAME) {
   }
 };
 
-#endif // __CONNECTIONS__NVHLS_MESSAGE_H_
+}
+
+#endif // __CONNECTIONS__MESSAGE_H_
 

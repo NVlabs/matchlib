@@ -17,7 +17,7 @@
 #ifndef NVHLS_MARSHALLER_H_
 #define NVHLS_MARSHALLER_H_
 
-#include "../../connections/cmod/include/connections/nvhls_marshaller.h"
+#include "../../connections/cmod/include/connections/marshaller.h"
 
 #include <nvhls_assert.h>
 

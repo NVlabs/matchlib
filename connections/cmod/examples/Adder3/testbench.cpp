@@ -18,9 +18,7 @@
 #include <systemc.h>
 #include <mc_scverify.h>
 
-// #define NVHLS_VERIFY_BLOCKS (Adder2)
-// #include <nvhls_verify.h>
-#include <connections/nvhls_annotate.h>
+#include <connections/annotate.h>
 
 #include <deque>
 using namespace::std;
@@ -31,7 +29,6 @@ using namespace::std;
 #define RAND_SEED 1
 
 #include <connections/Pacer.h>
-// #include <testbench/nvhls_rand.h>
 
 typedef deque<int> Fifo;
 
@@ -84,8 +81,7 @@ SC_MODULE (Source) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        // NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	async_reset_signal_is(rst,false);
+	      async_reset_signal_is(rst,false);
     }
 };
 
@@ -150,14 +146,12 @@ SC_MODULE (Dest) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        //NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	async_reset_signal_is(rst,false);
+	      async_reset_signal_is(rst,false);
     }
 };
 
 
 SC_MODULE (testbench) {
-    //NVHLS_DESIGN(Adder2) adder;
     Adder2 adder;
     Source srca,srcb;
     Dest dest;
@@ -234,9 +228,8 @@ int sc_main(int argc, char *argv[])
     cout << "Error: This unit test doesn't support CONN_RAND_STALL since it looks for specific cycle times! Please re-run without it enabled." << endl;
     assert(0);
 #endif
-    // nvhls::set_random_seed();
     testbench my_testbench("my_testbench");
-    nvhls::annotate_design(my_testbench);
+    Connections::annotate_design(my_testbench);
     sc_start();
     cout << "CMODEL PASS" << endl;
     return 0;

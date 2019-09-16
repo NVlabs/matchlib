@@ -17,8 +17,7 @@
 #define __ADDER_H__
 
 #include <systemc.h>
-//#include <nvhls_module.h>
-#include <connections/nvhls_connections.h>
+#include <connections/connections.h>
 
 // adder: inputs a and b; output sum=a+b
 // forward progress only after a and b read, and sum written
@@ -42,7 +41,6 @@ SC_MODULE(Adder)
         {
             SC_THREAD (run); 
             sensitive << clk.pos(); 
-	    //NVHLS_NEG_RESET_SIGNAL_IS(rst);
             async_reset_signal_is(rst,false);
         }
 

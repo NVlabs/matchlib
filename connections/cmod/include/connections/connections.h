@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 //========================================================================
-// nvhls_connections.h
+// connections.h
 //========================================================================
 
-#ifndef __CONNECTIONS__NVHLS_CONNECTIONS_H__
-#define __CONNECTIONS__NVHLS_CONNECTIONS_H__
+#ifndef __CONNECTIONS__CONNECTIONS_H__
+#define __CONNECTIONS__CONNECTIONS_H__
 
 #include <systemc.h>
-#include "nvhls_marshaller.h"
+#include "marshaller.h"
 #include <ccs_p2p.h>
 
-#include "nvhls_connections_utils.h"
+#include "connections_utils.h"
 
 #ifndef __SYNTHESIS__
 #include <iomanip>
@@ -139,7 +139,7 @@ enum connections_port_t {SYN_PORT = 0, MARSHALL_PORT = 1, DIRECT_PORT = 2, TLM_P
  *
  * \code
  *      #define AUTO_PORT MARSHALL_PORT
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  * \endcode
  * 
  * \par
@@ -149,7 +149,7 @@ enum connections_port_t {SYN_PORT = 0, MARSHALL_PORT = 1, DIRECT_PORT = 2, TLM_P
  * 
  * \code
  *      #define FORCE_AUTO_PORT MARSHALL_PORT
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  * \endcode
  *
  * \par 
@@ -358,7 +358,7 @@ class ResetChecker {
 	// Add in hierarchcy to name
 	name = std::string(sc_core::sc_get_current_process_b()->get_parent_object()->name()) + "." + this->name;
       }
-      SC_REPORT_ERROR("NVHLS-101", ("Port or channel " + name + " wasn't reset! In thread or process '" \
+      SC_REPORT_ERROR("CONNECTIONS-101", ("Port or channel " + name + " wasn't reset! In thread or process '" \
 				    + std::string(sc_core::sc_get_current_process_b()->basename()) \
 				    + "'.").c_str());
       is_reset = true;
@@ -526,7 +526,7 @@ inline bool& get_rand_stall_print_debug_enable()
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  *
  *      int sc_main(int argc, char *argv[])
  *      {
@@ -558,7 +558,7 @@ inline bool& get_rand_stall_print_debug_enable()
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  *
  *      int sc_main(int argc, char *argv[])
  *      {
@@ -590,7 +590,7 @@ inline bool& get_rand_stall_print_debug_enable()
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  *
  *      int sc_main(int argc, char *argv[])
  *      {
@@ -619,7 +619,7 @@ inline bool& get_rand_stall_print_debug_enable()
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  *
  *      int sc_main(int argc, char *argv[])
  *      {
@@ -1111,7 +1111,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
    *
    * \par A Simple Example
    * \code
-   *      #include <connections/nvhls_connections.h>
+   *      #include <connections/connections.h>
    *
    *      int sc_main(int argc, char *argv[])
    *      {
@@ -1144,7 +1144,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
    *
    * \par A Simple Example
    * \code
-   *      #include <connections/nvhls_connections.h>
+   *      #include <connections/connections.h>
    *
    *      int sc_main(int argc, char *argv[])
    *      {
@@ -1173,7 +1173,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
    *
    * \par A Simple Example
    * \code
-   *      #include <connections/nvhls_connections.h>
+   *      #include <connections/connections.h>
    *
    *      int sc_main(int argc, char *argv[])
    *      {
@@ -1209,7 +1209,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
    *
    * \par A Simple Example
    * \code
-   *      #include <connections/nvhls_connections.h>
+   *      #include <connections/connections.h>
    *
    *      int sc_main(int argc, char *argv[])
    *      {
@@ -1237,7 +1237,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
    *
    * \par A Simple Example
    * \code
-   *      #include <connections/nvhls_connections.h>
+   *      #include <connections/connections.h>
    *
    *      int sc_main(int argc, char *argv[])
    *      {
@@ -1266,7 +1266,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
    *
    * \par A Simple Example
    * \code
-   *      #include <connections/nvhls_connections.h>
+   *      #include <connections/connections.h>
    *
    *      int sc_main(int argc, char *argv[])
    *      {
@@ -1455,7 +1455,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_connections.h>
+ *      #include <connections/connections.h>
  *
  *      ...
  *      Connections::In< T > in;
@@ -4150,4 +4150,4 @@ class Combinational <Message, TLM_PORT> : public Combinational_Ports_abs<Message
 	  
 }  // namespace Connections
 
-#endif  // __CONNECTIONS__NVHLS_CONNECTIONS_H__
+#endif  // __CONNECTIONS__CONNECTIONS_H__

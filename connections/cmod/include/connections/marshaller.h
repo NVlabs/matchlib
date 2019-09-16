@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 //========================================================================
-// nvhls_marshaller.h
+// marshaller.h
 //========================================================================
-#ifndef __CONNECTIONS__NVHLS_MARSHALLER_H_
-#define __CONNECTIONS__NVHLS_MARSHALLER_H_
+#ifndef __CONNECTIONS__MARSHALLER_H_
+#define __CONNECTIONS__MARSHALLER_H_
 
 #include <systemc.h>
 
@@ -26,8 +26,8 @@
 #include <ccs_p2p.h>
 #endif
 
-#include "nvhls_connections_utils.h"
-#include "nvhls_message.h"
+#include "connections_utils.h"
+#include "message.h"
 
 
 //------------------------------------------------------------------------
@@ -36,19 +36,19 @@
 #ifdef HLS_CATAPULT
 
 template<typename A, int vec_width>
-void nvhls_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
+void connections_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
   type_to_vector(data, length, vec);
 }
 
 template<typename A, int vec_width>
-void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
+void connections_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
   vector_to_type(vec, is_signed, data);
 }
 
 #else
 
 /**
- * \brief nvhls_cast_type_to_vector: Converts a datatype to sc_lv<>.
+ * \brief connections_cast_type_to_vector: Converts a datatype to sc_lv<>.
  * \ingroup Marshaller
  *
  * Marshalling depends on casting primitive and sc/ac data types to
@@ -65,16 +65,16 @@ void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *d
  *
  */
 template<typename A, int vec_width>
-void nvhls_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
+void connections_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
   // Primitive type conversion to and from sc_lv types must be provided!
   CONNECTIONS_ASSERT(0);
 #ifdef __SYNTHESIS__ // CONNECTIONS_ASSERT is transparent in SYNTHESIS, so protect against SYNTHESIS
-#error "Must provide a definition for nvhls_cast_type_to_vector and nvhls_cast_vector_to_type when not running in Catapult mode!"
+#error "Must provide a definition for connections_cast_type_to_vector and connections_cast_vector_to_type when not running in Catapult mode!"
 #endif
 }
 
 /**
- * \brief nvhls_cast_vector_to_type: Converts an sc_lv<> to a datatype.
+ * \brief connections_cast_vector_to_type: Converts an sc_lv<> to a datatype.
  * \ingroup Marshaller
  *
  * Marshalling depends on casting primitive and sc/ac data types to
@@ -91,11 +91,11 @@ void nvhls_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec)
  *
  */
 template<typename A, int vec_width>
-void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
+void connections_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
   // Primitive type conversion to and from sc_lv types must be provided!
   CONNECTIONS_ASSERT(0);
 #ifdef __SYNTHESIS__ // CONNECTIONS_ASSERT is transparent in SYNTHESIS, so protect against SYNTHESIS
-#error "Must provide a definition for nvhls_cast_type_to_vector and nvhls_cast_vector_to_type when not running in Catapult mode!"
+#error "Must provide a definition for connections_cast_type_to_vector and connections_cast_vector_to_type when not running in Catapult mode!"
 #endif
 }
 
@@ -121,13 +121,13 @@ void nvhls_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *d
  * type_to_vector() and vector_to_type() calls as Catapult libraries deal
  * with the specialization for all C++ primitive types, SystemC types, and
  * the ac_* types. To make this vendor agnostic we would have to implement
- * our own nvhls_cast() with all the specialization. Since, the Marshaller
+ * our own connections_cast() with all the specialization. Since, the Marshaller
  * deals with unpacking and packing all complex types, using the Catapult
  * type conversion functions works well in this case.
  *
  * \par A Simple Example
  * \code
- *      #include <connections/nvhls_marshaller.h>
+ *      #include <connections/marshaller.h>
  *
  *      ...
  *      class mem_req_t {
@@ -171,12 +171,12 @@ class Marshaller {
     CONNECTIONS_SIM_ASSERT(cur_idx + FieldSize <= Size);
     if (is_marshalling) {
       sc_lv<FieldSize> bits;
-      nvhls_cast_type_to_vector(d, FieldSize, bits);
+      connections_cast_type_to_vector(d, FieldSize, bits);
       glob.range(cur_idx + FieldSize - 1, cur_idx) = bits;
       cur_idx += FieldSize;
     } else {
       sc_lv<FieldSize> bits = glob.range(cur_idx + FieldSize - 1, cur_idx);
-      nvhls_cast_vector_to_type(bits, false, &d);
+      connections_cast_vector_to_type(bits, false, &d);
       cur_idx += FieldSize;
     }
   }
@@ -204,7 +204,7 @@ class Marshaller {
  *  This function is used to determine the width of a datatype. For ac_types, it relies on static member inside the class called width. For sc_types and bool, Wrapped class has specilizations that determine its width.
  * \par A Simple Example
  * \code
- *  #include <connections/nvhls_marshaller.h>
+ *  #include <connections/marshaller.h>
  *
  *  ...
  *  DataType    wdata;
@@ -474,7 +474,7 @@ Marshaller<Size>& operator&(Marshaller<Size>& m, p2p<>::chan<Message>& rhs) {
  *
  * \par A Simple Example
  * \code
- *  #include <connections/nvhls_marshaller.h>
+ *  #include <connections/marshaller.h>
  *
  *  ...
  *  static const unsigned int larger_width =
@@ -496,7 +496,7 @@ class StaticMax {
  *
  * \par A Simple Example
  * \code
- *  #include <connections/nvhls_marshaller.h>
+ *  #include <connections/marshaller.h>
  *
  *  ...
  *  typedef BitUnion2<TypeA, TypeB> UnionType;
@@ -581,4 +581,4 @@ class BitUnion2 {
   sc_lv<1> tag;
 };
 
-#endif  // __CONNECTIONS__NVHLS_MARSHALLER_H_
+#endif  // __CONNECTIONS__MARSHALLER_H_

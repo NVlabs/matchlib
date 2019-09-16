@@ -17,7 +17,7 @@
 #define __ADDER2_H__
 
 #include <systemc.h>
-#include <connections/nvhls_connections.h>
+#include <connections/connections.h>
 
 // adder2: inputs a and b; output sum=a+b_val?b:0
 // forward progress even if b is not present, use 0
@@ -41,8 +41,7 @@ SC_MODULE(Adder2)
         {
             SC_THREAD (run); 
             sensitive << clk.pos(); 
-            //NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	    async_reset_signal_is(rst,false);
+	          async_reset_signal_is(rst,false);
         }
 
         void run()

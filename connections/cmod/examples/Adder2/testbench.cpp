@@ -18,13 +18,9 @@
 #include <systemc.h>
 #include <mc_scverify.h>
 
-// #define NVHLS_VERIFY_BLOCKS (Adder2)
-// #include <nvhls_verify.h>
-
 #include <deque>
 using namespace::std;
 #include <connections/Pacer.h>
-//#include <testbench/nvhls_rand.h>
 
 typedef deque<int> Fifo;
 
@@ -77,8 +73,7 @@ SC_MODULE (Source) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        //NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	async_reset_signal_is(rst,false);
+	      async_reset_signal_is(rst,false);
     }
 };
 
@@ -139,14 +134,12 @@ SC_MODULE (Dest) {
     {
         SC_THREAD(run);
         sensitive << clk.pos();
-        //NVHLS_NEG_RESET_SIGNAL_IS(rst);
-	async_reset_signal_is(rst,false);
+	      async_reset_signal_is(rst,false);
     }
 };
 
 
 SC_MODULE (testbench) {
-    //NVHLS_DESIGN(Adder2) adder;
     Adder2 adder;
     Source srca,srcb;
     Dest dest;
@@ -212,7 +205,6 @@ SC_MODULE (testbench) {
 
 int sc_main(int argc, char *argv[])
 {
-  //nvhls::set_random_seed();
     testbench my_testbench("my_testbench");
     sc_start();
     cout << "CMODEL PASS" << endl;

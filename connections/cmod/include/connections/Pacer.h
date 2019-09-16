@@ -56,7 +56,7 @@
  *         pacer(pacer_) {
  *     SC_THREAD(run);
  *     sensitive << clk.pos();
- *     NVHLS_NEG_RESET_SIGNAL_IS(rst);
+ *     NEG_RESET_SIGNAL_IS(rst);
  *   }
  * }
  *      
