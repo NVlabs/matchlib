@@ -36,7 +36,7 @@ foreach design_file $DESIGN_FILES {
 foreach tb_file $TB_FILES {
 	solution file add $tb_file -type SYSTEMC -exclude true
 }
-options set Input/CompilerFlags "-DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM $HLS_CATAPULT_FLAG -DRAND_SEED=$env(SEED) -DCONN_RAND_STALL"
+options set Input/CompilerFlags "-D_SYNTHESIS_ -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM $HLS_CATAPULT_FLAG -DRAND_SEED=$env(SEED) -DCONN_RAND_STALL"
 go analyze
 solution library add mgc_sample-065nm-dw_beh_dc -- -rtlsyntool DesignCompiler -vendor Sample -technology 065nm -Designware Yes
 solution library add ram_sample-065nm-singleport_beh_dc
