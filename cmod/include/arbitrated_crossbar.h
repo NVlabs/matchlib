@@ -135,22 +135,22 @@ class ArbitratedCrossbar {
 
   // The next few functions report status of a given input or output lane
   bool isInputEmpty(InputIdx index) {
-    NVHLS_ASSERT(index <= NumInputs);
+    NVHLS_ASSERT_MSG(index <= NumInputs, "Input_index_greater_than_number_of_inputs");
     return input_queues.isEmpty(index);
   }
 
   bool isOutputEmpty(OutputIdx index) {
-    NVHLS_ASSERT(index <= NumOutputs);
+    NVHLS_ASSERT_MSG(index <= NumOutputs, "Output_index_greater_than_number_of_outputs");
     return output_queues.isEmpty(index);
   }
 
   bool isInputFull(InputIdx index) {
-    NVHLS_ASSERT(index <= NumInputs);
+    NVHLS_ASSERT_MSG(index <= NumInputs, "Input_index_greater_than_number_of_inputs");
     return input_queues.isFull(index);
   }
 
   bool isOutputFull(OutputIdx index) {
-    NVHLS_ASSERT(index <= NumOutputs);
+    NVHLS_ASSERT_MSG(index <= NumOutputs, "Output_index_greater_than_number_of_outputs");
     return output_queues.isFull(index);
   }
 

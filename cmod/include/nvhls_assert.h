@@ -34,7 +34,7 @@
 /**
  * \def NVHLS_ASSERT(x)
  * \ingroup Assertions
- * Synthesizable assertion to check \a x. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings 
+ * Synthesizable assertion to check \a x. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings. If HLS_CATAPULT flag is not set, then assertions are enabled only in SystemC/C++ simulation and not synthesized to RTL.
  * \par A Simple Example
  * \code
  *      #include <nvhls_assert.h>
@@ -83,14 +83,14 @@
 
 #ifndef __SYNTHESIS__
 #define CMOD_ASSERT(x) CTC_SKIP_ASSERT assert(x); CTC_ENDSKIP_ASSERT
-#else 
+#else
 #define CMOD_ASSERT(x) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
 #endif
 
 /**
  * \def NVHLS_ASSERT_MSG(x, msg)
  * \ingroup Assertions
- * Synthesizable assertion to check \a x and print \a msg if assertion fails. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings 
+ * Synthesizable assertion to check \a x and print \a msg if assertion fails. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings. If HLS_CATAPULT flag is not set, then assertions are enabled only in SystemC/C++ simulation and not synthesized to RTL.
  * \par A Simple Example
  * \code
  *      #include <nvhls_assert.h>
@@ -110,17 +110,11 @@
 #ifdef HLS_CATAPULT
 #include <ac_assert.h>
 #define NVHLS_ASSERT_MSG(X,MSG) \
-     if (!(X)) { \
-       DCOUT("Assertion Failed. " << MSG << endl);  \
-     }\
-     CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
+     CTC_SKIP_ASSERT assert(X && MSG); CTC_ENDSKIP_ASSERT
 #else
   #ifndef __SYNTHESIS__
     #define NVHLS_ASSERT_MSG(X,MSG)  \
-     if (!(X)) { \
-       DCOUT("Assertion Failed. " << MSG << endl);  \
-     } \
-     CTC_SKIP_ASSERT sc_assert(X); CTC_ENDSKIP_ASSERT
+     CTC_SKIP_ASSERT sc_assert(X && MSG); CTC_ENDSKIP_ASSERT
   #else
     #define NVHLS_ASSERT_MSG(X,MSG) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
   #endif
@@ -152,7 +146,7 @@
     DCOUT("Assertion Failed. " << MSG << endl);	    \
   }						    \
   CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
-#else 
+#else
 #define CMOD_ASSERT_MSG(X,MSG) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
 #endif
 

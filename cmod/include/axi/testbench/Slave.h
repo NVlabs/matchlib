@@ -87,7 +87,7 @@ class Slave : public sc_module {
       typename axi4_::AddrPayload rd_addr_pld;
       if (if_rd.nb_aread(rd_addr_pld)) {
         sc_uint<axi4_::ADDR_WIDTH> addr = rd_addr_pld.addr;
-        NVHLS_ASSERT(addr % bytesPerBeat == 0);  // Require word-aligned addresses
+        NVHLS_ASSERT_MSG(addr % bytesPerBeat == 0, "Addresses_must_be_word_aligned");
         CDCOUT(sc_time_stamp() << " " << name() << " Received read request:"
                       << " addr=" << hex << addr
                       << " burstlen=" << dec << rd_addr_pld.len.to_uint64()
@@ -177,7 +177,7 @@ class Slave : public sc_module {
 
       // Grab a write request (addr) and put it in the local queue
       if (if_wr.aw.PopNB(wr_addr_pld)) {
-        NVHLS_ASSERT(wr_addr_pld.addr.to_uint64() % bytesPerBeat == 0);  // Require word-aligned addresses
+        NVHLS_ASSERT_MSG(wr_addr_pld.addr.to_uint64() % bytesPerBeat == 0, "Addresses_must_be_word_aligned");
         wr_addr.push(wr_addr_pld);
         CDCOUT(sc_time_stamp() << " " << name() << " Received write request:"
                       << " addr=" << hex << wr_addr_pld.addr.to_uint64()

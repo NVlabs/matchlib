@@ -81,7 +81,7 @@ class AxiMasterGate : public sc_module {
 
   void run_wr() {
 
-    NVHLS_ASSERT( MaxInFlightTrans <= (1 << axi4_::ID_WIDTH) );
+    NVHLS_ASSERT_MSG( MaxInFlightTrans <= (1 << axi4_::ID_WIDTH) , "Number_of_inflight_transactions_cannot_exceed_number_of_unique_IDs");
 
     if_wr.reset();
     wrRequestIn.Reset();
@@ -174,7 +174,7 @@ class AxiMasterGate : public sc_module {
         }
 
         if (wrRequestIdValid_local) {
-          NVHLS_ASSERT(wrRequestValid_local);
+          NVHLS_ASSERT_MSG(wrRequestValid_local, "Should_be_impossible_to_reach_this_state");
 
           bool addr_sent_local = addr_sent;
           if (!addr_sent_local) {

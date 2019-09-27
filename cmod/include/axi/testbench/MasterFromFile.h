@@ -86,7 +86,7 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
     std::vector< std::vector<std::string> > dataList = reader.readCSV();
     for (unsigned int i=0; i < dataList.size(); i++) {
       std::vector<std::string> vec = dataList[i];
-      NVHLS_ASSERT(vec.size() == 4);
+      NVHLS_ASSERT_MSG(vec.size() == 4, "Each_request_must_have_four_elements");
       delay_q.push(atoi(vec[0].c_str()));
       if (vec[1] == "R") {
         isWrite_q.push(0);
@@ -127,7 +127,7 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         //              << " data=" << hex << wr_data_pld.data.to_uint64()
         //              << endl, kDebugLevel);
       } else {
-        NVHLS_ASSERT(1);
+        NVHLS_ASSERT_MSG(1,"Requests_must_be_R_or_W");
       }
     }
 
@@ -173,7 +173,7 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         CDCOUT(sc_time_stamp() << " " << name() << " Received read response:"
                       << " data=" << hex << data_pld.data.to_uint64()
                       << endl, kDebugLevel);
-        NVHLS_ASSERT(data_pld.data == rresp_q.front());
+        NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read_response_did_not_match_expected_value");
         rresp_q.pop();
       }
       isWrite_q.pop();

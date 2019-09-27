@@ -125,7 +125,7 @@ class Arbiter {
                 }
             }
             // assert valid!=0  =>  (valid&choice)!=0
-            // NVHLS_ASSERT(valid!=0); 
+            //NVHLS_ASSERT_MSG(valid!=0, "Arbiter_input_is_zero_and_output_is_non-zero");
             return choice;
         }
 };

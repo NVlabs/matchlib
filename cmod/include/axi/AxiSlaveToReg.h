@@ -133,7 +133,7 @@ class AxiSlaveToReg : public sc_module {
 
       if (select_mask == 1) {
         valid_rd_addr = (axiRdAddr >= baseAddr.read() && axiRdAddr <= maxValidAddr);
-        NVHLS_ASSERT(valid_rd_addr);
+        NVHLS_ASSERT_MSG(valid_rd_addr, "Read_address_is_out_of_bounds");
         NVUINTW(regAddrWidth) regAddr = (axiRdAddr - baseAddr.read()) >> axiAddrBitsPerReg;
         axi_rd_resp.id = axi_rd_req.id;
         if (valid_rd_addr) {
@@ -162,7 +162,7 @@ class AxiSlaveToReg : public sc_module {
       } else if (select_mask == 2) {
         if (if_axi_wr.w.PopNB(axi_wr_req_data)) {
           valid_wr_addr = (axiWrAddr >= baseAddr.read() && axiWrAddr <= maxValidAddr);
-          NVHLS_ASSERT(valid_wr_addr);
+          NVHLS_ASSERT_MSG(valid_wr_addr, "Write_address_is_out_of_bounds");
           NVUINTW(axi4_::DATA_WIDTH) axiData(static_cast<sc_uint<axi4_::DATA_WIDTH> >(axi_wr_req_data.data));
           NVUINTW(regAddrWidth) regAddr = (axiWrAddr - baseAddr.read()) >> axiAddrBitsPerReg;
           if (!axi_wr_req_data.wstrb.and_reduce()) { // Non-uniform write strobe - need to do read-modify-write

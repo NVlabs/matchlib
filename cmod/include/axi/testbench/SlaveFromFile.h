@@ -79,7 +79,7 @@ template <typename axiCfg> class SlaveFromFile : public sc_module {
     std::vector< std::vector<std::string> > dataList = reader.readCSV();
     for (unsigned int i=0; i < dataList.size(); i++) {
       std::vector<std::string> vec = dataList[i];
-      NVHLS_ASSERT(vec.size() == 2);
+      NVHLS_ASSERT_MSG(vec.size() == 2, "Each_request_must_have_two_elements");
       std::stringstream ss;
       sc_uint<axi4_::ADDR_WIDTH> addr;
       ss << hex << vec[0];

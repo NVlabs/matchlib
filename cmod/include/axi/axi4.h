@@ -34,8 +34,8 @@
 struct EmptyField : public nvhls_message {
   template <typename T>
   EmptyField operator=(T const &) {
-    NVHLS_ASSERT(true);  // If an assignment actually occurs during runtime
-                         // you've done something wrong
+    NVHLS_ASSERT_MSG(true,"EmptyField_should_never_be_assigned_or_accessed");   // If an assignment actually occurs during runtime
+                                                                                // you've done something wrong
     return EmptyField();
   }
   uint64 to_uint64() { return 0; }

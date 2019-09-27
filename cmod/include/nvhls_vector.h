@@ -123,11 +123,9 @@ class nv_scvector : public nvhls_message {
       out.data[i] = data[i];
   }
   Type& operator[](unsigned int i) {
-    //NVHLS_ASSERT(i<VectorLength);
     return this->data[i];
   }
   const Type& operator[](unsigned int i) const {
-    //NVHLS_ASSERT(i<VectorLength);
     return this->data[i];
   }
   // Converting vector to rawbits of NVUINT type

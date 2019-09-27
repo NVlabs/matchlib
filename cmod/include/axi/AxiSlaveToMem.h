@@ -170,7 +170,7 @@ class AxiSlaveToMem : public sc_module {
 
           if (wr_beat_cnt_local == wr_addr_pld.len) {
             wr_beat_cnt_local = 0;
-            NVHLS_ASSERT(write_pld.last == true);
+            NVHLS_ASSERT_MSG(write_pld.last == true, "WRLEN_indicates_that_this_should_be_the_last_beat,_but_WRLAST_is_not_set");
             wr_addr.incrHead();
 
             // push resp
@@ -179,7 +179,7 @@ class AxiSlaveToMem : public sc_module {
             resp_pld.id = wr_addr_pld.id;
             wr_resp.push(resp_pld);
           } else {
-            NVHLS_ASSERT(write_pld.last == false);
+            NVHLS_ASSERT_MSG(write_pld.last == false, "WRLEN_indicates_that_this_should_not_be_the_last_beat,_but_WRLAST_is_set");
             ++wr_beat_cnt_local;
           }
 

@@ -54,7 +54,7 @@
  *         case reset:                     rob.reset();                    break;
  *         case isEmpty:       out_resp =  rob.isEmpty();                  break;
  *         default:
- *             NVHLS_ASSERT(0); //never get here
+ *             NVHLS_ASSERT_MSG(0,"invalid_op"); //never get here
  *     }
  * }
  *      ...
@@ -112,7 +112,7 @@ public:
     {
         Id id;
         bool success = get_next_avail_id(id, idrep);
-        NVHLS_ASSERT(success);
+        NVHLS_ASSERT_MSG(success, "get_next_avail_id_unsuccessful");
 
         id2entry.write(static_cast<typename Id2Entry::LocalIndex>(id), 0, vbits.get_tail()); 
         vbits.push(false);
@@ -134,13 +134,13 @@ public:
         EntryNum entryNum = id2entry.read(static_cast<typename Id2Entry::LocalIndex>(id), 0);
         storage.write(entryNum, 0, data);
         vbits.fifo_body.write(static_cast<typename VBits::FifoIdx>(entryNum), 0, true);
-        NVHLS_ASSERT (idrep[static_cast<int>(id)] == 1);
+        NVHLS_ASSERT_MSG(idrep[static_cast<int>(id)] == 1, "idrep[id]!=1");
         idrep[static_cast<int>(id)]=0;
     }
 
     Data popResponse()
     {
-        NVHLS_ASSERT(topResponseReady());
+        NVHLS_ASSERT_MSG(topResponseReady(),"topResponseNotReady");
 
         Data result = storage.read( vbits.get_head(), 0); 
         vbits.incrHead();

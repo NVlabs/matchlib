@@ -123,8 +123,8 @@ class mem_array_sep {
     #pragma hls_unroll yes
     for (int i = 0; i < NumByteEnables; i++) {
       LocalSliceIndex local_slice_index = idx * NumByteEnables + i;
-      NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank index out of bounds");
-      NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local index out of bounds");
+      NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank_index_out_of_bounds");
+      NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local_index_out_of_bounds");
       read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
     } 
     return BitsToType<T>(read_data);
@@ -142,8 +142,8 @@ class mem_array_sep {
       for (int i = 0; i < NumByteEnables; i++) {
         if (write_mask[i] == 1) {
           LocalSliceIndex local_slice_index = idx * NumByteEnables + i;
-          NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank index out of bounds");
-          NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local index out of bounds");
+          NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank_index_out_of_bounds");
+          NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local_index_out_of_bounds");
           bank[bank_sel][local_slice_index] = tmp[i];
         }
       }

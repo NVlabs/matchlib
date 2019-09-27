@@ -109,7 +109,7 @@ public:
         //          << " Read credit from credit port-"
         //          << i << " " << credit_recv[i] << endl);
       }
-      NVHLS_ASSERT(credit_recv[i] <= buffersize);
+      NVHLS_ASSERT_MSG(credit_recv[i] <= buffersize, "Total_credits_received_cannot_be_larger_than_Buffer_size");
     }
   }
 
@@ -140,10 +140,10 @@ public:
                               << endl);
         if (num_vchannels > 1) {
           NVUINTW(log_num_vchannels) vcin_tmp = inflit[i].get_packet_id();
-          NVHLS_ASSERT(!ififo.isFull(i * num_vchannels + vcin_tmp));
+          NVHLS_ASSERT_MSG(!ififo.isFull(i * num_vchannels + vcin_tmp), "Input_fifo_is_full");
           ififo.push(inflit[i], i * num_vchannels + vcin_tmp);
         } else {
-          NVHLS_ASSERT(!ififo.isFull(i));
+          NVHLS_ASSERT_MSG(!ififo.isFull(i), "Input_fifo_is_full");
           ififo.push(inflit[i], i);
         }
       }
@@ -590,7 +590,7 @@ public:
         // << i
         //          << " VC-" << vcin[i] << endl);
         this->credit_send[i * num_vchannels + vcin[i]]++;
-        NVHLS_ASSERT(this->credit_send[i * num_vchannels + vcin[i]] <= BaseClass::buffersize);
+        NVHLS_ASSERT_MSG(this->credit_send[i * num_vchannels + vcin[i]] <= BaseClass::buffersize, "Total_credits_cannot_be_larger_than_buffer_size");
       }
     }
 
