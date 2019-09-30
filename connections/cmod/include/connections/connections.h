@@ -418,7 +418,7 @@ public:
             }
         }
 
-        CONNECTIONS_ASSERT(0);
+        CONNECTIONS_ASSERT_MSG(0, "Couldn't find port to remove from ConManager sim accurate tracking!");
     }
 
     void remove_annotate(Connections_BA_abs* c)
@@ -432,7 +432,7 @@ public:
             }
         }
 
-        assert(0);
+        CONNECTIONS_ASSERT_MSG(0, "Couldn't find port to remove from ConManager back-annotation tracking!");
     }
 
     
@@ -785,7 +785,7 @@ protected:
   // Blocking_abs functions
   bool Pre() {
     if (val.read() && rdy.read()) {
-      CONNECTIONS_ASSERT(fifo->nb_can_get());
+      CONNECTIONS_ASSERT_MSG(fifo->nb_can_get(), "Val and rdy indicated data was available, but no data was available!");
       fifo->get(); // Discard, we've already peeked it. Just incrementing the head here.
     }
     return true;
@@ -843,7 +843,7 @@ protected:
     if (rdy.read() && val.read()) {
       Message data;
       data = msg.read();
-      CONNECTIONS_ASSERT(fifo->nb_can_put());
+      CONNECTIONS_ASSERT_MSG(fifo->nb_can_put(), "Val and rdy indicated data was available, but no data was available!");
       fifo->put(data);
     }
     return true;
@@ -900,14 +900,14 @@ class InBlocking_abs {
  public:
   // Reset read
   virtual void Reset() {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 
 // Pop
 #pragma design modulario < in >
   virtual Message Pop() {
     Message m;
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return m;
   }
 
@@ -915,14 +915,14 @@ class InBlocking_abs {
 #pragma design modulario < in >
   virtual Message Peek() {
     Message m;
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return m;
   }
 
 // PopNB
 #pragma design modulario < in >
   virtual bool PopNB(Message& data, const bool& do_wait = true) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return false;
   }
 };
@@ -1012,7 +1012,7 @@ class InBlocking_Ports_abs : public InBlocking_abs<Message> {
   
  protected:
   virtual void read_msg(Message &m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 };
 
@@ -1425,7 +1425,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   bool Empty_SIM() { return !data_val; }
 
   Message& ConsumeBuf_SIM() {
-    CONNECTIONS_ASSERT(data_val);
+    CONNECTIONS_ASSERT_MSG(data_val, "Unreachable state, asked to consume but data isn't valid!");
     data_val = false;
     return data_buf;
   }
@@ -1440,7 +1440,7 @@ class InBlocking_SimPorts_abs : public InBlocking_Ports_abs<Message> {
   
  protected:
   virtual void read_msg(Message &m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 };
 
@@ -2117,19 +2117,19 @@ class OutBlocking_abs {
 
   // Reset write
   void Reset() {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m, const bool& do_wait = true) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return false;
   }
 };
@@ -2202,13 +2202,13 @@ class OutBlocking_Ports_abs : public OutBlocking_abs<Message> {
 
  protected:
     virtual void reset_msg() {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     virtual void write_msg(const Message &m) {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     virtual void invalidate_msg() {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
 };
 
@@ -2346,7 +2346,7 @@ class OutBlocking_SimPorts_abs : public OutBlocking_Ports_abs<Message> {
   }
 
   void FillBuf_SIM(const Message& m) {
-    CONNECTIONS_ASSERT(!data_val);
+    CONNECTIONS_ASSERT_MSG(!data_val, "Unreachable state, asked to fill buffer but buffer already full!");
     data_val = true;
     transmit_data(m);
     data_buf = m;
@@ -2964,20 +2964,20 @@ class BA_Message {
      {}
 
    virtual void annotate(unsigned long latency, unsigned int capacity) {
-     CONNECTIONS_ASSERT(0);
+     CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
    }
    
    void disable_annotate() {
-     CONNECTIONS_ASSERT(0);
+     CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
    }
 
    virtual const char *src_name() {
-     CONNECTIONS_ASSERT(0);
+     CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
      return 0;
    }
    
    virtual const char *dest_name() {
-     CONNECTIONS_ASSERT(0);
+     CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
      return 0;
    }
  };
@@ -3004,18 +3004,18 @@ class Combinational_abs {
  public:
   // Reset
   void ResetRead() {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 
   void ResetWrite() {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 
 // Pop
 #pragma design modulario < in >
   Message Pop() {
     Message m;
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return m;
   }
 
@@ -3023,14 +3023,14 @@ class Combinational_abs {
 #pragma design modulario < in >
   Message Peek() {
     Message m;
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return m;
   }
 
 // PopNB
 #pragma design modulario < in >
   bool PopNB(Message& data) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return false;
   }
 
@@ -3041,13 +3041,13 @@ class Combinational_abs {
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 
 // PushNB
 #pragma design modulario < out >
   bool PushNB(const Message& m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     return false;
   }
 
@@ -3172,16 +3172,16 @@ class Combinational_Ports_abs : public Combinational_abs<Message> {
   
  protected:
     virtual void reset_msg() {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     virtual void read_msg(Message &m) {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     virtual void write_msg(const Message &m) {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     virtual void invalidate_msg() {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
 };
 
@@ -3632,16 +3632,16 @@ class Combinational_SimPorts_abs
   
  protected:
   virtual void reset_msg() {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
   virtual void read_msg(Message &m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
   virtual void write_msg(const Message &m) {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
   virtual void invalidate_msg() {
-    CONNECTIONS_ASSERT(0);
+    CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
   }
 #endif
 };
@@ -4131,16 +4131,16 @@ class Combinational <Message, TLM_PORT> : public Combinational_Ports_abs<Message
 
  protected:
     void reset_msg() {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     void read_msg(Message &m) {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     void write_msg(const Message &m) {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
     void invalidate_msg() {
-      CONNECTIONS_ASSERT(0);
+      CONNECTIONS_ASSERT_MSG(0, "Unreachable virtual function in abstract class!");
     }
 
  public:

@@ -60,6 +60,8 @@
     #define NVHLS_ASSERT(X) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
   #endif
 #endif
+
+
 /**
  * \def CMOD_ASSERT(x)
  * \ingroup Assertions
@@ -125,6 +127,34 @@
 #endif
 
 
+/**
+ * \def CMOD_ASSERT_MSG(x,msg)
+ * \ingroup Assertions
+ * Non-synthesizable assertion to check \a x and print \a msg if assertion fails. It will be checked only in C++ simulation and not synthesized by HLS tool.
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_assert.h>
+ *
+ *      ...
+ *      while(1) {
+ *        if (in.PopNB(in_var)) {
+ *          CMOD_ASSERT_MSG(in_var!=0, "Input is Zero"); // Assert that input is never 0
+ *        ...
+ *        }
+ *      }
+ * \endcode
+ * \par
+ */
+
+#ifndef __SYNTHESIS__
+#define CMOD_ASSERT_MSG(X,MSG)			    \
+  if (!(X)) {					    \
+    DCOUT("Assertion Failed. " << MSG << endl);	    \
+  }						    \
+  CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
+#else 
+#define CMOD_ASSERT_MSG(X,MSG) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+#endif
 
 
 #endif

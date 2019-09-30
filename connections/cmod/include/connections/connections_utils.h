@@ -25,21 +25,85 @@
 
 #include <systemc>
 
-// Define the preferred assert mechanism for Connnections library.
-#ifndef CONNECTIONS_ASSERT
+/**
+ * \def CONNECTIONS_ASSERT_MSG(x, msg)
+ * \ingroup Assertions
+ * Synthesizable assertion to check \a x and print \a msg if assertion fails. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings 
+ * \par A Simple Example
+ * \code
+ *      #include <connections_utils.h>
+ *
+ *      ...
+ *      while(1) {
+ *        if (in.PopNB(in_var)) {
+ *          CONNECTIONS_ASSERT_MSG(in_var!=0, "Input is Zero"); // Assert that input is never 0
+ *        ...
+ *        }
+ *      }
+ * \endcode
+ * \par
+ */
 
 #ifdef HLS_CATAPULT
 #include <ac_assert.h>
-#define CONNECTIONS_ASSERT(X) assert(X);
+
+  #ifndef CONNECTIONS_ASSERT_MSG
+#define CONNECTIONS_ASSERT_MSG(X,MSG) \
+     if (!(X)) { \
+       CONNECTIONS_COUT("Assertion Failed. " << MSG << endl);  \
+     }\
+     assert(X);
+  #endif // ifndef CONNECTIONS_ASSERT_MSG
+
 #else // ifdef HLS_CATAPULT
+
   #ifndef __SYNTHESIS__
-    #define CONNECTIONS_ASSERT(X) sc_assert(X);
+    #ifndef CONNECTIONS_ASSERT_MSG
+    #define CONNECTIONS_ASSERT_MSG(X,MSG)  \
+     if (!(X)) { \
+       CONNECTIONS_COUT("Assertion Failed. " << MSG << endl);  \
+     } \
+     sc_assert(X);
+    #endif // ifndef CONNECTIONS_ASSERT_MSG
   #else
-    #define CONNECTIONS_ASSERT(X) ((void)0);
+    #ifndef CONNECTIONS_ASSERT_MSG
+    #define CONNECTIONS_ASSERT_MSG(X,MSG) ((void)0);
+    #endif // ifndef CONNECTIONS_ASSERT_MSG
   #endif
+
 #endif // ifdef HLS_CATAPULT
 
-#endif // ifndef CONNECTIONS_ASSERT
+
+/**
+ * \def CONNECTIONS_SIM_ONLY_ASSERT_MSG(x, msg)
+ * \ingroup Assertions
+ * Non-synthesizable assertion to check \a x and print \a msg if assertion fails.
+ * \par A Simple Example
+ * \code
+ *      #include <connections_utils.h>
+ *
+ *      ...
+ *      while(1) {
+ *        if (in.PopNB(in_var)) {
+ *          CONNECTIONS_SIM_ONLY_ASSERT_MSG(in_var!=0, "Input is Zero"); // Assert that input is never 0
+ *        ...
+ *        }
+ *      }
+ * \endcode
+ * \par
+ */
+#ifndef CONNECTIONS_SIM_ONLY_ASSERT_MSG
+#ifndef __SYNTHESIS__
+#define CONNECTIONS_SIM_ONLY_ASSERT_MSG(X,MSG)	\
+  if (!(X)) {						       \
+    CONNECTIONS_COUT("Assertion Failed. " << MSG << endl);     \
+  }							       \
+  sc_assert(X);
+#else
+#define CONNECTIONS_SIM_ONLY_ASSERT_MSG(X,MSG) ((void)0);
+#endif // ifdef HLS_CATAPULT
+#endif // ifndef CONNECTIONS_SIM_ONLY_ASSERT_MSG
+
 
 // Define preferred debug mechanism.
 // FIXME: Change this to not support << but be a string instead, so can be pushed over to
@@ -51,17 +115,6 @@
    #define CONNECTIONS_COUT(x) cout << x
 #endif
 #endif // ifndef CONNECTIONS_COUT
-
-// Sim only assetion.
-#ifndef CONNECTIONS_SIM_ASSERT
-
-#ifndef __SYNTHESIS__
-#define CONNECTIONS_SIM_ASSERT(x) assert(x);
-#else 
-#define CONNECTIONS_SIM_ASSERT(x) ((void)0);
-#endif
-
-#endif // ifndef CONNECTIONS_SIM_ASSERT
 
 /**
  * \brief CONNECTIONS_CONCAT define: Concatenate two strings, separate with an underscore.

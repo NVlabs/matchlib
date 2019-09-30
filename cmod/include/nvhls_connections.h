@@ -17,6 +17,12 @@
 #ifndef NVHLS_CONNECTIONS_H_
 #define NVHLS_CONNECTIONS_H_
 
+#include <nvhls_assert.h>
+
+// Map CONNECTIONS_ASSERT_MSG onto NVHLS_ASSERT_MSG to support CTC_SKIP_ASSER
+#define CONNECTIONS_ASSERT_MSG(X,MSG) NVHLS_ASSERT_MSG(X,MSG)
+#define CONNECTIONS_SIM_ONLY_ASSERT_MSG(X,MSG) CMOD_ASSERT_MSG(X,MSG)
+
 // Include connections tree nvhls_connections.h
 #include "../../connections/cmod/include/connections/connections.h"
 

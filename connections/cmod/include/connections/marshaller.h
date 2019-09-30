@@ -67,8 +67,8 @@ void connections_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed
 template<typename A, int vec_width>
 void connections_cast_type_to_vector(const A &data, int length, sc_lv<vec_width> &vec) {
   // Primitive type conversion to and from sc_lv types must be provided!
-  CONNECTIONS_ASSERT(0);
-#ifdef __SYNTHESIS__ // CONNECTIONS_ASSERT is transparent in SYNTHESIS, so protect against SYNTHESIS
+  CONNECTIONS_ASSERT_MSG(0, "Must provide a definition for connections_cast_type_to_vector and connections_cast_vector_to_type when not running in Catapult mode!");
+#ifdef __SYNTHESIS__ // CONNECTIONS_ASSERT_MSG is transparent in SYNTHESIS, so protect against SYNTHESIS
 #error "Must provide a definition for connections_cast_type_to_vector and connections_cast_vector_to_type when not running in Catapult mode!"
 #endif
 }
@@ -93,8 +93,8 @@ void connections_cast_type_to_vector(const A &data, int length, sc_lv<vec_width>
 template<typename A, int vec_width>
 void connections_cast_vector_to_type(const sc_lv<vec_width> &vec, bool is_signed, A *data) {
   // Primitive type conversion to and from sc_lv types must be provided!
-  CONNECTIONS_ASSERT(0);
-#ifdef __SYNTHESIS__ // CONNECTIONS_ASSERT is transparent in SYNTHESIS, so protect against SYNTHESIS
+  CONNECTIONS_ASSERT_MSG(0, "Must provide a definition for connections_cast_type_to_vector and connections_cast_vector_to_type when not running in Catapult mode!");
+#ifdef __SYNTHESIS__ // CONNECTIONS_ASSERT_MSG is transparent in SYNTHESIS, so protect against SYNTHESIS
 #error "Must provide a definition for connections_cast_type_to_vector and connections_cast_vector_to_type when not running in Catapult mode!"
 #endif
 }
@@ -168,7 +168,7 @@ class Marshaller {
   /* Add a field to the glob, or extract it. */
   template <typename T, int FieldSize>
   void AddField(T& d) {
-    CONNECTIONS_SIM_ASSERT(cur_idx + FieldSize <= Size);
+    CONNECTIONS_SIM_ONLY_ASSERT_MSG(cur_idx + FieldSize <= Size, "Field size exceeded Size. Is an nvhls_message's width enum missing an element, and are all fields marshalled?");
     if (is_marshalling) {
       sc_lv<FieldSize> bits;
       connections_cast_type_to_vector(d, FieldSize, bits);
@@ -183,7 +183,7 @@ class Marshaller {
 
   /* Return the bit vector. */
   sc_lv<Size> GetResult() {
-    CONNECTIONS_SIM_ASSERT(cur_idx==Size);
+    CONNECTIONS_SIM_ONLY_ASSERT_MSG(cur_idx==Size, "Size doesn't match current index. Is an nvhls_message's width enum missing an element, and are all fields marshalled?");
     return glob.range(Size - 1, 0); 
   }
 
@@ -535,14 +535,14 @@ class BitUnion2 {
   bool IsB() const { return tag == 1; }
 
   A GetA() const {
-    CONNECTIONS_SIM_ASSERT(tag == 0);
+    CONNECTIONS_SIM_ONLY_ASSERT_MSG(tag == 0, "Tag doesn't match request! Use GetB() instead.");
     Marshaller<width> m(payload);
     Wrapped<A> result;
     result.Marshall<width>(m);
     return result.val;
   }
   B GetB() const {
-    CONNECTIONS_SIM_ASSERT(tag == 1);
+    CONNECTIONS_SIM_ONLY_ASSERT_MSG(tag == 1, "Tag doesn't match request! Use GetA() instead.");
     Marshaller<width> m(payload);
     Wrapped<B> result;
     result.Marshall<width>(m);
