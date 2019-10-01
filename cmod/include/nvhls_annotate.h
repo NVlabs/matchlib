@@ -22,8 +22,8 @@
 #include "../../connections/cmod/include/connections/annotate.h"
 
 namespace nvhls {
-  void annotate_design(const sc_object &root, std::string base_name = "") {
-    Connections::annotate_design(root,base_name);
+  void annotate_design(const sc_object &root, std::string base_name = "", std::string input_dir_path = "", std::string output_dir_path = "") {
+    Connections::annotate_design(root, base_name, input_dir_path, output_dir_path);
   }
 }
 

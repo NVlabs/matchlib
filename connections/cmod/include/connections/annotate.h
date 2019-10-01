@@ -124,22 +124,38 @@ namespace Connections {
     }
   }
 
-  void annotate_design(const sc_object &root, std::string base_name = "") {
+  void annotate_design(const sc_object &root, std::string base_name = "", std::string input_dir_path = "", std::string output_dir_path = "") {
+    bool explicit_input_dir=false;
     // If empty basename, set it to name() of object...
     if(base_name.length() == 0) { base_name = root.name(); }
     
     // Add delim if non-empty base_name
     if(base_name.length() > 0) { base_name += "."; }
+
+    // Sanity check input and output paths if they exist
+    if(input_dir_path.length() > 0) {
+      input_dir_path += "/";
+      explicit_input_dir = true;
+    }
+    if(output_dir_path.length() > 0) {
+      output_dir_path += "/";
+    }
     
     // Create DOM object.
     rapidjson::Document d;
 
     // Try reading document from input.json
-    std::ifstream ifs((base_name + "input.json").c_str());
+    std::string input_path  = input_dir_path + base_name + "input.json";
+    std::ifstream ifs(input_path.c_str());
     if(! ifs.fail()) {
       rapidjson::IStreamWrapper isw(ifs);
       d.ParseStream(isw);
     } else {
+      if(explicit_input_dir) {
+	NVHLS_ASSERT_MSG(0, ("Warning: Could not read input json " + input_path).c_str());
+      } else {
+	DCOUT("Warning: Could not read input json " << input_path.c_str() << endl);
+      }
       d.SetObject();
     }
     
@@ -149,7 +165,8 @@ namespace Connections {
     __annotate_vector(Connections::get_conManager().tracked_annotate, root_name, d);
     
     // Output DOM to file
-    std::ofstream ofs((base_name + "output.json").c_str());
+    std::string output_path = output_dir_path + base_name + "output.json";
+    std::ofstream ofs(output_path.c_str());
     rapidjson::OStreamWrapper osw(ofs);
     rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
     d.Accept(writer);
@@ -163,6 +180,8 @@ namespace Connections {
  *
  * \tparam root          Root sc_object to annotate.
  * \tparam base_name     Base file name (optional, defaults to name of root within hierarchy)
+ * \tparam base_name     Input directory (optional, defaults to current working directory)
+ * \tparam base_name     Output directory (optional, defaults to current working directory)
  *
  * \par Description
  *      When a design is annotated, it writes out a base_name.output.json with all annotatable
@@ -198,7 +217,7 @@ namespace Connections {
  * \par
  *
  */
-  void annotate_design(const sc_object &root, std::string base_name = "") {
+  void annotate_design(const sc_object &root, std::string base_name = "", std::string input_dir_path = "", std::string output_dir_path = "") {
     cerr << "WARNING: Cannot annotate_design() unless running in sim accurate mode!" << endl;
     cerr << "WARNING: Design will not be annotated." << endl;
   }
