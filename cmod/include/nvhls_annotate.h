@@ -17,6 +17,8 @@
 #ifndef NVHLS_ANNOTATE_H_
 #define NVHLS_ANNOTATE_H_
 
+#include <nvhls_connections_utils.h>
+
 #include "../../connections/cmod/include/connections/annotate.h"
 
 namespace nvhls {

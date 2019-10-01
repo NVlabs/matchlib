@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef PACER_H_
-#define PACER_H_
+#ifndef NVHLS_CONNECTIONS_UTILS_H_
+#define NVHLS_CONNECTIONS_UTILS_H_
 
-#include <nvhls_connections_utils.h>
+#include <nvhls_assert.h>
 
-#include "../../../connections/cmod/include/connections/Pacer.h"
+// Map CONNECTIONS_ASSERT_MSG onto NVHLS_ASSERT_MSG to support CTC_SKIP_ASSER
+#define CONNECTIONS_ASSERT_MSG(X,MSG) NVHLS_ASSERT_MSG(X,MSG)
+#define CONNECTIONS_SIM_ONLY_ASSERT_MSG(X,MSG) CMOD_ASSERT_MSG(X,MSG)
 
-#endif // PACER_H_
+
+#endif // ifndef NVHLS_CONNECTIONS_UTILS_H_

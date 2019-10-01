@@ -17,6 +17,8 @@
 #ifndef NVHLS_MESSAGE_H_
 #define NVHLS_MESSAGE_H_
 
+#include <nvhls_connections_utils.h>
+
 #include "../../connections/cmod/include/connections/message.h"
 
 class nvhls_message : public Connections::message {};
