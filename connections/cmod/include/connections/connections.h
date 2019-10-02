@@ -3394,6 +3394,7 @@ class Combinational_SimPorts_abs
     
   void annotate(unsigned long latency, unsigned int capacity) {
     this->latency = latency;
+    assert(! (latency == 0 && capacity > 0)); // latency == 0 && capacity > 0 is not supported.
     assert(! (latency > 0 && capacity == 0)); // latency > 0 but capacity == 0 is not supported.
     if(capacity > 0) {
       this->b.resize(capacity);

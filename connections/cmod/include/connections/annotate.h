@@ -152,9 +152,9 @@ namespace Connections {
       d.ParseStream(isw);
     } else {
       if(explicit_input_dir) {
-	NVHLS_ASSERT_MSG(0, ("Warning: Could not read input json " + input_path).c_str());
+	CONNECTIONS_ASSERT_MSG(0, ("Warning: Could not read input json " + input_path).c_str());
       } else {
-	DCOUT("Warning: Could not read input json " << input_path.c_str() << endl);
+	CONNECTIONS_COUT("Warning: Could not read input json " << input_path.c_str() << endl);
       }
       d.SetObject();
     }
