@@ -141,13 +141,16 @@ namespace Connections {
       output_dir_path += "/";
     }
     
+    std::string input_path  = input_dir_path + base_name + "input.json";
+    std::string output_path = output_dir_path + base_name + "output.json";
+
     // Create DOM object.
     rapidjson::Document d;
 
     // Try reading document from input.json
-    std::string input_path  = input_dir_path + base_name + "input.json";
     std::ifstream ifs(input_path.c_str());
     if(! ifs.fail()) {
+      CONNECTIONS_COUT("Reading back-annotation from " << input_path << ". Please diff " << input_path << " and " << output_path << " to ensure it matches expectations." << endl);
       rapidjson::IStreamWrapper isw(ifs);
       d.ParseStream(isw);
     } else {
@@ -165,7 +168,6 @@ namespace Connections {
     __annotate_vector(Connections::get_conManager().tracked_annotate, root_name, d);
     
     // Output DOM to file
-    std::string output_path = output_dir_path + base_name + "output.json";
     std::ofstream ofs(output_path.c_str());
     rapidjson::OStreamWrapper osw(ofs);
     rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
