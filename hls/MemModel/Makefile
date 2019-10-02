@@ -14,5 +14,10 @@
 # limitations under the License.
 #
 
-include ../hls_Makefile
+ROOT            := ../..
+SRC_PATH        := $(ROOT)/cmod
+RAND_SEED       ?= $(shell bash -c 'echo $$RANDOM')
+SEED            := $(RAND_SEED)
+COMPILER_FLAGS  := HLS_ALGORITHMICC RAND_SEED=$(SEED) CONN_RAND_STALL
 
+include $(ROOT)/hls/hls_Makefile

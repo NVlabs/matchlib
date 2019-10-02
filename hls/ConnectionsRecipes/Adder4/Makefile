@@ -14,5 +14,7 @@
 # limitations under the License.
 #
 
-include ../../hls_Makefile
+ROOT      := ../../..
+SRC_PATH  := $(ROOT)/cmod/examples/ConnectionsRecipes
 
+include $(ROOT)/hls/hls_Makefile

@@ -14,17 +14,24 @@
 # limitations under the License.
 #
 
-HLS_CATAPULT ?= 1
-ifeq ($(HLS_CATAPULT),1)
-	export HLS_CATAPULT=1
-endif
+export ROOT           ?= ../../..
+export TOP_NAME       ?= $(shell basename `pwd`)
+export CLK_PERIOD     ?= 2
+export SRC_PATH       ?= $(ROOT)/cmod/unittests
+export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include
+export HLS_CATAPULT   ?= 1
+export RUN_SCVERIFY   ?= 1
 
 RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
 export SEED=$(RAND_SEED)
+export COMPILER_FLAGS ?= SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM RAND_SEED=$(SEED) CONN_RAND_STALL
 
 export FSDB_VCS_RD_SC_VALPTR_PROTECT=1
 hls:
 	catapult -shell -product ultra -file go_hls.tcl
+
+shell:
+	catapult -shell -product ultra
 
 .PHONY: clean
 clean:
@@ -35,4 +42,3 @@ clean:
 	/bin/rm -rf ./Catapult*
 	/bin/rm -rf ./catapult*
 	/bin/rm -rf ./*.log
-

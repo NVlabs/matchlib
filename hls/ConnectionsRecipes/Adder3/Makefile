@@ -14,7 +14,17 @@
 # limitations under the License.
 #
 
-export RAPIDJSON_HOME ?= ../../../rapidjson
+ROOT          := ../../..
 
-include ../../hls_Makefile
+RAPIDJSON_HOME ?= $(ROOT)/rapidjson
 
+TOP_NAME      :=  Adder2
+SRC_PATH      := $(ROOT)/cmod/examples/ConnectionsRecipes
+SEARCH_PATH   := $(ROOT)/cmod \
+                 $(ROOT)/cmod/include \
+                 $(ROOT)/cmod/examples/ConnectionsRecipes/$(TOP_NAME) \
+                 $(RAPIDJSON_HOME)/include
+
+COMPILER_FLAGS  := SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM
+
+include $(ROOT)/hls/hls_Makefile
