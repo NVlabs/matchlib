@@ -127,7 +127,7 @@ class mem_array_sep {
       NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local_index_out_of_bounds");
       read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
     } 
-    NVHLS_ASSERT_MSG(read_data.xor_reduce()!=sc_logic('X'), "Read_data_is_X");
+    CMOD_ASSERT_MSG(read_data.xor_reduce()!=sc_logic('X'), "Read_data_is_X");
     return BitsToType<T>(read_data);
   }
 
@@ -146,7 +146,7 @@ class mem_array_sep {
           NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank_index_out_of_bounds");
           NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local_index_out_of_bounds");
           bank[bank_sel][local_slice_index] = tmp[i];
-          NVHLS_ASSERT_MSG(tmp[i].xor_reduce()!=sc_logic('X'), "Write_data_is_X");
+          CMOD_ASSERT_MSG(tmp[i].xor_reduce()!=sc_logic('X'), "Write_data_is_X");
         }
       }
     }
