@@ -15,7 +15,33 @@
 #
 # Integration tests with a set of existing units.
 
-DIRS = Counter ConnectionsRecipes/Adder ConnectionsRecipes/Adder2 ConnectionsRecipes/Adder3 ConnectionsRecipes/Adder4 MemModel
+DIRS = \
+	Counter \
+	ConnectionsRecipes/Adder \
+	ConnectionsRecipes/Adder2 \
+	ConnectionsRecipes/Adder3 \
+	ConnectionsRecipes/Adder4 \
+	MemModel \
+	unittests/ArbiterModule \
+	unittests/ArbiterTop \
+	unittests/ArbitratedCrossbarTop \
+	unittests/ArbitratedScratchpadTop \
+	unittests/ArbitratedScratchpadDPTop \
+	unittests/CrossbarTop \
+	unittests/FifoTop \
+	unittests/LzdTop \
+	unittests/ReorderBufTop \
+	unittests/ScratchpadTop \
+	unittests/VectorUnit \
+	unittests/axi/AxiAddRemoveWRespTop \
+	unittests/axi/AxiArbSplitTop \
+	unittests/axi/AxiLiteSlaveToMemTop \
+	unittests/axi/AxiMasterGateTop \
+	unittests/axi/AxiSlaveToMemTop \
+	unittests/axi/AxiSlaveToReadyValidTop \
+	unittests/axi/AxiSlaveToRegTop \
+
+# unittests/WHVCRouterTop \
 
 .PHONY: all $(DIRS)
 
