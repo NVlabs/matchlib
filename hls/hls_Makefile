@@ -18,9 +18,10 @@ export ROOT           ?= ../../..
 export TOP_NAME       ?= $(shell basename `pwd`)
 export CLK_PERIOD     ?= 2
 export SRC_PATH       ?= $(ROOT)/cmod/unittests
-export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include
+export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include $(BOOST_HOME)/include
 export HLS_CATAPULT   ?= 1
 export RUN_SCVERIFY   ?= 1
+export SYSTEMC_DESIGN ?= 1
 
 RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
 export SEED=$(RAND_SEED)

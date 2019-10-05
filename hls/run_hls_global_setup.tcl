@@ -18,7 +18,7 @@ solution new -state initial
 solution options defaults
 flow package require /SCVerify
 solution options set /Output/PackageOutput false
-#
+
 ## Use fsdb file for power flow - make sure your environment var $NOVAS_INST_DIR has been set before you launch Catapult.
 solution options set /Flows/LowPower/SWITCHING_ACTIVITY_TYPE fsdb
 ## SCVerify settings
@@ -33,8 +33,6 @@ if { [info exist env(VG_GNU_PACKAGE)] } {
 }
 solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
 solution options set /Flows/VCS/SYSC_VERSION 2.3.1
-options set Input/CompilerFlags {-D_SYNTHESIS_ -DHLS_CATAPULT=1}
-options set Input/SearchPath ". ../../cmod ../../cmod/include"
 
 # Verilog/VHDL
 solution options set Output OutputVerilog true
@@ -80,6 +78,3 @@ directive set -CLUSTER_FAST_MODE false
 directive set -CLUSTER_TYPE combinational
 directive set -COMPGRADE fast
 directive set -PIPELINE_RAMP_UP true
-
-# End
-

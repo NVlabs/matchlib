@@ -14,18 +14,6 @@
 
 source ../nvhls_exec.tcl
 
-proc nvhls::set_input_files {SRC_PATH TOP_NAME} {
-    set DESIGN_FILES [list $SRC_PATH/$TOP_NAME/$TOP_NAME.cpp]
-    set TB_FILES [list $SRC_PATH/$TOP_NAME/testbench.cpp]
-
-    foreach design_file $DESIGN_FILES {
-        solution file add $design_file -type C++
-    }
-    foreach tb_file $TB_FILES {
-        solution file add $tb_file -type C++ -exclude true
-    }
-}
-
 set PIPE_INIT_INTERVAL 1
 set WORDSIZE_LIST {8 }
 set BANKS_LIST {1 }

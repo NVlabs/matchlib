@@ -19,7 +19,7 @@ namespace eval nvhls {
 
         # Get all input variables set from Makefile
         global env
-        set USER_VARS {TOP_NAME CLK_PERIOD SRC_PATH SEARCH_PATH HLS_CATAPULT RUN_SCVERIFY COMPILER_FLAGS}
+        set USER_VARS {TOP_NAME CLK_PERIOD SRC_PATH SEARCH_PATH HLS_CATAPULT RUN_SCVERIFY COMPILER_FLAGS SYSTEMC_DESIGN}
 
         echo "***USER SETTINGS***"
         foreach var $USER_VARS {
@@ -34,12 +34,14 @@ namespace eval nvhls {
         
         options set Input/SearchPath ". $SEARCH_PATH"
 
-        set_input_files $SRC_PATH $TOP_NAME
+        set_input_files $SRC_PATH $TOP_NAME $SYSTEMC_DESIGN
         set_compiler_flags $HLS_CATAPULT $COMPILER_FLAGS
+        usercmd_pre_analyze
         go analyze
         setup_libs
         setup_clocks $CLK_PERIOD
         setup_hier $TOP_NAME
+        usercmd_pre_compile
         go compile
         go libraries
         go assembly
@@ -58,16 +60,16 @@ namespace eval nvhls {
         exit
     }
   
-    proc set_input_files {SRC_PATH TOP_NAME} {
-        set DESIGN_FILES [list $SRC_PATH/$TOP_NAME/$TOP_NAME.h]
-        set TB_FILES [list $SRC_PATH/$TOP_NAME/testbench.cpp]
-        
-        foreach design_file $DESIGN_FILES {
-            solution file add $design_file -type SYSTEMC
+    proc set_input_files {SRC_PATH TOP_NAME SYSC} {
+        if { $SYSC eq "1" } {
+            set type SYSTEMC
+            set ext h
+        } else {
+            set type C++
+            set ext cpp
         }
-        foreach tb_file $TB_FILES {
-            solution file add $tb_file -type SYSTEMC -exclude true
-        }
+        solution file add [list $SRC_PATH/$TOP_NAME/$TOP_NAME.$ext] -type $type
+        solution file add [list $SRC_PATH/$TOP_NAME/testbench.cpp] -type $type -exclude true
     }
 
     proc set_compiler_flags {HLS_CATAPULT COMPILER_FLAGS} {
@@ -86,6 +88,7 @@ namespace eval nvhls {
     proc setup_libs {} {
         solution library add mgc_sample-065nm-dw_beh_dc -- -rtlsyntool DesignCompiler -vendor Sample -technology 065nm -Designware Yes
         solution library add ram_sample-065nm-singleport_beh_dc
+        solution library add ram_sample-065nm-separate_beh_dc
     }
 
     proc setup_clocks {period} {
@@ -99,6 +102,8 @@ namespace eval nvhls {
         directive set -DESIGN_HIERARCHY "$TOP_NAME"
     } 
 
+    proc usercmd_pre_analyze {} {}
+    proc usercmd_pre_compile {} {}
     proc usercmd_post_assembly {} {}
     proc usercmd_post_architect {} {}
 
