@@ -49,5 +49,8 @@ all: $(DIRS)
 
 $(DIRS):
 	$(MAKE) -C $@ clean 
+ifdef RUN_CDESIGN_CHECKER
+	$(MAKE) -C $@ cdc
+else
 	$(MAKE) -C $@ 
-
+endif

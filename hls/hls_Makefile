@@ -23,6 +23,8 @@ export HLS_CATAPULT   ?= 1
 export RUN_SCVERIFY   ?= 1
 export SYSTEMC_DESIGN ?= 1
 
+export RUN_CDESIGN_CHECKER	?= 0
+
 RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
 export SEED=$(RAND_SEED)
 export COMPILER_FLAGS ?= SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM RAND_SEED=$(SEED) CONN_RAND_STALL
@@ -34,6 +36,11 @@ hls:
 shell:
 	catapult -shell -product ultra
 
+cdc:
+	env RUN_CDESIGN_CHECKER=1 catapult -shell -product ultra -file go_hls.tcl
+	$(ROOT)/hls/design_checker_summary.py
+	cat DesignCheckSummary.csv
+
 .PHONY: clean
 clean:
 	/bin/rm -rf ./catapult_cache
@@ -43,3 +50,5 @@ clean:
 	/bin/rm -rf ./Catapult*
 	/bin/rm -rf ./catapult*
 	/bin/rm -rf ./*.log
+	/bin/rm -rf ./design_checker_*.tcl
+	/bin/rm -rf ./*.csv

@@ -24,6 +24,7 @@ MatchLib is regressed against the following tool/dependency verions:
 * `vcs` - 2017.03-SP2-11
 * `verdi` - 2017.12-SP2-11
 * `rapidjson` - v1.1.0
+* `python` - 3.4.2
 
 ## Environment requirements
 
@@ -55,6 +56,14 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 ### HLS run and Verilog simulate all
     cd hls
     make -f regress_Makefile
+
+### Design Checker run
+    cd hls/<module>
+    make cdc
+
+### Design Checker run all
+    cd hls
+    make -f regress_Makefile RUN_CDESIGN_CHECKER=1
 
 # Directory structure
 

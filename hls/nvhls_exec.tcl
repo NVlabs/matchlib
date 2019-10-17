@@ -19,7 +19,7 @@ namespace eval nvhls {
 
         # Get all input variables set from Makefile
         global env
-        set USER_VARS {TOP_NAME CLK_PERIOD SRC_PATH SEARCH_PATH HLS_CATAPULT RUN_SCVERIFY COMPILER_FLAGS SYSTEMC_DESIGN}
+        set USER_VARS {TOP_NAME CLK_PERIOD SRC_PATH SEARCH_PATH HLS_CATAPULT RUN_SCVERIFY COMPILER_FLAGS SYSTEMC_DESIGN RUN_CDESIGN_CHECKER}
 
         echo "***USER SETTINGS***"
         foreach var $USER_VARS {
@@ -43,6 +43,7 @@ namespace eval nvhls {
         setup_hier $TOP_NAME
         usercmd_pre_compile
         go compile
+        if { $RUN_CDESIGN_CHECKER eq "1" } { run_design_checker; exit }
         go libraries
         go assembly
         usercmd_post_assembly
@@ -101,6 +102,11 @@ namespace eval nvhls {
     proc setup_hier {TOP_NAME} {
         directive set -DESIGN_HIERARCHY "$TOP_NAME"
     } 
+
+    proc run_design_checker {} {
+      flow run /CDesignChecker/write_options {{-abr -severity error } {-abw -severity error } {-acc -severity warning } {-acs -severity warning } {-aic -severity warning } {-aob -severity error } {-apt -severity info } {-cas -severity error } {-ccc -severity warning } {-cia -severity warning } {-cns -severity warning } {-cwb -severity warning } {-dbz -severity error } {-fxd -severity warning } {-ise -severity error } {-mxs -severity info } {-ovl -severity error } {-pdd -severity warning } {-rrt -severity error } {-stf -severity info } {-sud -severity warning } {-umr -severity error }}
+      flow run /CDesignChecker/launch_sleccpc_sh ./CDesignChecker/design_checker.sh
+    }
 
     proc usercmd_pre_analyze {} {}
     proc usercmd_pre_compile {} {}

@@ -3,9 +3,10 @@
 *.log-*
 *.log_*
 *ucli.key
-*design_checker*
+*design_checker*tcl
 *vcs*
 *Catapult*
 *.ccs
 *.pinfo
 *.output.json
+*.csv
