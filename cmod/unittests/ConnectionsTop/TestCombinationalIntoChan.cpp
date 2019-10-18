@@ -115,6 +115,7 @@ class TestHarnessBlocking : public sc_module {
   }
 
   void src_line_trace() {
+#ifndef CONNECTIONS_SIM_ONLY    
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (chan.val.read() && chan.rdy.read()) {
@@ -125,6 +126,7 @@ class TestHarnessBlocking : public sc_module {
       }
       std::cout << " | ";
     }
+#endif    
   }
 
   void src_Go() {

@@ -18,7 +18,6 @@ include ../../../cmod_Makefile
 
 all: sim_adder4
 
-#USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 run:
 	./sim_adder4
 

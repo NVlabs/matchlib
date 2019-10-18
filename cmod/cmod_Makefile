@@ -33,8 +33,29 @@ endif
 LIBS ?=
 LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_system
 
-RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
-USER_FLAGS += -DRAND_SEED=$(RAND_SEED) -DCONN_RAND_STALL
+# SIM_MODE
+# 0 = Synthesis view of Connections port and combinational code.
+# 	This option can cause failed simulations due to SystemC's timing model.
+# 1 = Cycle-accurate view of Connections port and channel code, CONNECTIONS_ACCURATE_SIM. (default)
+# 2 = Faster TLM view of Connections port and channel code, CONNECTIONS_FAST_SIM.
+SIM_MODE ?= 1
+ifeq ($(SIM_MODE),1)
+	USER_FLAGS += -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES
+endif
+ifeq ($(SIM_MODE),2)
+	USER_FLAGS += -DCONNECTIONS_FAST_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES
+endif
+
+# RAND_STALL
+# 0 = Random stall of ports and channels disabled (default)
+# 1 = Random stall of ports and channels enabled
+#   This feature aids in latency insensitive design verication.
+#   Note: Only valid if SIM_MODE = 1 (accurate) or 2 (fast)
+RAND_STALL ?= 0
+ifeq ($(RAND_STALL),1)
+	RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
+	USER_FLAGS += -DRAND_SEED=$(RAND_SEED) -DCONN_RAND_STALL
+endif
 
 .PHONY: Build
 Build: all

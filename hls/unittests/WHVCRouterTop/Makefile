@@ -14,6 +14,5 @@
 #
 
 ROOT            := ../../..
-COMPILER_FLAGS  := SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM
 
 include $(ROOT)/hls/hls_Makefile

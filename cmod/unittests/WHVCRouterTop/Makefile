@@ -14,7 +14,5 @@
 # limitations under the License.
 #
 
-
-USER_FLAGS +=  -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
-USER_FLAGS +=  -DDISABLE_PACER
+USER_FLAGS += -DDISABLE_PACER
 include ../unittests_Makefile

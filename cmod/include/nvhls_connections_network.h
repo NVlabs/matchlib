@@ -61,6 +61,11 @@ class InNetwork : public sc_module {
 
  protected:
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+#endif
+    
     SC_METHOD(AssignMsg);
     sensitive << enq.msg << rst;
 
@@ -154,6 +159,13 @@ class OutNetwork : public sc_module {
 
  protected:
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+    route.disable_spawn();
+    id.disable_spawn();
+#endif
+    
     SC_METHOD(AssignMsg);
     sensitive << enq.msg << id_state << route_state << rst;
 
@@ -291,6 +303,15 @@ class InNetworkCredit : public sc_module {
 
  protected:
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+    credit.disable_spawn();
+    init_credits.disable_spawn();
+    credit_route.disable_spawn();
+    credit_id.disable_spawn();
+#endif
+
     credit_out.clk(clk);
     credit_out.rst(rst);
     credit_out.route(credit_route);
@@ -489,6 +510,14 @@ class OutNetworkCredit : public sc_module {
 
  protected:
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+    credit.disable_spawn();
+    route.disable_spawn();
+    id.disable_spawn();
+#endif
+    
     credit_in.clk(clk);
     credit_in.rst(rst);
     credit_in.enq(credit);

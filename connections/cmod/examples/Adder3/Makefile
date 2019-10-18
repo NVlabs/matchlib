@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 
+# Must always use these modes for this test, since it is cycle count
+# dependent.
+override SIM_MODE=1
+override RAND_STALL=0
+
 include ../../cmod_Makefile
 
 all: sim_adder3
@@ -21,8 +26,6 @@ all: sim_adder3
 # Location of rapidjson
 RAPIDJSON_HOME ?= ../../../../rapidjson
 
-# = instead of += to avoid -DCONN_RAND_STALL
-USER_FLAGS = -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 run:
 	./sim_adder3
 

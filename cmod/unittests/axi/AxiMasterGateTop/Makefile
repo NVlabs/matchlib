@@ -18,6 +18,4 @@
 # will cause reads to overtake writes.
 RAND_SEED := 1000
 
-USER_FLAGS +=  -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
-#USER_FLAGS += -DDEBUG_LEVEL=5 -DDEBUGMODE
 include ../../unittests_Makefile

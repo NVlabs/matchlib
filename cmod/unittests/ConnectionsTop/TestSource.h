@@ -81,16 +81,19 @@ class TestSourceBlocking : public sc_module {
   }
 
   void line_trace() {
+#ifndef CONNECTIONS_FAST_SIM // Ports don't exist in fast sim (TLM mode)
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (out.val.read() && out.rdy.read()) {
         std::cout << sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read();
       }
+
       else {
         std::cout << sc_time_stamp() << " " << std::setw(width+1) << " ";
       }
       std::cout << " | ";
     }
+#endif
   }
   void Go() {
     go = true;
@@ -227,6 +230,7 @@ class TestSourceBuffered : public sc_module {
   }
 
   void line_trace() {
+#ifndef CONNECTIONS_FAST_SIM
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (out.val.read() && out.rdy.read()) {
@@ -237,6 +241,7 @@ class TestSourceBuffered : public sc_module {
       }
       std::cout << " | ";
     }
+#endif    
   }
   void Go() {
     go = true;

@@ -25,6 +25,12 @@ SEARCH_PATH   := $(ROOT)/cmod \
                  $(ROOT)/cmod/examples/ConnectionsRecipes/$(TOP_NAME) \
                  $(RAPIDJSON_HOME)/include
 
+
 COMPILER_FLAGS  := SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM
+
+# Must always use these modes for this test, since it is cycle count
+# dependent.
+override SIM_MODE=1
+override RAND_STALL=0
 
 include $(ROOT)/hls/hls_Makefile

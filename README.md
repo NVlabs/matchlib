@@ -77,7 +77,7 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 
 # Preprocessor Macro Definitions
 
-* `HLS_CATAPULT` - Select if Catapult is selected as the HLS target. Catapult header files will not be included if not set. If enabled, NVINT is defined as ac_int.  If disabled, NVINT is defined as sc_int. NOTE: Currently MatchLib only supports Catapult, so HLS_CATAPULT must be set.
+* `HLS_CATAPULT` - Select if Catapult is selected as the HLS target. Catapult header files will not be included if not set. If enabled, NVINT is defined as ac_int. If disabled, NVINT is defined as sc_int. NOTE: Currently MatchLib only supports Catapult, so HLS_CATAPULT must be set.
 * `HLS_ALGORITHMICC` - Set to enable AlgorithmicC-specific optimizations in the code.
 * `HLS_STRATUS` - Set to indicate that HLS is being performed with Stratus tool. This disables Catapult-specific flags and optimizations like the use of ac_types. This feature is not fully tested.
 * `SC_INCLUDE_DYNAMIC_PROCESSES` - Set to enable SystemC dynamic processes.
@@ -87,7 +87,7 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `FORCE_AUTO_PORT` - Like AUTO_PORT, but forces to a set port type for HLS too.
 * `CONNECTIONS_ACCURATE_SIM` - Set to enable sim-accurate mode in SystemC simulation of the Connections library. This can be used to accurately estimate the performance of SystemC designs before HLS.
 * `CONNECTIONS_FAST_SIM` - Set to enable fast sim mode in SystemC simulation of the Connections library. This reduces simulation runtime at the cost of cycle accuracy and I/O port fidelity. In particular, the simulation becomes event driven, and a TLM fifo replaces ports and combinational conncetions.
-* `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode.  It should be disabled during HLS. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM automatically sets this.
+* `CONNECTIONS_SIM_ONLY` - Set this during simulation to enable sim-accurate mode. It should be disabled during HLS. CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM automatically sets this.
 * `CONN_RAND_STALL` - Set to enable random stall injection in Connections library by default.
 * `CONN_RAND_STALL_PRINT_DEBUG` - Set to enable random stall print debug messages in Connections library by default.
 * `CONNECTIONS_ASSERT_ON_QUERY` - Set to display a message when Connections features not supported by the tool are used. Specifically, it is used for Empty(), Peek(), and Full() checks in Connections with the Catapult tool.
@@ -99,6 +99,15 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `NVHLS_VERIFY_ISVCSMX` - Set for standalone VCS-MX co-simulations of SystemC with Catapult-generated RTL. Do not use in SystemC simulation or Catapult sc_verify.
 * `ENABLE_SYNC_RESET` - Enables synchronous, active-low reset instead of asynchronous, active-low reset in MatchLib.
 
+# Command-line Simulation Settings
+
+Many of the flags above are design-specific, and so are typically codified into design Makefiles. However, some of the variables pertain to different simulation modes, and it is desirable to simulate the same design under different settings for different purposes. Accordingly, we provide the following command-line environment flags for use with the cmod or hls steps:
+
+* `SIM_MODE` - Set this variable to 1 (default) to use Connections sim-accurate mode, so that Connections ports and channels simulated in SystemC closely match the cycle-by-cycle behavior of their HLS-generated RTL counterparts. Set this variable to 2 to enable a TLM-based Connections mode that is faster to simulate but does not track the cycle behavior of HLS-generated RTL as closely. Set this variable to 0 to directly simulate the synthesized representation of Connections ports and channels (not recommended, as it may result in spurious failures).
+* `RAND_STALL` - Set this variable to 1 to enable random stalling on Connections ports and channels. Set to 0 (default) to disable random stalling.
+
+To accurately simulate expected RTL performance, use the default settings. For robust verification, simulate with four different modes: both `SIM_MODE=1` and `SIM_MODE=2`, with random stalling both enabled and disabled.
+
 # Questions and Contributions
 
 We welcome feedback and contributions from the open-source hardware community.
@@ -107,11 +116,11 @@ To contribute bugfixes or new features, submit a pull request.
 
 # Contributors
 
-MatchLib originated as a project of [NVIDIA Research](https://research.nvidia.com).  
+MatchLib originated as a project of [NVIDIA Research](https://research.nvidia.com).
 
 Contributors to the initial open-source release (alphabetical): Jason Clemons, Christopher Fletcher, Davide Giri, Ben Keller, Brucek Khailany, Alicia Klinefelter, Evgeni Krimer, Hyoukjun Kwon, Ziyun Li, Michael Pellauer, Nathaniel Pinckney, Antonio Puglielli, Sophia Shao, Shreesha Srinath, Gopalakrishnan Srinivasan, Christopher Torng, Rangharajan Venkatesan, Sam Xi
 
-Portions of MatchLib are derived from code in Mentor Graphics' Algorithmic C Datatypes v3.7.1 (also released under the Apache 2.0 license).  See individual file headers for details.
+Portions of MatchLib are derived from code in Mentor Graphics' Algorithmic C Datatypes v3.7.1 (also released under the Apache 2.0 license). See individual file headers for details.
 
 MatchLib's back annotation feature is dependent on RapidJSON released under the MIT License. 
 

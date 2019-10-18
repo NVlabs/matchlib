@@ -16,9 +16,7 @@
 
 ROOT            := ../..
 SRC_PATH        := $(ROOT)/cmod
-RAND_SEED       ?= $(shell bash -c 'echo $$RANDOM')
-SEED            := $(RAND_SEED)
-COMPILER_FLAGS  := HLS_ALGORITHMICC RAND_SEED=$(SEED) CONN_RAND_STALL
+COMPILER_FLAGS  := HLS_ALGORITHMICC
 SYSTEMC_DESIGN  := 0
 
 include $(ROOT)/hls/hls_Makefile

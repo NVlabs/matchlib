@@ -586,7 +586,7 @@ SC_MODULE(testbench) {
 
   SC_CTOR(testbench)
       : router("router"),
-        clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, false),
+        clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         rst("rst") {
 
     Connections::set_sim_clk(&clk);

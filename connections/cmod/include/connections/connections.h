@@ -34,6 +34,10 @@
 #error "Both CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM are defined. Define one or the other."
 #endif
 
+#if defined(CONN_RAND_STALL) && !defined(__SYNTHESIS__) && !(defined(CONNECTIONS_ACCURATE_SIM) || defined(CONNECTIONS_FAST_SIM))
+#warning "Warning: CONN_RAND_STALL only works in CONNECTIONS_ACCURATE_SIM and CONNECTIONS_FAST_SIM modes!"
+#endif
+ 
 #if !defined(__SYNTHESIS__) && (defined(CONNECTIONS_ACCURATE_SIM) || defined(CONNECTIONS_FAST_SIM))
 #define CONNECTIONS_SIM_ONLY
 #ifndef SC_INCLUDE_DYNAMIC_PROCESSES

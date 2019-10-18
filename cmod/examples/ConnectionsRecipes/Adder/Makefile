@@ -18,13 +18,11 @@ include ../../../cmod_Makefile
 
 all: sim_adder1
 
-USER_FLAGS += -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM
 run:
 	./sim_adder1
 
 sim_adder1: $(wildcard *.h) $(wildcard *.cpp)
 	$(CC) -o sim_adder1 $(CFLAGS) $(USER_FLAGS) -I../../../include -I../../../include/connections $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
-#	$(CC) -o sim_adder1 $(CFLAGS) $(USER_FLAGS) -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*

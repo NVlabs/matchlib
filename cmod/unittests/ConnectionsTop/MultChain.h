@@ -72,6 +72,7 @@ protected:
 #ifndef __SYNTHESIS__
 public:
   void line_trace() {
+#ifndef CONNECTIONS_FAST_SIM    
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       // Input port
@@ -92,6 +93,7 @@ public:
       }
       std::cout << " | ";
     }
+#endif    
   }
 #endif
 };

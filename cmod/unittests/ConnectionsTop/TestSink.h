@@ -84,6 +84,7 @@ class TestSinkBlocking : public sc_module {
   }
 
   void line_trace() {
+#ifndef CONNECTIONS_FAST_SIM // Ports don't exist in fast sim (TLM mode)
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (in_.val.read() && in_.rdy.read()) {
@@ -94,6 +95,7 @@ class TestSinkBlocking : public sc_module {
       }
       std::cout << " | ";
     }
+#endif    
   }
   void Go() {
     go = true;
@@ -248,6 +250,7 @@ class TestSinkBuffered : public sc_module {
   }
 
   void line_trace() {
+#ifndef CONNECTIONS_FAST_SIM      
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (in_.val.read() && in_.rdy.read()) {
@@ -258,6 +261,7 @@ class TestSinkBuffered : public sc_module {
       }
       std::cout << " | ";
     }
+#endif    
   }
   void Go() {
     go = true;

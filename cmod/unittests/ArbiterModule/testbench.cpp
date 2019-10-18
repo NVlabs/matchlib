@@ -159,7 +159,7 @@ SC_MODULE (testbench) {
         dest_inst("dest_inst",0),
         valid_chan("valid_chan"),
         select_chan("select_chan"),
-        clk("clk", 0.7, SC_NS, 0.5,0,SC_NS,true),
+        clk("clk", 1, SC_NS, 0.5,0,SC_NS,true),
         rst("rst")
     {
         my_inst.clk(clk);

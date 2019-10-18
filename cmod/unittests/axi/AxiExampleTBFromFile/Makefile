@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-USER_FLAGS +=  -DSC_INCLUDE_DYNAMIC_PROCESSES -DCONNECTIONS_ACCURATE_SIM -Wno-unused-local-typedefs
+USER_FLAGS +=  -Wno-unused-local-typedefs
 
 include ../../unittests_Makefile

@@ -156,6 +156,16 @@ class StateSignal<Message, DIRECT_PORT> {
   }
 };
 
+// Because of ports not existing in TLM_PORT and the code depending on it,
+// we remap to DIRECT_PORT here.
+template <typename Message>
+class StateSignal<Message, TLM_PORT> : public StateSignal<Message, DIRECT_PORT>
+{
+ public:
+ StateSignal() : StateSignal<Message, DIRECT_PORT>() {}
+ StateSignal(sc_module_name name) : StateSignal<Message, DIRECT_PORT>(name) {}
+};
+ 
 //------------------------------------------------------------------------
 // Bypass
 //------------------------------------------------------------------------
@@ -194,6 +204,11 @@ class Bypass : public sc_module {
 
   // Helper functions
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+#endif
+    
     SC_METHOD(EnqRdy);
     sensitive << full;
 
@@ -285,6 +300,16 @@ class Bypass : public sc_module {
 #endif
 };
  
+// Because of ports not existing in TLM_PORT and the code depending on it,
+// we remap to DIRECT_PORT here.
+template <typename Message>
+class Bypass<Message, TLM_PORT> : public Bypass<Message, DIRECT_PORT>
+{
+ public:
+ Bypass() : Bypass<Message, DIRECT_PORT>() {}
+ Bypass(sc_module_name name) : Bypass<Message, DIRECT_PORT>(name) {}
+};
+ 
 //------------------------------------------------------------------------
 // Pipeline
 //------------------------------------------------------------------------
@@ -323,6 +348,11 @@ class Pipeline : public sc_module {
 
   // Helper functions
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+#endif
+    
     SC_METHOD(EnqRdy);
     sensitive << full << deq.rdy;
 
@@ -409,6 +439,17 @@ class Pipeline : public sc_module {
 #endif
 };
 
+// Because of ports not existing in TLM_PORT and the code depending on it,
+// we remap to DIRECT_PORT here.
+template <typename Message>
+class Pipeline<Message, TLM_PORT> : public Pipeline<Message, DIRECT_PORT>
+{
+ public:
+ Pipeline() : Pipeline<Message, DIRECT_PORT>() {}
+ Pipeline(sc_module_name name) : Pipeline<Message, DIRECT_PORT>(name) {}
+};
+
+ 
 //
 // NEW FEATURE: Buffered Bypass Channel.
 // This is a BypassBuffered channel that can have depth > 1.
@@ -459,6 +500,11 @@ class BypassBuffered : public sc_module {
 
   // Helper functions
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+#endif
+    
     SC_METHOD(EnqRdy);
     sensitive << full;
 
@@ -634,6 +680,17 @@ class BypassBuffered : public sc_module {
 #endif
 };
 
+// Because of ports not existing in TLM_PORT and the code depending on it,
+// we remap to DIRECT_PORT here.
+template <typename Message, unsigned int NumEntries>
+class BypassBuffered<Message, NumEntries, TLM_PORT> : public BypassBuffered<Message, NumEntries, DIRECT_PORT>
+{
+ public:
+ BypassBuffered() : BypassBuffered<Message, NumEntries, DIRECT_PORT>() {}
+ BypassBuffered(sc_module_name name) : BypassBuffered<Message, NumEntries, DIRECT_PORT>(name) {}
+};
+
+ 
 //------------------------------------------------------------------------
 // Buffer
 //------------------------------------------------------------------------
@@ -678,6 +735,11 @@ class Buffer : public sc_module {
 
   // Helper functions
   void Init() {
+#ifdef CONNECTIONS_SIM_ONLY
+    enq.disable_spawn();
+    deq.disable_spawn();
+#endif
+    
     SC_METHOD(EnqRdy);
     sensitive << full;
 
@@ -847,6 +909,9 @@ class Buffer : public sc_module {
 template <typename Message, unsigned int NumEntries>
 class Buffer<Message, NumEntries, TLM_PORT> : public Buffer<Message, NumEntries, DIRECT_PORT>
 {
+ public:
+ Buffer() : Buffer<Message, NumEntries, DIRECT_PORT>() {}
+ Buffer(sc_module_name name) : Buffer<Message, NumEntries, DIRECT_PORT>(name) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1025,10 +1090,6 @@ class ChannelBinder {
    deq(sc_gen_unique_name("bind_deq")) {
 
     out(enq);
-#ifdef CONNECTIONS_SIM_ONLY
-    chan.enq.disable_spawn();
-    chan.deq.disable_spawn();
-#endif
     chan.clk(clk);
     chan.rst(rst);
     chan.enq(enq);
@@ -1045,10 +1106,6 @@ class ChannelBinder {
     deq(sc_gen_unique_name("bind_deq")) {
 
     out(enq);
-#ifdef CONNECTIONS_SIM_ONLY
-    chan.enq.disable_spawn();
-    chan.deq.disable_spawn();
-#endif
     chan.clk(clk);
     chan.rst(rst);
     chan.enq(enq);
@@ -1066,10 +1123,6 @@ class ChannelBinder {
     deq(sc_gen_unique_name("bind_deq")) {
 
     out(enq);
-#ifdef CONNECTIONS_SIM_ONLY
-    chan.enq.disable_spawn();
-    chan.deq.disable_spawn();
-#endif
     chan.clk(clk);
     chan.rst(rst);
     chan.enq(enq);
@@ -1086,10 +1139,6 @@ class ChannelBinder {
     deq(sc_gen_unique_name("bind_deq")) {
 
     out(enq);
-#ifdef CONNECTIONS_SIM_ONLY
-    chan.enq.disable_spawn();
-    chan.deq.disable_spawn();
-#endif
     chan.clk(clk);
     chan.rst(rst);
     chan.enq(enq);
