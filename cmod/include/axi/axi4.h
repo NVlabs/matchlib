@@ -22,79 +22,11 @@
 #include <nvhls_assert.h>
 #include <nvhls_message.h>
 #include <nvhls_module.h>
+
+#include <UIntOrEmpty.h>
+
 #include <axi/axi4_encoding.h>
 #include <axi/axi4_configs.h>
-
-///////////////////
-// This section should be moved into marshaller
-
-/**
- * \brief The EmptyField class is used for rudimentary support for members of a struct that can be configured to have zero width.
- */
-struct EmptyField : public nvhls_message {
-  template <typename T>
-  EmptyField operator=(T const &) {
-    NVHLS_ASSERT_MSG(true,"EmptyField_should_never_be_assigned_or_accessed");   // If an assignment actually occurs during runtime
-                                                                                // you've done something wrong
-    return EmptyField();
-  }
-  uint64 to_uint64() { return 0; }
-  const sc_bit operator[](std::size_t idx) const { return static_cast<sc_bit>(0); }
-};
-
-/* Operator << for EmptyField. */
-inline std::ostream &operator<<(ostream &os, const EmptyField &empty) {
-  return os << "EMPTYFIELD";
-}
-
-/* Operator & for Marshaller and EmptyField. */
-template <unsigned int Size>
-Marshaller<Size> &operator&(Marshaller<Size> &m, EmptyField &rhs) {
-  return m;  // just do nothing
-}
-
-/**
- * \brief A class to determine whether to instantiate an sc_bv or an EmptyField.
- */
-template <bool, int W>
-class BitFieldwCheck;
-
-/**
- * \brief Template specialization to instantiate an sc_bv if the width of the BitField is greater than 0.
- */
-template <int W>
-class BitFieldwCheck<true, W> {
- public:
-  typedef sc_bv<W> T;
-};
-
-/**
- * \brief Template specialization to instantiate an EmptyField if the width of the BitField is 0.
- */
-template <int W>
-class BitFieldwCheck<false, W> {
- public:
-  typedef EmptyField T;
-};
-
-/**
- * \brief The BitField class is used to define a bitvector that can have a bitwidth of 0.
- *
- * \tparam axiCfg     The width of the bitfield (can be 0).
- *
- * \par Overview
- * BitField allows fields to be elided entirely from a struct in the case that they are not used.
- * If W=0, an EmptyField is instantiated instead of an sc_bv.
- * EmptyField is ignored by the Marshaller and overloads some common operators so that
- * code using it does not need to be special-cased for zero-width parameterizations.
- */
-template <int W>
-class BitField {
- public:
-  typedef typename BitFieldwCheck<(W > 0), W>::T T;
-};
-
-//////////////////
 
 /**
  * \brief The axi namespace contains classes and definitions related to the AXI standard.
@@ -113,7 +45,7 @@ namespace axi {
  * the various fields of the AXI specification are defined, and classes and
  * convenience functions can be used to instantiate AXI Connections, wire them
  * together, and use them to implement the AXI protocol.
- * - Each AXI signal is defined as a BitField of an appropriate width, allowing
+ * - Each AXI signal is defined as a UIntOrEmpty of an appropriate width, allowing
  * for the presence of 0-width fields when they can be elided entirely.
  * - If useWriteResponses = 0, the B channel is not removed entirely (for
  * implementation convenience), but is reduced to minimum width.
@@ -121,6 +53,7 @@ namespace axi {
  * AddrPayload type.
  *
  */
+
 template <typename Cfg>
 class axi4 {
  public:
@@ -152,22 +85,22 @@ class axi4 {
     RUSER_WIDTH = Cfg::rUserWidth,
   };
 
-  typedef sc_bv<ADDR_WIDTH> Addr;
-  typedef sc_bv<DATA_WIDTH> Data;
-  typedef typename BitField<ID_WIDTH>::T Id;
-  typedef typename BitField<BID_WIDTH>::T BId;
-  typedef typename BitField<ALEN_WIDTH>::T BeatNum;
-  typedef typename BitField<ASIZE_WIDTH>::T BeatSize;
-  typedef typename BitField<LAST_WIDTH>::T Last;
-  typedef typename BitField<WSTRB_WIDTH>::T Wstrb;
-  typedef typename BitField<CACHE_WIDTH>::T Cache;
-  typedef typename BitField<BURST_WIDTH>::T Burst;
-  typedef sc_bv<RESP_WIDTH> Resp;
+  typedef NVUINTW(ADDR_WIDTH) Addr;
+  typedef NVUINTW(DATA_WIDTH) Data;
+  typedef typename nvhls::UIntOrEmpty<ID_WIDTH>::T Id;
+  typedef typename nvhls::UIntOrEmpty<BID_WIDTH>::T BId;
+  typedef typename nvhls::UIntOrEmpty<ALEN_WIDTH>::T BeatNum;
+  typedef typename nvhls::UIntOrEmpty<ASIZE_WIDTH>::T BeatSize;
+  typedef typename nvhls::UIntOrEmpty<LAST_WIDTH>::T Last;
+  typedef typename nvhls::UIntOrEmpty<WSTRB_WIDTH>::T Wstrb;
+  typedef typename nvhls::UIntOrEmpty<CACHE_WIDTH>::T Cache;
+  typedef typename nvhls::UIntOrEmpty<BURST_WIDTH>::T Burst;
+  typedef NVUINTW(RESP_WIDTH) Resp;
 
-  typedef typename BitField<AUSER_WIDTH>::T AUser;
-  typedef typename BitField<WUSER_WIDTH>::T WUser;
-  typedef typename BitField<BUSER_WIDTH>::T BUser;
-  typedef typename BitField<RUSER_WIDTH>::T RUser;
+  typedef typename nvhls::UIntOrEmpty<AUSER_WIDTH>::T AUser;
+  typedef typename nvhls::UIntOrEmpty<WUSER_WIDTH>::T WUser;
+  typedef typename nvhls::UIntOrEmpty<BUSER_WIDTH>::T BUser;
+  typedef typename nvhls::UIntOrEmpty<RUSER_WIDTH>::T RUser;
 
   /**
    * \brief A struct composed of the signals associated with AXI read and write requests.
@@ -195,6 +128,14 @@ class axi4 {
       m &cache;
       m &auser;
     }
+
+#ifdef CONNECTIONS_SIM_ONLY
+    inline friend void sc_trace(sc_trace_file *tf, const AddrPayload& v, const std::string& NAME ) {
+      sc_trace(tf,v.id,    NAME + ".id");
+      sc_trace(tf,v.addr,  NAME + ".addr");
+      sc_trace(tf,v.len,   NAME + ".len");
+    }
+#endif
   };
 
   /**
@@ -219,6 +160,14 @@ class axi4 {
       m &last;
       m &ruser;
     }
+
+#ifdef CONNECTIONS_SIM_ONLY
+    inline friend void sc_trace(sc_trace_file *tf, const ReadPayload& v, const std::string& NAME ) {
+      sc_trace(tf,v.id,    NAME + ".id");
+      sc_trace(tf,v.data,  NAME + ".data");
+      sc_trace(tf,v.last,  NAME + ".last");
+    }
+#endif
   };
 
   /**
@@ -238,6 +187,13 @@ class axi4 {
       m &resp;
       m &buser;
     }
+
+#ifdef CONNECTIONS_SIM_ONLY
+    inline friend void sc_trace(sc_trace_file *tf, const WRespPayload& v, const std::string& NAME ) {
+      sc_trace(tf,v.id,    NAME + ".id");
+      sc_trace(tf,v.resp,  NAME + ".resp");
+    }
+#endif
   };
 
   /**
@@ -250,6 +206,11 @@ class axi4 {
     Wstrb wstrb;
     WUser wuser;
 
+    WritePayload() {
+      if(WSTRB_WIDTH > 0)
+        wstrb = ~0;
+    }
+    
     static const unsigned int width =
         DATA_WIDTH + LAST_WIDTH + WSTRB_WIDTH + WUSER_WIDTH;
 
@@ -260,6 +221,14 @@ class axi4 {
       m &wstrb;
       m &wuser;
     }
+
+#ifdef CONNECTIONS_SIM_ONLY
+    inline friend void sc_trace(sc_trace_file *tf, const WritePayload& v, const std::string& NAME ) {
+      sc_trace(tf,v.data,  NAME + ".data");
+      sc_trace(tf,v.last,  NAME + ".last");
+      sc_trace(tf,v.wstrb, NAME + ".wstrb");
+    }
+#endif
   };
 
   /**
@@ -273,10 +242,11 @@ class axi4 {
     /**
      * \brief The AXI read channel, used for connecting an AXI master and AXI slave.
      */
+    template <Connections::connections_port_t PortType = AUTO_PORT>
     class chan {
      public:
-      typedef Connections::Combinational<AddrPayload> ARChan;
-      typedef Connections::Combinational<ReadPayload> RChan;
+     typedef Connections::Combinational<AddrPayload, PortType> ARChan;
+     typedef Connections::Combinational<ReadPayload, PortType> RChan;
 
       ARChan ar;  // master to slave
       RChan r;    // slave to master
@@ -290,10 +260,11 @@ class axi4 {
     /**
      * \brief The AXI read master port.  This port has an AR request channel as output and an R response channel as input.
      */
+    template <Connections::connections_port_t PortType = AUTO_PORT>
     class master {
      public:
-      typedef Connections::Out<AddrPayload> ARPort;
-      typedef Connections::In<ReadPayload> RPort;
+      typedef Connections::Out<AddrPayload, PortType> ARPort;
+      typedef Connections::In<ReadPayload, PortType> RPort;
 
       ARPort ar;
       RPort r;
@@ -322,10 +293,11 @@ class axi4 {
     /**
      * \brief The AXI read slave port.  This port has an AR request channel as input and an R response channel as output.
      */
+    template <Connections::connections_port_t PortType = AUTO_PORT>
     class slave {
      public:
-      typedef Connections::In<AddrPayload> ARPort;
-      typedef Connections::Out<ReadPayload> RPort;
+      typedef Connections::In<AddrPayload, PortType> ARPort;
+      typedef Connections::Out<ReadPayload, PortType> RPort;
 
       ARPort ar;
       RPort r;
@@ -365,11 +337,12 @@ class axi4 {
     /**
      * \brief The AXI write channel, used for connecting an AXI master and AXI slave.
      */
+    template <Connections::connections_port_t PortType = AUTO_PORT>
     class chan {
      public:
-      typedef Connections::Combinational<AddrPayload> AWChan;
-      typedef Connections::Combinational<WritePayload> WChan;
-      typedef Connections::Combinational<WRespPayload> BChan;
+     typedef Connections::Combinational<AddrPayload, PortType> AWChan;
+     typedef Connections::Combinational<WritePayload, PortType> WChan;
+     typedef Connections::Combinational<WRespPayload, PortType> BChan;
 
       AWChan aw;  // master to slave
       WChan w;    // master to slave
@@ -386,11 +359,12 @@ class axi4 {
     /**
      * \brief The AXI write master port.  This port has AW and W request channels as outputs and a B response channel as input.
      */
+    template <Connections::connections_port_t PortType = AUTO_PORT>
     class master {
      public:
-      typedef Connections::Out<AddrPayload> AWPort;
-      typedef Connections::Out<WritePayload> WPort;
-      typedef Connections::In<WRespPayload> BPort;
+      typedef Connections::Out<AddrPayload, PortType> AWPort;
+      typedef Connections::Out<WritePayload, PortType> WPort;
+      typedef Connections::In<WRespPayload, PortType> BPort;
 
       AWPort aw;
       WPort w;
@@ -425,11 +399,12 @@ class axi4 {
     /**
      * \brief The AXI write slave port.  This port has AW and W request channels as inputs and a B response channel as output.
      */
+    template <Connections::connections_port_t PortType = AUTO_PORT>
     class slave {
      public:
-      typedef Connections::In<AddrPayload> AWPort;
-      typedef Connections::In<WritePayload> WPort;
-      typedef Connections::Out<WRespPayload> BPort;
+      typedef Connections::In<AddrPayload, PortType> AWPort;
+      typedef Connections::In<WritePayload, PortType> WPort;
+      typedef Connections::Out<WRespPayload, PortType> BPort;
 
       AWPort aw;
       WPort w;

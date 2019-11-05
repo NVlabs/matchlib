@@ -52,10 +52,10 @@ SC_MODULE(testbench) {
   sc_signal<bool> reset_bar;
   sc_signal<bool> done;
 
-  typename axi::axi4<cfgWithWresp>::read::chan axi_read_m;
-  typename axi::axi4<cfgWithWresp>::write::chan axi_write_m;
-  typename axi::axi4<cfgNoWresp>::read::chan axi_read_s;
-  typename axi::axi4<cfgNoWresp>::write::chan axi_write_s;
+  typename axi::axi4<cfgWithWresp>::read::template chan<> axi_read_m;
+  typename axi::axi4<cfgWithWresp>::write::template chan<> axi_write_m;
+  typename axi::axi4<cfgNoWresp>::read::template chan<> axi_read_s;
+  typename axi::axi4<cfgNoWresp>::write::template chan<> axi_write_s;
 
   SC_CTOR(testbench)
       : slave("slave"),

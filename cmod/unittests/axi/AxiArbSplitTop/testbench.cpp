@@ -69,16 +69,16 @@ SC_MODULE(testbench) {
   sc_signal<bool> reset_bar;
   nvhls::nv_array<sc_signal<bool>, numSlaves> done;
 
-  nvhls::nv_array<typename axi_::read::chan, numSlaves>
+  nvhls::nv_array<typename axi_::read::template chan<>, numSlaves>
       axi_read_m_tb;
-  nvhls::nv_array<typename axi_::write::chan, numSlaves>
+  nvhls::nv_array<typename axi_::write::template chan<>, numSlaves>
       axi_write_m_tb;
 
   CCS_DESIGN(AxiArbSplitTop) axi_arbsplit;
 
-  nvhls::nv_array<typename axi_::read::chan, numSlaves>
+  nvhls::nv_array<typename axi_::read::template chan<>, numSlaves>
       axi_read_s_tb;
-  nvhls::nv_array<typename axi_::write::chan, numSlaves>
+  nvhls::nv_array<typename axi_::write::template chan<>, numSlaves>
       axi_write_s_tb;
 
   SC_CTOR(testbench)

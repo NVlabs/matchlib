@@ -52,7 +52,7 @@ SC_MODULE(RVSink) {
 /**
  * \brief The struct containing fields for the read and write request interface.
  */
-  class Write {
+  class Write : public nvhls_message {
    public:
     Data data;
     Addr addr;
@@ -74,7 +74,7 @@ SC_MODULE(RVSink) {
 /**
  * \brief The struct containing the data field for the read response interface.
  */
-  class Read {
+  class Read : public nvhls_message {
    public:
     Data data;
 

@@ -164,7 +164,7 @@ class Tracer {
       (*ostr_) << std::endl;
     }
     if (fatal_)
-      std::exit(1);
+      exit(1);
     return *this;
   }
 #else

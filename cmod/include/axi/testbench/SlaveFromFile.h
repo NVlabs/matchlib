@@ -50,21 +50,21 @@ template <typename axiCfg> class SlaveFromFile : public sc_module {
   static const int kDebugLevel = 0;
   typedef axi::axi4<axiCfg> axi4_;
 
-  typename axi4_::read::slave if_rd;
-  typename axi4_::write::slave if_wr;
+  typename axi4_::read::template slave<> if_rd;
+  typename axi4_::write::template slave<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
 
   std::queue <typename axi4_::ReadPayload> rd_resp;
-  std::queue < sc_uint<axi4_::ADDR_WIDTH> > rd_resp_addr;
+  std::queue <typename axi4_::Addr> rd_resp_addr;
   std::queue <typename axi4_::AddrPayload> wr_addr;
   std::queue <typename axi4_::WritePayload> wr_data;
   std::queue <typename axi4_::WRespPayload> wr_resp;
 
-  std::map< sc_uint<axi4_::ADDR_WIDTH>, sc_uint<axi4_::DATA_WIDTH> > localMem;
-  std::map< sc_uint<axi4_::ADDR_WIDTH>, sc_uint<8> > localMem_wstrb;
-  std::vector< sc_uint<axi4_::ADDR_WIDTH> > validReadAddresses;
+  std::map<typename axi4_::Addr, typename axi4_::Data> localMem;
+  std::map<typename axi4_::Addr, NVUINT8> localMem_wstrb;
+  std::vector<typename axi4_::Addr> validReadAddresses;
 
   typename axi4_::WritePayload load_data_pld;
 
@@ -81,17 +81,18 @@ template <typename axiCfg> class SlaveFromFile : public sc_module {
       std::vector<std::string> vec = dataList[i];
       NVHLS_ASSERT_MSG(vec.size() == 2, "Each_request_must_have_two_elements");
       std::stringstream ss;
-      sc_uint<axi4_::ADDR_WIDTH> addr;
+      sc_uint<axi4_::ADDR_WIDTH> addr_sc_uint;
       ss << hex << vec[0];
-      ss >> addr;
+      ss >> addr_sc_uint;
       std::stringstream ss_data;
       sc_uint<axi4_::DATA_WIDTH> data;
       ss_data << hex << vec[1];
       ss_data >> data;
-      load_data_pld.data = data;
+      load_data_pld.data = static_cast<typename axi4_::Data>(data);
+      typename axi4_::Addr addr = static_cast<typename axi4_::Addr>(addr_sc_uint);
       if (axiCfg::useWriteStrobes) {
         for (int j=0; j<axi4_::WSTRB_WIDTH; j++) {
-          localMem_wstrb[addr+j] = static_cast< sc_bv<8> >(load_data_pld.data.range(8*j+7,8*j));
+          localMem_wstrb[addr+j] = nvhls::get_slc<8>(load_data_pld.data, 8*j);
         }
       } else {
         localMem[addr] = load_data_pld.data;
@@ -118,12 +119,12 @@ protected:
 
       typename axi4_::AddrPayload rd_addr_pld;
       if (if_rd.nb_aread(rd_addr_pld)) {
-        sc_uint<axi4_::ADDR_WIDTH> addr = rd_addr_pld.addr;
+        typename axi4_::Addr addr = rd_addr_pld.addr;
         CDCOUT(sc_time_stamp() << " " << name() << " Received read request:"
                       << " addr=" << hex << addr
                       << " burstlen=" << dec << (axiCfg::useBurst ? rd_addr_pld.len : "N/A")
                       << endl, kDebugLevel);
-        sc_uint<axi4_::ALEN_WIDTH> len = (axiCfg::useBurst ? rd_addr_pld.len : 0);
+        NVUINTW(axi4_::ALEN_WIDTH) len = (axiCfg::useBurst ? rd_addr_pld.len : NVUINTW(axi4_::ALEN_WIDTH)(0));
         for (unsigned int i=0; i<(len+1); i++) {
           std::ostringstream msg;
           msg << "\nError @" << sc_time_stamp() << " from " << name()
@@ -139,9 +140,9 @@ protected:
           if (axiCfg::useWriteStrobes) {
             for (int k=0; k<axi4_::WSTRB_WIDTH; k++) {
               if (localMem_wstrb.find(addr+k) != localMem_wstrb.end()) {
-                data_pld.data.range(8*k+7,8*k) = localMem_wstrb[addr+k];
+                data_pld.data = nvhls::set_slc(data_pld.data, localMem_wstrb[addr+k], 8*k);
               } else {
-                data_pld.data.range(8*k+7,8*k) = 0;
+                data_pld.data = nvhls::set_slc(data_pld.data, NVUINT8(0), 8*k);
               }
             }
           } else {
@@ -159,7 +160,7 @@ protected:
       if (!rd_resp.empty()) {
         typename axi4_::ReadPayload data_pld;
         data_pld = rd_resp.front();
-        sc_uint<axi4_::ADDR_WIDTH> addr = rd_resp_addr.front();
+        typename axi4_::Addr addr = rd_resp_addr.front();
         if (if_rd.nb_rwrite(data_pld)) {
           CDCOUT(sc_time_stamp() << " " << name() << " Returned read data:"
                         << " data=" << hex << data_pld.data.to_uint64()
@@ -184,7 +185,7 @@ protected:
     typename axi4_::WritePayload wr_data_pld;
     unsigned int wrBeatInFlight = 0;
     bool first_beat = 1;
-    sc_uint<axi4_::ADDR_WIDTH> wresp_addr;
+    typename axi4_::Addr wresp_addr;
 
     while (1) {
       wait();
@@ -229,7 +230,7 @@ protected:
           wresp_addr = wr_addr_pld.addr;
           first_beat = 0;
         }
-        sc_uint<axi4_::ALEN_WIDTH> len = (axiCfg::useBurst ? wr_addr_pld.len : 0);
+        NVUINTW(axi4_::ALEN_WIDTH) len = (axiCfg::useBurst ? wr_addr_pld.len : NVUINTW(axi4_::ALEN_WIDTH)(0));
         wr_data_pld = wr_data.front(); wr_data.pop();
         // Store the data
         if (axiCfg::useWriteStrobes) {
@@ -239,7 +240,7 @@ protected:
           BOOST_ASSERT_MSG( wr_data_pld.wstrb != 0, msg.str().c_str() );
           for (int j=0; j<axi4_::WSTRB_WIDTH; j++) {
             if (wr_data_pld.wstrb[j] == 1) {
-              localMem_wstrb[wresp_addr+j] = static_cast< sc_bv<8> >(wr_data_pld.data.range(8*j+7,8*j));
+              localMem_wstrb[wresp_addr+j] = nvhls::get_slc<8>(wr_data_pld.data, 8*j);
             }
           }
         } else {

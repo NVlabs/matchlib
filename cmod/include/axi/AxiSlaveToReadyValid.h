@@ -44,8 +44,8 @@ class AxiSlaveToReadyValid : public sc_module {
   
   typedef typename axi::axi4<axiCfg> axi4_;
 
-  typename axi4_::read::slave if_axi_rd;
-  typename axi4_::write::slave if_axi_wr;
+  typename axi4_::read::template slave<> if_axi_rd;
+  typename axi4_::write::template slave<> if_axi_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;

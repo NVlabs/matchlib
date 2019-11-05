@@ -104,12 +104,12 @@ SC_MODULE(testbench) {
 
   AxiArbiter<axi::cfg::standard, numMasters, maxInFlight> axi_arbiter;
 
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::chan, numMasters>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::template chan<>, numMasters>
       axi_read_m;
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::chan, numMasters>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::template chan<>, numMasters>
       axi_write_m;
-  typename axi::axi4<axi::cfg::standard>::read::chan axi_read_s;
-  typename axi::axi4<axi::cfg::standard>::write::chan axi_write_s;
+  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read_s;
+  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write_s;
 
   SC_CTOR(testbench)
       : slave("slave"),

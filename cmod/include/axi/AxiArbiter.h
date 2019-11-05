@@ -50,11 +50,11 @@ class AxiArbiter : public sc_module {
   typedef typename axi::axi4<axiCfg> axi_;
   static const int numMasters_width = nvhls::log2_ceil<numMasters>::val;
 
-  typedef typename axi_::read::slave::ARPort axi_rd_slave_ar;
-  typedef typename axi_::read::slave::RPort axi_rd_slave_r;
-  typedef typename axi_::write::slave::AWPort axi_wr_slave_aw;
-  typedef typename axi_::write::slave::WPort axi_wr_slave_w;
-  typedef typename axi_::write::slave::BPort axi_wr_slave_b;
+  typedef typename axi_::read::template slave<>::ARPort axi_rd_slave_ar;
+  typedef typename axi_::read::template slave<>::RPort axi_rd_slave_r;
+  typedef typename axi_::write::template slave<>::AWPort axi_wr_slave_aw;
+  typedef typename axi_::write::template slave<>::WPort axi_wr_slave_w;
+  typedef typename axi_::write::template slave<>::BPort axi_wr_slave_b;
 
   // [ben] Unfortunately HLS cannot handle an nv_array of the master/slave wrapper classes.
   // It will work fine in C but die mysteriously in Catapult 10.1b when methods of the
@@ -64,8 +64,8 @@ class AxiArbiter : public sc_module {
   nvhls::nv_array<axi_wr_slave_aw, numMasters> axi_wr_m_aw;
   nvhls::nv_array<axi_wr_slave_w, numMasters> axi_wr_m_w;
   nvhls::nv_array<axi_wr_slave_b, numMasters> axi_wr_m_b;
-  typename axi_::read::master axi_rd_s;
-  typename axi_::write::master axi_wr_s;
+  typename axi_::read::template master<> axi_rd_s;
+  typename axi_::write::template master<> axi_wr_s;
 
   typedef NVUINTW(numMasters_width) inFlight_t;
   FIFO<inFlight_t, maxOutstandingRequests> readQ;

@@ -28,8 +28,8 @@ SC_MODULE(AxiMasterGateTop) {
  public:
   typedef axi::axi4<axi::cfg::standard> axi4_;
 
-  typename axi4_::read::master if_rd;
-  typename axi4_::write::master if_wr;
+  typename axi4_::read::template master<> if_rd;
+  typename axi4_::write::template master<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;

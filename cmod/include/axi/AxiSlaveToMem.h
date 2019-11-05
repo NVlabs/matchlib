@@ -56,8 +56,8 @@ class AxiSlaveToMem : public sc_module {
   typedef typename axi::axi4<axiCfg> axi4_;
   static const int bytesPerWord = axiCfg::dataWidth >> 3;
 
-  typename axi4_::read::slave if_rd;
-  typename axi4_::write::slave if_wr;
+  typename axi4_::read::template slave<> if_rd;
+  typename axi4_::write::template slave<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
@@ -110,9 +110,7 @@ class AxiSlaveToMem : public sc_module {
                       << endl, kDebugLevel);
 
         typename axi4_::ReadPayload data_pld;
-        data_pld.data = static_cast<sc_uint<axi4_::DATA_WIDTH> >
-                          (memarray.read(static_cast<typename Memarray::LocalIndex>
-                          (static_cast<sc_uint<axi4_::ADDR_WIDTH> >(rd_addr_pld.addr) + bytesPerWord*rd_beat_cnt)));
+        data_pld.data = memarray.read(rd_addr_pld.addr + bytesPerWord*rd_beat_cnt);
         data_pld.resp = axi4_::Enc::XRESP::OKAY;
         data_pld.id = rd_addr_pld.id;
 

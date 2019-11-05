@@ -123,8 +123,8 @@ enum connections_port_t {SYN_PORT = 0, MARSHALL_PORT = 1, DIRECT_PORT = 2, TLM_P
  * \ingroup Connections
  *
  * \par Set this to one of four port simulation types. From slowest (most accurate) to fastest (least accurate):
- *   - SYN_PORT: Actual SystemC modulario code given to catapult. Many wait() statements leads to simulation
- *     timing inaccuracy.
+ *   - SYN_PORT: Actual SystemC modulario code given to catapult. Many wait() statements leads to 
+ *     timing inaccuracy in SystemC simulation.
  *   - MARSHALL_PORT: Like SYN_PORT, except when CONNECTIONS_SIM_ONLY is defined will use a cycle-based simulator
  *     to time the Push() and Pop() commands, which should approximate performance of real RTL when HLS'd with a
  *     pipeline init interval of 1. All input and output msg ports are "marshalled" into a sc_lv bitvectors.
@@ -166,16 +166,16 @@ enum connections_port_t {SYN_PORT = 0, MARSHALL_PORT = 1, DIRECT_PORT = 2, TLM_P
 #ifndef AUTO_PORT 
 
 #if defined(__SYNTHESIS__)
-#define AUTO_PORT SYN_PORT
+#define AUTO_PORT Connections::SYN_PORT
 #elif !defined(CONNECTIONS_SIM_ONLY)
-#define AUTO_PORT MARSHALL_PORT
+#define AUTO_PORT Connections::MARSHALL_PORT
 #else
 
 // Switch if we are in CONNECTIONS_SIM_ONLY
 #if defined(CONNECTIONS_FAST_SIM)
-#define AUTO_PORT TLM_PORT
+#define AUTO_PORT Connections::TLM_PORT
 #else
-#define AUTO_PORT MARSHALL_PORT
+#define AUTO_PORT Connections::MARSHALL_PORT
 #endif
  
 #endif // defined(__SYNTHESIS__)
@@ -187,7 +187,7 @@ enum connections_port_t {SYN_PORT = 0, MARSHALL_PORT = 1, DIRECT_PORT = 2, TLM_P
 // manually defined in a Makefile or go_hls.tcl.
 #if defined(__SYNTHESIS__)
 #undef AUTO_PORT
-#define AUTO_PORT SYN_PORT
+#define AUTO_PORT Connections::SYN_PORT
 #endif // defined(__SYNTHESIS__)
 
 /**
@@ -260,8 +260,12 @@ class SimConnectionsClk : public clk_statics<void>
 {
     public:
     SimConnectionsClk()
-    : clk("default_sim_clk", 1, SC_NS, 0.5, 0, SC_NS, true), clk_ptr(&clk)
-    {};
+    {
+     clk_ptr = 0;
+#ifndef NO_DEFAULT_CONNECTIONS_CLOCK
+     clk_ptr = new sc_clock("default_sim_clk", 1, SC_NS, 0.5, 0, SC_NS, true);
+#endif
+    }
 
     void set(sc_clock* clk_ptr_) { clk_ptr = clk_ptr_; }; // should we use a module that is binded instead?
 
@@ -294,9 +298,9 @@ class SimConnectionsClk : public clk_statics<void>
     }
 
 
-    private:
-    sc_clock  clk;
     sc_clock* clk_ptr;
+
+    private:
 
     inline sc_time get_period_delay() const
     {
@@ -323,13 +327,6 @@ ConManager& get_conManager();
 
 #endif
 
-inline void set_sim_clk(sc_clock* clk_ptr)
-{
-#ifdef CONNECTIONS_SIM_ONLY
-    get_sim_clk().set(clk_ptr);
-#endif
-}
-
 class ResetChecker {
  protected:
   bool is_reset;
@@ -352,6 +349,7 @@ class ResetChecker {
   }
   
   void check() {
+/*
 #ifndef __SYNTHESIS__
     if(!is_reset) {
       // FIXME add warning here
@@ -368,6 +366,7 @@ class ResetChecker {
       is_reset = true;
     }
 #endif // ifndef __SYNTHESIS__
+*/
   }
 
   void set_val_name(const char *name_) {
@@ -468,6 +467,14 @@ struct ConManager_statics
      static bool rand_stall_print_debug_enable;
 };
 
+inline void set_sim_clk(sc_clock* clk_ptr)
+{
+#ifdef CONNECTIONS_SIM_ONLY
+  ConManager_statics<void>::sim_clk.clk_ptr = clk_ptr;
+#endif
+}
+
+
 #ifdef __CONN_RAND_STALL_FEATURE
 
 #ifdef CONN_RAND_STALL
@@ -495,6 +502,7 @@ ConManager ConManager_statics<Dummy>::conManager;
 
 inline SimConnectionsClk& get_sim_clk()
 {
+  CONNECTIONS_ASSERT_MSG(ConManager_statics<void>::sim_clk.clk_ptr, "You must call Connections::set_sim_clk(&clk) before sc_start()");
   return ConManager_statics<void>::sim_clk;
 }
 
@@ -862,6 +870,86 @@ protected:
     return true;
   }
 };
+
+class in_port_marker : public sc_object {
+public:
+
+  unsigned w;
+  bool named;
+  sc_in<bool>* val;
+  sc_out<bool>* rdy;
+  sc_port_base* msg;
+  sc_object* bound_to;
+  bool top_port;
+
+  in_port_marker() {
+    named = false;
+    val = 0;
+    rdy = 0;
+    msg = 0;
+    bound_to = 0;
+    top_port = false;
+  }
+
+  in_port_marker(const char* name, unsigned _w, sc_in<bool>*_val, sc_out<bool>* _rdy, sc_port_base* _msg)
+   : sc_object(name)
+  {
+    named = true;
+    val = _val;
+    rdy = _rdy;
+    msg = _msg;
+    bound_to = 0;
+    top_port = false;
+    
+    w = _w;
+  }
+
+  void end_of_elaboration() {
+   if (val)
+    bound_to = dynamic_cast<sc_object*>(val->operator->());
+  }
+};
+
+class out_port_marker : public sc_object {
+public:
+
+  unsigned w;
+  bool named;
+  sc_out<bool>* val;
+  sc_in<bool>* rdy;
+  sc_port_base* msg;
+  sc_object* bound_to;
+  bool top_port;
+
+  out_port_marker() {
+    named = false;
+    val = 0;
+    rdy = 0;
+    msg = 0;
+    bound_to = 0;
+    top_port = false;
+  }
+
+  out_port_marker(const char* name, unsigned _w, sc_out<bool>*_val, sc_in<bool>* _rdy, sc_port_base* _msg)
+   : sc_object(name)
+  {
+    named = true;
+    val = _val;
+    rdy = _rdy;
+    msg = _msg;
+    bound_to = 0;
+    top_port = false;
+    
+    w = _w;
+  }
+
+  void end_of_elaboration() {
+   if (val)
+    bound_to = dynamic_cast<sc_object*>(val->operator->());
+  }
+};
+
+
 
 #endif // defined(CONNECTIONS_SIM_ONLY)
  
@@ -1651,11 +1739,22 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
   typedef sc_lv<WMessage::width> MsgBits;
   sc_in<MsgBits> msg;
 
+#ifdef CONNECTIONS_SIM_ONLY
+  in_port_marker marker;
+#endif
+
+
   InBlocking() : InBlocking_SimPorts_abs<Message>(),
-    msg(sc_gen_unique_name("in_msg")) {}
+    msg(sc_gen_unique_name("in_msg"))
+   {}
   
-  explicit InBlocking(const char* name) : InBlocking_SimPorts_abs<Message>(name),
-    msg(CONNECTIONS_CONCAT(name, "msg")) {}
+  explicit InBlocking(const char* name) : 
+      InBlocking_SimPorts_abs<Message>(name)
+    , msg(CONNECTIONS_CONCAT(name, "msg"))
+#ifdef CONNECTIONS_SIM_ONLY
+    , marker(ccs_concat(name, "in_port_marker"), width, &(this->val), &(this->rdy), &msg)
+#endif
+   {}
 
   // Reset read
   void Reset() {
@@ -1698,6 +1797,7 @@ class InBlocking <Message, MARSHALL_PORT> : public InBlocking_SimPorts_abs<Messa
     this->rdy(rhs.out_rdy);
     rhs.out_bound = true;
     rhs.out_ptr = this;
+    marker.top_port = true;
 #else
     this->msg(rhs.msg);
     this->val(rhs.val);
@@ -2384,11 +2484,14 @@ class OutBlocking <Message, SYN_PORT> : public OutBlocking_Ports_abs<Message> {
   typedef sc_lv<WMessage::width> MsgBits;
   sc_out<MsgBits> msg;
 
+
   OutBlocking() : OutBlocking_Ports_abs<Message>(),
                  msg(sc_gen_unique_name("out_msg")) {}
   
-  explicit OutBlocking(const char* name) : OutBlocking_Ports_abs<Message>(name),
-    msg(CONNECTIONS_CONCAT(name, "msg")) {}
+  explicit OutBlocking(const char* name) : 
+      OutBlocking_Ports_abs<Message>(name)
+    , msg(CONNECTIONS_CONCAT(name, "msg"))
+   {}
 
   // Reset write
   virtual void Reset() {
@@ -2561,12 +2664,26 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
   sc_out<MsgBits> msg;
+#ifdef CONNECTIONS_SIM_ONLY
+  out_port_marker marker;
+  OutBlocking<Message, MARSHALL_PORT>* driver;
+#endif
 
   OutBlocking() : OutBlocking_SimPorts_abs<Message>(),
-    msg(sc_gen_unique_name("out_msg")) {}
+    msg(sc_gen_unique_name("out_msg"))
+#ifdef CONNECTIONS_SIM_ONLY
+    , driver(0)
+#endif
+    {}
   
-  explicit OutBlocking(const char* name) : OutBlocking_SimPorts_abs<Message>(name),
-    msg(CONNECTIONS_CONCAT(name, "msg")) {}
+  explicit OutBlocking(const char* name) 
+    : OutBlocking_SimPorts_abs<Message>(name)
+    , msg(CONNECTIONS_CONCAT(name, "msg"))
+#ifdef CONNECTIONS_SIM_ONLY
+    , marker(ccs_concat(name, "out_port_marker"), width, &(this->val), &(this->rdy), &msg)
+    , driver(0)
+#endif
+    {}
 
   // Reset write
   void Reset() {
@@ -2589,6 +2706,7 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
   void Bind(OutBlocking<Message, MARSHALL_PORT>& rhs) {
 #ifdef CONNECTIONS_SIM_ONLY
     rhs.disable_spawn();
+    rhs.driver = this;
 #endif
     this->msg(rhs.msg);
     this->val(rhs.val);
@@ -2601,8 +2719,10 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
     this->msg(rhs.in_msg);
     this->val(rhs.in_val);
     this->rdy(rhs.in_rdy);
+    rhs.driver = this;
     rhs.in_bound = true;
     rhs.in_ptr = this;
+    marker.top_port = true;
 #else
     this->msg(rhs.msg);
     this->val(rhs.val);
@@ -2681,8 +2801,15 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
   void reset_msg() {
     msg.write(0);
   }
+
+#ifdef CONNECTIONS_SIM_ONLY
+  Message traced_msg;
+#endif
   
   void write_msg(const Message &m) {
+#ifdef CONNECTIONS_SIM_ONLY
+    traced_msg = m;
+#endif    
     Marshaller<WMessage::width> marshaller;
     WMessage wm(m);
     wm.Marshall(marshaller);
@@ -2699,6 +2826,14 @@ class OutBlocking <Message, MARSHALL_PORT> : public OutBlocking_SimPorts_abs<Mes
     msg.write(dc_bits);
 #endif
   }
+
+public:
+#ifdef CONNECTIONS_SIM_ONLY
+  void set_trace(sc_trace_file* trace_file_ptr, std::string full_name)
+  {
+    sc_trace(trace_file_ptr, traced_msg, full_name);
+  }
+#endif
 };  
 
 template <typename Message>
@@ -3352,6 +3487,10 @@ class Combinational_SimPorts_abs
   // Empty
 //  bool Empty() { return !val.read(); }
 
+#ifdef CONNECTIONS_SIM_ONLY
+  Message traced_msg;
+#endif
+
 // Push
 #pragma design modulario < out >
   void Push(const Message& m) {
@@ -3359,6 +3498,7 @@ class Combinational_SimPorts_abs
     /* assert(! in_bound); */
     
     this->write_reset_check.check();
+    traced_msg = m;
 
     sim_out.Push(m);
 #else
@@ -3525,6 +3665,8 @@ class Combinational_SimPorts_abs
   
 #pragma design modulario < in >
   bool transmitted() { 	return out_rdy.read(); }
+
+
 
 #pragma design modulario < out >
   void transmit_data(const Message& m) {
@@ -3742,6 +3884,14 @@ class Combinational <Message, SYN_PORT> : public Combinational_Ports_abs<Message
   }
 };  
 
+#ifdef CONNECTIONS_SIM_ONLY
+class sc_trace_marker {
+public:
+  virtual void set_trace(sc_trace_file* trace_file_ptr) = 0;
+};
+#endif
+
+
  
 template <typename Message>
 class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs<Message, MARSHALL_PORT> {
@@ -3757,6 +3907,7 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
 #ifdef CONNECTIONS_SIM_ONLY
   sc_signal<MsgBits> in_msg;
   sc_signal<MsgBits> out_msg;
+  OutBlocking<Message>* driver;
 #else
   sc_signal<MsgBits> msg;
 #endif
@@ -3771,6 +3922,8 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
 #endif
     {
 #ifdef CONNECTIONS_SIM_ONLY
+      driver = 0;
+      
       //SC_METHOD(do_bypass);
       declare_method_process(do_bypass_handle, sc_gen_unique_name("do_bypass"), SC_CURRENT_USER_MODULE, do_bypass);
       this->sensitive << in_msg << this->in_val << this->out_rdy;
@@ -3788,6 +3941,8 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
 #endif
     {
 #ifdef CONNECTIONS_SIM_ONLY
+      driver = 0;
+      
       //SC_METHOD(do_bypass);
       declare_method_process(do_bypass_handle, sc_gen_unique_name("do_bypass"), SC_CURRENT_USER_MODULE, do_bypass);
       this->sensitive << in_msg << this->in_val << this->out_rdy;
@@ -3869,7 +4024,7 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
 
 #ifdef CONNECTIONS_SIM_ONLY
  protected:
-    class DummyPortManager : public sc_module {
+    class DummyPortManager : public sc_module, public sc_trace_marker {
         SC_HAS_PROCESS(DummyPortManager);
     private:
     InBlocking<Message,MARSHALL_PORT>& in;
@@ -3911,6 +4066,25 @@ class Combinational <Message, MARSHALL_PORT> : public Combinational_SimPorts_abs
 
             in.disable_spawn();
         }
+    }
+
+    virtual void set_trace(sc_trace_file* trace_file_ptr)
+    {
+      sc_trace(trace_file_ptr, parent.out_val, parent.out_val.name());
+      sc_trace(trace_file_ptr, parent.out_rdy, parent.out_rdy.name());
+
+      if (!parent.driver)
+      {
+        sc_trace(trace_file_ptr, parent.traced_msg, parent.out_msg.name());
+      }
+      else
+      {
+        OutBlocking<Message, MARSHALL_PORT>* driver = parent.driver;
+        while (driver->driver)
+          driver = driver->driver;
+
+        driver->set_trace(trace_file_ptr, parent.out_msg.name());
+      }
     }
 
     } dummyPortManager;

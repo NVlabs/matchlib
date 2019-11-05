@@ -68,24 +68,24 @@ SC_MODULE(testbench) {
   sc_signal<bool> reset_bar;
   nvhls::nv_array<sc_signal<bool>, numSlaves> done;
 
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::chan, numSlaves>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::template chan<>, numSlaves>
       axi_read_m_tb;
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::chan, numSlaves>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::template chan<>, numSlaves>
       axi_write_m_tb;
 
   AxiArbiter<axi::cfg::standard, numSlaves, 16> axi_arbiter;
 
-  typename axi::axi4<axi::cfg::standard>::read::chan axi_read_tb_int;
-  typename axi::axi4<axi::cfg::standard>::write::chan axi_write_tb_int;
+  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read_tb_int;
+  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write_tb_int;
 
   AxiSplitter<axi::cfg::standard, numSlaves, numAddrBitsToInspect> axi_splitter;
 
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::chan, numSlaves>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::template chan<>, numSlaves>
       axi_read_s;
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::chan, numSlaves>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::template chan<>, numSlaves>
       axi_write_s;
-  typename axi::axi4<axi::cfg::standard>::read::chan axi_read_m;
-  typename axi::axi4<axi::cfg::standard>::write::chan axi_write_m;
+  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read_m;
+  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write_m;
 
   sc_signal<NVUINTW(numAddrBitsToInspect)> addrBound[numSlaves][2];
 

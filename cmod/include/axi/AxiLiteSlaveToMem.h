@@ -44,14 +44,14 @@ class AxiLiteSlaveToMem : public sc_module {
   static const int capacity_in_bytes = capacity;
   static const int banks = 1; // Not templated - only support 1 bank for now
 
-  typedef NVUINTW(axi_::DATA_WIDTH) Data;
+  typedef typename axi_::Data Data;
   typedef mem_array_sep<Data, capacity_in_bytes, banks> Memarray;
 
   Memarray memarray;
 
  public:
-  axi_::read::slave if_rd;
-  axi_::write::slave if_wr;
+  axi_::read::template slave<> if_rd;
+  axi_::write::template slave<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
@@ -105,9 +105,9 @@ class AxiLiteSlaveToMem : public sc_module {
       }
 
       if (rd_mem)
-        data_pld.data = TypeToNVUINT<Data>(memarray.read(BitsToType<typename Memarray::LocalIndex>(rd_addr_pld.addr)));
+        data_pld.data = memarray.read(rd_addr_pld.addr);
       if (wr_mem)
-        memarray.write(BitsToType<typename Memarray::LocalIndex>(wr_addr_pld.addr),0,BitsToType<Data>(write_pld.data));
+        memarray.write(wr_addr_pld.addr,0,write_pld.data);
       if (rd_resp_pend_local) {
         rd_resp_pend_local = !(if_rd.nb_rwrite(data_pld));
       }

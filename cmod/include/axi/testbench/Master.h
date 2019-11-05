@@ -93,16 +93,16 @@ class Master : public sc_module {
   static const int kDebugLevel = 0;
   typedef axi::axi4<axiCfg> axi4_;
 
-  typename axi4_::read::master if_rd;
-  typename axi4_::write::master if_wr;
+  typename axi4_::read::template master<> if_rd;
+  typename axi4_::write::template master<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
 
-  std::map< sc_uint<axi4_::ADDR_WIDTH>, sc_uint<axi4_::DATA_WIDTH> > localMem;
-  std::map< sc_uint<axi4_::ADDR_WIDTH>, sc_uint<8> > localMem_wstrb;
-  std::vector< sc_uint<axi4_::ADDR_WIDTH> > validReadAddresses;
-  std::vector< sc_uint<axi4_::ADDR_WIDTH> > validReadAddresses_q;
+  std::map<typename axi4_::Addr, typename axi4_::Data> localMem;
+  std::map<typename axi4_::Addr, NVUINT8 > localMem_wstrb;
+  std::vector<typename axi4_::Addr> validReadAddresses;
+  std::vector<typename axi4_::Addr> validReadAddresses_q;
   std::vector< long long > validReadAddresses_ctr;
 
   static const int bytesPerBeat = axi4_::DATA_WIDTH >> 3;
@@ -127,13 +127,13 @@ class Master : public sc_module {
     // Workaround for useBurst=0, which sets ALEN field to 0 width
     static const int ALEN_W = axiCfg::useBurst != 0 ? axi4_::ALEN_WIDTH : 1; 
     static const int WSTRB_W = axiCfg::useWriteStrobes != 0 ? axi4_::WSTRB_WIDTH : 1; 
-    std::queue < sc_uint<axi4_::ADDR_WIDTH> > raddr_queue;
-    std::queue < sc_uint<ALEN_W> > rlen_queue;
-    std::queue < sc_uint<axi4_::ADDR_WIDTH> > waddr_queue;
-    std::queue < sc_uint<ALEN_W> > wlen_queue;
-    sc_uint<axi4_::DATA_WIDTH> check_data;
-    sc_uint<8> check_data_wstrb;
-    sc_uint<8> rcv_data_wstrb;
+    std::queue <typename axi4_::Addr> raddr_queue;
+    std::queue < NVUINTW(ALEN_W) > rlen_queue;
+    std::queue <typename axi4_::Addr> waddr_queue;
+    std::queue < NVUINTW(ALEN_W) > wlen_queue;
+    typename axi4_::Data check_data;
+    NVUINT8 check_data_wstrb;
+    NVUINT8 rcv_data_wstrb;
     typename axi4_::AddrPayload addr_pld;
     typename axi4_::ReadPayload data_pld;
 
@@ -143,13 +143,13 @@ class Master : public sc_module {
     boost::random::uniform_int_distribution<> random_burstlen(0, axiCfg::maxBurstSize-1);
     boost::random::uniform_int_distribution<> uniform_rand;
 
-    sc_uint<axi4_::ADDR_WIDTH> wr_addr = cfg::addrBoundLower;
-    sc_uint<axi4_::DATA_WIDTH> wr_data = 0xf00dcafe12345678;
-    sc_uint<WSTRB_W> wstrb = 0xFF;
-    sc_uint<ALEN_W> wr_len = 0;
-    sc_uint<axi4_::ADDR_WIDTH> rd_addr_next;
-    sc_uint<axi4_::ADDR_WIDTH> rd_addr;
-    sc_uint<ALEN_W> rd_len;
+    typename axi4_::Addr wr_addr = cfg::addrBoundLower;
+    typename axi4_::Data wr_data = 0xf00dcafe12345678;
+    NVUINTW(WSTRB_W) wstrb = 0xFF;
+    NVUINTW(ALEN_W) wr_len = 0;
+    typename axi4_::Addr rd_addr_next;
+    typename axi4_::Addr rd_addr;
+    NVUINTW(ALEN_W) rd_len;
     typename axi4_::AddrPayload wr_addr_pld;
     typename axi4_::WritePayload wr_data_pld;
     typename axi4_::WRespPayload wr_resp_pld;
@@ -224,7 +224,7 @@ class Master : public sc_module {
           bool checked_one = false;
           for (int i=0; i<axi4_::WSTRB_WIDTH; i++) {
             if (localMem_wstrb.count(rd_addr+i)) {
-              rcv_data_wstrb = static_cast< sc_bv<8> >(data_pld.data.range(8*i+7,8*i));
+              rcv_data_wstrb = nvhls::get_slc<8>(data_pld.data,8*i);
               check_data_wstrb = localMem_wstrb[rd_addr+i];
               std::ostringstream msg;
               msg << "\nError @" << sc_time_stamp() << " from " << name()
@@ -331,7 +331,7 @@ class Master : public sc_module {
           if (axiCfg::useWriteStrobes) {
             for (int i=0; i<axi4_::WSTRB_WIDTH; i++) {
               if (wr_data_pld.wstrb[i] == 1) {
-                localMem_wstrb[wr_addr+i] = static_cast< sc_bv<8> >(wr_data_pld.data.range(8*i+7,8*i));
+                localMem_wstrb[wr_addr+i] = nvhls::get_slc<8>(wr_data_pld.data, 8*i);
               }
             }
           }
@@ -352,7 +352,7 @@ class Master : public sc_module {
           } else { // Only this beat is done
             wr_addr += bytesPerBeat;
           }
-          wr_data = ((static_cast<sc_uint<axi4_::DATA_WIDTH> >(wr_addr)) << 16) ^ 0xf00dcafe12345678 ^ uniform_rand(gen);
+          wr_data = ((static_cast<typename axi4_::Data>(wr_addr)) << 16) ^ 0xf00dcafe12345678 ^ uniform_rand(gen);
           if (axiCfg::useWriteStrobes) {
             if (uniform_rand(gen) % 5 == 0) { // 20% of writes have nonuniform strobe
               wstrb = random_wstrb(gen);

@@ -113,7 +113,7 @@ class StateSignal<Message, SYN_PORT> {
   typedef sc_lv<WMessage::width> MsgBits;
   sc_signal<MsgBits> msg;
   
- StateSignal() : msg("msg") {}
+ StateSignal() : msg(sc_gen_unique_name("msg")) {}
 
  StateSignal(sc_module_name name) : msg(CONNECTIONS_CONCAT(name, "_msg")) { }
   
@@ -131,7 +131,7 @@ class StateSignal<Message, MARSHALL_PORT> {
   typedef sc_lv<WMessage::width> MsgBits;
   sc_signal<MsgBits> msg;
   
- StateSignal() : msg("msg") {}
+ StateSignal() : msg(sc_gen_unique_name("msg")) {}
 
  StateSignal(sc_module_name name) : msg(CONNECTIONS_CONCAT(name, "_msg")) { }
   
@@ -146,7 +146,7 @@ class StateSignal<Message, DIRECT_PORT> {
   // Interface
   sc_signal<Message> msg;
   
- StateSignal() : msg("msg") {}
+ StateSignal() : msg(sc_gen_unique_name("msg")) {}
 
  StateSignal(sc_module_name name) : msg(CONNECTIONS_CONCAT(name, "_msg")) { }
 

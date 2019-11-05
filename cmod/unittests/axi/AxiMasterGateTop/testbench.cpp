@@ -37,8 +37,8 @@ SC_MODULE(testbench) {
 
   sc_signal<bool> done_write, done_read;
 
-  axi4_::read::chan axi_read;
-  axi4_::write::chan axi_write;
+  axi4_::read::template chan<> axi_read;
+  axi4_::write::template chan<> axi_write;
 
   Connections::Combinational<WrRequest<axi::cfg::standard> > wrRequestChan;
   Connections::Combinational<WrResp<axi::cfg::standard> > wrRespChan;

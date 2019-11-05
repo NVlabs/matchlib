@@ -34,6 +34,7 @@
  * \tparam numSlaves                The number of slaves to send traffic to.
  * \tparam numAddrBitsToInspect     The number of address bits to inspect when determining which slave to direct traffic to.  If this is less than the full address width, the routing determination will be made based on the number of address LSBs specified.  (Default: axiCfg::addrWidth)
  * \tparam default_output           If true, requests with addresses that do not fall in any of the specified address ranges will be directed to the highest-indexed slave port.  (Default: false)
+ * \tparam translate_addr           If true, requests are re-addressed relative to the base address of the receiving slave when they are passed through the splitter.  (Default: false)
  *
  * \par Overview
  * AxiSplitter connects one or more AXI slaves to a single AXI master.  Requests from the master are routed by address to the appropriate slave.
@@ -43,7 +44,7 @@
  * - The AXI configs of all ports must be the same.
  *
  */
-template <typename axiCfg, int numSlaves, int numAddrBitsToInspect = axiCfg::addrWidth, bool default_output = false>
+template <typename axiCfg, int numSlaves, int numAddrBitsToInspect = axiCfg::addrWidth, bool default_output = false, bool translate_addr = false>
 class AxiSplitter : public sc_module {
  public:
   static const int kDebugLevel = 5;
@@ -52,11 +53,11 @@ class AxiSplitter : public sc_module {
 
   typedef typename axi::axi4<axiCfg> axi4_;
 
-  typedef typename axi4_::read::master::ARPort axi_rd_master_ar;
-  typedef typename axi4_::read::master::RPort axi_rd_master_r;
-  typedef typename axi4_::write::master::AWPort axi_wr_master_aw;
-  typedef typename axi4_::write::master::WPort axi_wr_master_w;
-  typedef typename axi4_::write::master::BPort axi_wr_master_b;
+  typedef typename axi4_::read::template master<>::ARPort axi_rd_master_ar;
+  typedef typename axi4_::read::template master<>::RPort axi_rd_master_r;
+  typedef typename axi4_::write::template master<>::AWPort axi_wr_master_aw;
+  typedef typename axi4_::write::template master<>::WPort axi_wr_master_w;
+  typedef typename axi4_::write::template master<>::BPort axi_wr_master_b;
 
   static const unsigned int log_numSlaves = nvhls::log2_ceil<numSlaves>::val + 1;
 
@@ -68,8 +69,8 @@ class AxiSplitter : public sc_module {
   nvhls::nv_array<axi_wr_master_aw, numSlaves> axi_wr_s_aw;
   nvhls::nv_array<axi_wr_master_w, numSlaves> axi_wr_s_w;
   nvhls::nv_array<axi_wr_master_b, numSlaves> axi_wr_s_b;
-  typename axi4_::read::slave axi_rd_m;
-  typename axi4_::write::slave axi_wr_m;
+  typename axi4_::read::template slave<> axi_rd_m;
+  typename axi4_::write::template slave<> axi_wr_m;
 
   sc_in<NVUINTW(numAddrBitsToInspect)> addrBound[numSlaves][2];
 
@@ -115,6 +116,8 @@ class AxiSplitter : public sc_module {
     bool read_inFlight = 0;
     NVUINTW(log_numSlaves) pushedTo = numSlaves;
     
+      #pragma hls_pipeline_init_interval 1
+      #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 
@@ -135,6 +138,10 @@ class AxiSplitter : public sc_module {
             }
             // If the address did not fall in any valid range, that's bad
             NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Read_address_did_not_fall_into_any_output_address_range,_and_default_output_is_not_set");
+
+            if (translate_addr)
+              AR_reg.addr -= addrBound[pushedTo][0].read();
+
             axi_rd_s_ar[pushedTo].Push(AR_reg);
             read_inFlight = 1;
           }
@@ -172,6 +179,8 @@ class AxiSplitter : public sc_module {
     };
     NVUINT2 s = IDLE;
     
+      #pragma hls_pipeline_init_interval 1
+      #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 
@@ -191,6 +200,9 @@ class AxiSplitter : public sc_module {
               pushedTo = numSlaves-1;
             }
             NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write_address_did_not_fall_into_any_output_address_range,_and_default_output_is_not_set");
+            if (translate_addr)
+              AW_reg.addr -= addrBound[pushedTo][0].read();
+
             axi_wr_s_aw[pushedTo].Push(AW_reg);
             s = WRITE_INFLIGHT;
           }

@@ -18,4 +18,3 @@ SRC_PATH				:= $(ROOT)/cmod/unittests/axi
 
 include $(ROOT)/hls/hls_Makefile
 
-COMPILER_FLAGS += FORCE_AUTO_PORT=MARSHALL_PORT

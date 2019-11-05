@@ -36,8 +36,8 @@ SC_MODULE(testbench) {
 
   sc_signal<bool> done;
 
-  typename axi::axi4<axi::cfg::standard>::read::chan axi_read;
-  typename axi::axi4<axi::cfg::standard>::write::chan axi_write;
+  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read;
+  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write;
 
   SC_CTOR(testbench)
       : slave("slave"),

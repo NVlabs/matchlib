@@ -29,8 +29,8 @@ class AxiLiteSlaveToMemTop : public sc_module {
   sc_in<bool> clk;
   sc_in<bool> reset_bar;
 
-  typename axi_::read::slave axi_read;
-  typename axi_::write::slave axi_write;
+  typename axi_::read::template slave<> axi_read;
+  typename axi_::write::template slave<> axi_write;
 
   AxiLiteSlaveToMem<2 * 1024> slave;
 

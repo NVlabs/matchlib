@@ -46,10 +46,10 @@ class AxiAddWriteResponse : public sc_module {
   sc_in_clk clk;
   sc_in<bool> rst;
 
-  typename axiM::read::slave axiM_read;
-  typename axiM::write::slave axiM_write;
-  typename axiS::read::master axiS_read;
-  typename axiS::write::master axiS_write;
+  typename axiM::read::template slave<> axiM_read;
+  typename axiM::write::template slave<> axiM_write;
+  typename axiS::read::template master<> axiS_read;
+  typename axiS::write::template master<> axiS_write;
 
  private:
   // Local state and submodules

@@ -358,6 +358,28 @@ Marshaller<Size>& operator&(Marshaller<Size>& m, bool& rhs) {
     return m;                                                              \
   }
 
+#define SpecialWrapper3(Type)                                              \
+  template <int Width, int IWidth, bool Sign>                                          \
+  class Wrapped<Type<Width, IWidth, Sign> > {                                      \
+   public:                                                                 \
+    Type<Width, IWidth, Sign> val;                                                       \
+    Wrapped() {}                                                           \
+    Wrapped(const Type<Width, IWidth, Sign>& v) : val(v) {}                              \
+    static const unsigned int width = Width;                               \
+    static const bool is_signed = Sign;                                    \
+    template <unsigned int Size>                                           \
+    void Marshall(Marshaller<Size>& m) {                                   \
+      m& val;                                                              \
+    }                                                                      \
+  };                                                                       \
+                                                                           \
+  template <unsigned int Size, int K, int J, bool Sign>                           \
+  Marshaller<Size>& operator&(Marshaller<Size> & m, Type<K, J, Sign> & rhs) { \
+    m.template AddField<Type<K, J, Sign>, K>(rhs);                            \
+    return m;                                                              \
+  }
+
+
 #define SpecialWrapperIfc(Type)                                            \
   template <typename Message>                                              \
   class Wrapped<Type<Message> > {                                          \
@@ -391,6 +413,7 @@ SpecialWrapperIfc(sc_signal);
 #ifdef HLS_CATAPULT
 #include <ac_int.h>
 SpecialWrapper2(ac_int);
+SpecialWrapper3(ac_fixed);
 
 //------------------------------------------------------------------------
 // Wrapped< p2p<>::in<T> >

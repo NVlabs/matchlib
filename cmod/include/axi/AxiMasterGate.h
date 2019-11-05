@@ -55,8 +55,8 @@ class AxiMasterGate : public sc_module {
   FIFO<WrRequest<Cfg>, 4> wrReqFifo;
 
  public:
-  typename axi4_::read::master if_rd;
-  typename axi4_::write::master if_wr;
+  typename axi4_::read::template master<> if_rd;
+  typename axi4_::write::template master<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
@@ -154,7 +154,7 @@ class AxiMasterGate : public sc_module {
                << "\tid = " << resp_pld.id << "\tresp = " << resp_pld.resp
                << endl;
 #endif
-          wr_rob.addResponse(resp_pld.id, wrResp);
+          wr_rob.addResponse(static_cast<sc_uint<axi4_::ID_WIDTH> >(resp_pld.id), wrResp);
         }
       }
 
@@ -181,7 +181,7 @@ class AxiMasterGate : public sc_module {
             // send addr
             typename axi4_::AddrPayload addr_pld;
             wrRequest_local.copyToAddrPayload(addr_pld);
-            addr_pld.id = wrRequestId_local;
+            addr_pld.id = static_cast<typename axi4_::Id>(wrRequestId_local);
 
             addr_sent_local = if_wr.aw.PushNB(addr_pld);
 #ifdef DEBUGMODE
@@ -321,7 +321,7 @@ class AxiMasterGate : public sc_module {
         if (rdRequestIdValid_local) {
           typename axi4_::AddrPayload addr_pld;
           rdRequest_local.copyToAddrPayload(addr_pld);
-          addr_pld.id = rdRequestId_local;
+          addr_pld.id = static_cast<typename axi4_::Id>(rdRequestId_local);
 
           bool pushed = if_rd.ar.PushNB(addr_pld);
           rdRequestValid_local = !pushed;
@@ -362,7 +362,7 @@ class AxiMasterGate : public sc_module {
             rdResp.last = data_pld.last;
 
             if (!rdReceivingBurstBeats_local) {
-              rd_rob.addResponse(data_pld.id, rdResp);
+              rd_rob.addResponse(static_cast<sc_uint<axi4_::ID_WIDTH> >(data_pld.id), rdResp);
             } else {
               rd_rob.addBeat(rdResp);
               if (static_cast<sc_uint<1> >(data_pld.last) == 1) {

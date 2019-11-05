@@ -47,8 +47,8 @@ class AxiSlaveToReg : public sc_module {
   sc_in<bool> clk;
   sc_in<bool> reset_bar;
 
-  typename axi4_::read::slave if_axi_rd;
-  typename axi4_::write::slave if_axi_wr;
+  typename axi4_::read::template slave<> if_axi_rd;
+  typename axi4_::write::template slave<> if_axi_wr;
 
   static const int regAddrWidth = nvhls::log2_ceil<numReg>::val;
   static const int bytesPerReg = axi4_::DATA_WIDTH >> 3;

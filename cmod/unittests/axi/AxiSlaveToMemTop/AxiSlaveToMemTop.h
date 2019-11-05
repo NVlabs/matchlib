@@ -30,8 +30,8 @@ class AxiSlaveToMemTop : public sc_module {
   sc_in<bool> clk;
   sc_in<bool> reset_bar;
 
-  typename axi_::read::slave axi_read;
-  typename axi_::write::slave axi_write;
+  typename axi_::read::template slave<> axi_read;
+  typename axi_::write::template slave<> axi_write;
 
   AxiSlaveToMem<axi::cfg::no_wstrb, 8 * 256> slave;
 

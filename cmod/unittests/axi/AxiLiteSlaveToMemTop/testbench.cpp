@@ -47,8 +47,8 @@ SC_MODULE(testbench) {
   sc_signal<bool> reset_bar;
   sc_signal<bool> done;
 
-  axi_::read::chan axi_read;
-  axi_::write::chan axi_write;
+  axi_::read::template chan<> axi_read;
+  axi_::write::template chan<> axi_write;
 
   SC_CTOR(testbench)
       : slave("slave"),

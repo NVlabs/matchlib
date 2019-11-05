@@ -33,17 +33,17 @@ class AxiArbSplitTop : public sc_module {
 
   typedef axi::axi4<axi::cfg::standard> axi_;
 
-  typedef typename axi_::read::slave::ARPort axi_rd_slave_ar;
-  typedef typename axi_::read::slave::RPort axi_rd_slave_r;
-  typedef typename axi_::write::slave::AWPort axi_wr_slave_aw;
-  typedef typename axi_::write::slave::WPort axi_wr_slave_w;
-  typedef typename axi_::write::slave::BPort axi_wr_slave_b;
+  typedef typename axi_::read::template slave<>::ARPort axi_rd_slave_ar;
+  typedef typename axi_::read::template slave<>::RPort axi_rd_slave_r;
+  typedef typename axi_::write::template slave<>::AWPort axi_wr_slave_aw;
+  typedef typename axi_::write::template slave<>::WPort axi_wr_slave_w;
+  typedef typename axi_::write::template slave<>::BPort axi_wr_slave_b;
   
-  typedef typename axi_::read::master::ARPort axi_rd_master_ar;
-  typedef typename axi_::read::master::RPort axi_rd_master_r;
-  typedef typename axi_::write::master::AWPort axi_wr_master_aw;
-  typedef typename axi_::write::master::WPort axi_wr_master_w;
-  typedef typename axi_::write::master::BPort axi_wr_master_b;
+  typedef typename axi_::read::template master<>::ARPort axi_rd_master_ar;
+  typedef typename axi_::read::template master<>::RPort axi_rd_master_r;
+  typedef typename axi_::write::template master<>::AWPort axi_wr_master_aw;
+  typedef typename axi_::write::template master<>::WPort axi_wr_master_w;
+  typedef typename axi_::write::template master<>::BPort axi_wr_master_b;
 
   nvhls::nv_array<axi_rd_slave_ar, numMasters> axi_rd_m_ar;
   nvhls::nv_array<axi_rd_slave_r, numMasters> axi_rd_m_r;
@@ -53,8 +53,8 @@ class AxiArbSplitTop : public sc_module {
 
   AxiArbiter<axi::cfg::standard, numSlaves, 16> axi_arbiter;
 
-  typename axi_::read::chan axi_read_int;
-  typename axi_::write::chan axi_write_int;
+  typename axi_::read::template chan<> axi_read_int;
+  typename axi_::write::template chan<> axi_write_int;
 
   AxiSplitter<axi::cfg::standard, numSlaves, numAddrBitsToInspect> axi_splitter;
 

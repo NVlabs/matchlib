@@ -47,21 +47,21 @@ class Slave : public sc_module {
   static const int kDebugLevel = 0;
   typedef axi::axi4<axiCfg> axi4_;
 
-  typename axi4_::read::slave if_rd;
-  typename axi4_::write::slave if_wr;
+  typename axi4_::read::template slave<> if_rd;
+  typename axi4_::write::template slave<> if_wr;
 
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
 
   std::queue <typename axi4_::ReadPayload> rd_resp;
-  std::queue < sc_uint<axi4_::ADDR_WIDTH> > rd_resp_addr;
+  std::queue <typename axi4_::Addr> rd_resp_addr;
   std::queue <typename axi4_::AddrPayload> wr_addr;
   std::queue <typename axi4_::WritePayload> wr_data;
   std::queue <typename axi4_::WRespPayload> wr_resp;
 
-  std::map< sc_uint<axi4_::ADDR_WIDTH>, sc_uint<axi4_::DATA_WIDTH> > localMem;
-  std::map< sc_uint<axi4_::ADDR_WIDTH>, sc_uint<8> > localMem_wstrb;
-  std::vector< sc_uint<axi4_::ADDR_WIDTH> > validReadAddresses;
+  std::map<typename axi4_::Addr, typename axi4_::Data> localMem;
+  std::map<typename axi4_::Addr, NVUINT8 > localMem_wstrb;
+  std::vector<typename axi4_::Addr> validReadAddresses;
 
   static const int bytesPerBeat = axi4_::DATA_WIDTH >> 3;
 
@@ -86,14 +86,14 @@ class Slave : public sc_module {
 
       typename axi4_::AddrPayload rd_addr_pld;
       if (if_rd.nb_aread(rd_addr_pld)) {
-        sc_uint<axi4_::ADDR_WIDTH> addr = rd_addr_pld.addr;
+        typename axi4_::Addr addr = rd_addr_pld.addr;
         NVHLS_ASSERT_MSG(addr % bytesPerBeat == 0, "Addresses_must_be_word_aligned");
         CDCOUT(sc_time_stamp() << " " << name() << " Received read request:"
                       << " addr=" << hex << addr
                       << " burstlen=" << dec << rd_addr_pld.len.to_uint64()
                       << " id="   << hex << rd_addr_pld.id
                       << endl, kDebugLevel);
-        sc_uint<axi4_::ALEN_WIDTH> len = (axiCfg::useBurst ? rd_addr_pld.len : 0);
+        NVUINTW(axi4_::ALEN_WIDTH) len = (axiCfg::useBurst ? rd_addr_pld.len : NVUINTW(axi4_::ALEN_WIDTH)(0));
         for (unsigned int i=0; i<(len+1); i++) {
           std::ostringstream msg;
           msg << "\nError @" << sc_time_stamp() << " from " << name()
@@ -109,9 +109,9 @@ class Slave : public sc_module {
           if (axiCfg::useWriteStrobes) {
             for (int k=0; k<axi4_::WSTRB_WIDTH; k++) {
               if (localMem_wstrb.find(addr+k) != localMem_wstrb.end()) {
-                data_pld.data.range(8*k+7,8*k) = localMem_wstrb[addr+k];
+                data_pld.data = nvhls::set_slc(data_pld.data, localMem_wstrb[addr+k], 8*k);
               } else {
-                data_pld.data.range(8*k+7,8*k) = 0;
+                data_pld.data = nvhls::set_slc(data_pld.data, NVUINT8(0), 8*k);
               }
             }
           } else {
@@ -129,7 +129,7 @@ class Slave : public sc_module {
       if (!rd_resp.empty()) {
         typename axi4_::ReadPayload data_pld;
         data_pld = rd_resp.front();
-        sc_uint<axi4_::ADDR_WIDTH> addr = rd_resp_addr.front();
+        typename axi4_::Addr addr = rd_resp_addr.front();
         if (if_rd.nb_rwrite(data_pld)) {
           CDCOUT(sc_time_stamp() << " " << name() << " Returned read data:"
                         << " data=" << hex << data_pld.data.to_uint64()
@@ -157,7 +157,7 @@ class Slave : public sc_module {
     typename axi4_::WritePayload wr_data_pld_out;
     unsigned int wrBeatInFlight = 0;
     bool first_beat = 1;
-    sc_uint<axi4_::ADDR_WIDTH> wresp_addr;
+    typename axi4_::Addr wresp_addr;
 
     while (1) {
       wait();
@@ -206,7 +206,6 @@ class Slave : public sc_module {
           wresp_addr = wr_addr_pld_out.addr;
           first_beat = 0;
         }
-        sc_uint<axi4_::ALEN_WIDTH> len = (axiCfg::useBurst ? wr_addr_pld_out.len : 0);
         wr_data_pld_out = wr_data.front(); wr_data.pop();
         // Store the data
         if (axiCfg::useWriteStrobes) {
@@ -216,7 +215,7 @@ class Slave : public sc_module {
           BOOST_ASSERT_MSG( wr_data_pld_out.wstrb != 0, msg.str().c_str() );
           for (int j=0; j<axi4_::WSTRB_WIDTH; j++) {
             if (wr_data_pld_out.wstrb[j] == 1) {
-              localMem_wstrb[wresp_addr+j] = static_cast< sc_bv<8> >(wr_data_pld_out.data.range(8*j+7,8*j));
+              localMem_wstrb[wresp_addr+j] = nvhls::get_slc<8>(wr_data_pld_out.data, 8*j);
             }
           }
         } else {
