@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
+include ../../unittests_Makefile
+
 # The tetstbench is not very sophisticated, so certain random seeds
 # will cause reads to overtake writes.
-RAND_SEED := 1000
-
-include ../../unittests_Makefile
+USER_FLAGS += -DRAND_SEED=1000

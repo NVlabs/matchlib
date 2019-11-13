@@ -48,10 +48,8 @@ endif
 #   This feature aids in latency insensitive design verication.
 #   Note: Only valid if SIM_MODE = 1 (accurate) or 2 (fast)
 RAND_STALL ?= 0
-RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
-export SEED=$(RAND_SEED)
 ifeq ($(RAND_STALL),1)
-	COMPILER_FLAGS += RAND_SEED=$(SEED) CONN_RAND_STALL
+	COMPILER_FLAGS += CONN_RAND_STALL
 endif
 
 export FSDB_VCS_RD_SC_VALPTR_PROTECT=1

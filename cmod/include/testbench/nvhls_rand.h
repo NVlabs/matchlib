@@ -28,7 +28,10 @@ namespace nvhls {
  * \ingroup set_random_seed
  * 
  * \par Overview
- *      Function to set random seed in the testbench. Custom seed can be used by setting CFLAG RAND_SEED to desired value.
+ *      A function to set the random seed in the testbench. The seed is set based on the following prioritization:
+ *        -# The setting of the RAND_SEED environment variable at runtime
+ *        -# The setting of the RAND_SEED CFLAG at compile time (or via #define in a source file)
+ *        -# A random seed based on the unix timestamp at runtime
  *
  * \par A Simple Example
  * \code
@@ -57,6 +60,8 @@ inline int set_random_seed() {
 #ifdef RAND_SEED  
   seed = (RAND_SEED);
 #endif
+  const char* env_rand_seed = std::getenv("RAND_SEED");
+  if (env_rand_seed != NULL) seed = atoi(env_rand_seed);
   srand(seed);
   cout << "================================" << endl;
   cout << dec << "SETTING RANDOM SEED = " << seed << endl;

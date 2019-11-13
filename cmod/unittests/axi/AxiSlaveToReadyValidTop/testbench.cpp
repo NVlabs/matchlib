@@ -36,11 +36,7 @@ SC_MODULE(testbench) {
                         // guarantee that reads won't race ahead
       addrBoundLower = 0x0,
       addrBoundUpper = (1 << 20) - 1,
-#ifdef RAND_SEED
-      seed = RAND_SEED,
-#else
       seed = 0,
-#endif
       useFile = false,
     };
   };

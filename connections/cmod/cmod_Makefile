@@ -54,10 +54,8 @@ endif
 #
 # This feature aids in latency insensitive design verication.
 # Note: Only valid if SIM_MODE = 1 (accurate) or 2 (fast)
-RAND_STALL ?= 0
 ifeq ($(RAND_STALL),1)
-	RAND_SEED ?= $(shell bash -c 'echo $$RANDOM')
-	USER_FLAGS += -DRAND_SEED=$(RAND_SEED) -DCONN_RAND_STALL
+	USER_FLAGS += -DCONN_RAND_STALL
 endif
 
 .PHONY: Build

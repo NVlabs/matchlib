@@ -52,11 +52,7 @@ struct masterCfg {
     numWrites = 100,
     numReads = 100,
     readDelay = 0,
-#ifdef RAND_SEED
-    seed = RAND_SEED,
-#else
     seed = 0,
-#endif
   };
   // enum only supports 32-bit types, so use static 64-bit types as needed (e.g., for >32bit addresses)
   static const uint64_t addrBoundLower = 0;
@@ -137,7 +133,14 @@ class Master : public sc_module {
     typename axi4_::AddrPayload addr_pld;
     typename axi4_::ReadPayload data_pld;
 
-    boost::random::mt19937 gen(cfg::seed);
+    // Follow the same priority as nvhls_rand: environment, then preprocessor define, then config
+    unsigned int seed = cfg::seed;
+#ifdef RAND_SEED
+    seed = (RAND_SEED);
+#endif
+    const char* env_rand_seed = std::getenv("RAND_SEED");
+    if (env_rand_seed != NULL) seed = atoi(env_rand_seed);
+    boost::random::mt19937 gen(seed);
     boost::random::uniform_int_distribution<uint64_t> random_addr(cfg::addrBoundLower, cfg::addrBoundUpper);
     boost::random::uniform_int_distribution<> random_wstrb(1, pow(2,WSTRB_W)-1);
     boost::random::uniform_int_distribution<> random_burstlen(0, axiCfg::maxBurstSize-1);

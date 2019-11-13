@@ -19,3 +19,7 @@ SRC_PATH				:= $(ROOT)/cmod/unittests/axi
 include $(ROOT)/hls/hls_Makefile
 
 COMPILER_FLAGS += HLS_ALGORITHMICC
+
+# The tetstbench is not very sophisticated, so certain random seeds
+# will cause reads to overtake writes.
+COMPILER_FLAGS += RAND_SEED=1000

@@ -32,11 +32,7 @@ SC_MODULE(testbench) {
       readDelay = 0,
       addrBoundLower = 0,
       addrBoundUpper = 2 * 1024 - 1,
-  #ifdef RAND_SEED
-      seed = RAND_SEED,
-  #else
       seed = 0,
-  #endif
     };
   };
 

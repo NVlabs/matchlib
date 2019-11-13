@@ -35,11 +35,7 @@ SC_MODULE(testbench) {
       readDelay = 5000,
       addrBoundLower = 0,
       addrBoundUpper = 0x7FFFFFFF,
-#ifdef RAND_SEED
-      seed = RAND_SEED,
-#else
       seed = 0,
-#endif
       useFile = false,
     };
   };

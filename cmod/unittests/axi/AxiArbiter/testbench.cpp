@@ -38,11 +38,7 @@ SC_MODULE(testbench) {
       readDelay = 0,
       addrBoundLower = 0,
       addrBoundUpper = 0x1FFFFFFF,
-#ifdef RAND_SEED
-      seed = RAND_SEED,
-#else
       seed = 0,
-#endif
       useFile = false,
     };
   };
@@ -53,11 +49,7 @@ SC_MODULE(testbench) {
       readDelay = 0,
       addrBoundLower = 0x20000000,
       addrBoundUpper = 0x3FFFFFFF,
-#ifdef RAND_SEED
-      seed = RAND_SEED + 1,
-#else
       seed = 1,
-#endif
       useFile = false,
     };
   };
@@ -68,11 +60,7 @@ SC_MODULE(testbench) {
       readDelay = 0,
       addrBoundLower = 0x40000000,
       addrBoundUpper = 0x5FFFFFFF,
-#ifdef RAND_SEED
-      seed = RAND_SEED + 2,
-#else
       seed = 2,
-#endif
       useFile = false,
     };
   };
@@ -83,11 +71,7 @@ SC_MODULE(testbench) {
       readDelay = 0,
       addrBoundLower = 0x60000000,
       addrBoundUpper = 0x7FFFFFFF,
-#ifdef RAND_SEED
-      seed = RAND_SEED + 3,
-#else
       seed = 3,
-#endif
       useFile = false,
     };
   };
