@@ -118,6 +118,22 @@ class axi4 {
                                       ASIZE_WIDTH + BURST_WIDTH + CACHE_WIDTH +
                                       AUSER_WIDTH;
 
+   AddrPayload() {
+     if(ID_WIDTH > 0)
+       id = 0;
+     addr = 0; // NVUINT, ADDR_WIDTH always > 0
+     if(ALEN_WIDTH > 0)
+       len = 0;
+     if(ASIZE_WIDTH > 0)
+       size = 0;
+     if(BURST_WIDTH > 0)
+       burst = 0;
+     if(CACHE_WIDTH > 0)
+       cache = 0;
+     if(AUSER_WIDTH > 0)
+       auser = 0;
+    }
+    
     template <unsigned int Size>
     void Marshall(Marshaller<Size> &m) {
       m &id;
@@ -152,6 +168,17 @@ class axi4 {
     static const unsigned int width =
         DATA_WIDTH + RESP_WIDTH + ID_WIDTH + LAST_WIDTH + RUSER_WIDTH;
 
+   ReadPayload() {
+     if(ID_WIDTH > 0)
+       id = 0;
+     data = 0; // NVUINT, DATA_WIDTH always > 0 
+     resp = 0; // NVUINT, RESP_WIDTH always > 0
+     if(LAST_WIDTH > 0)
+       last = 0;
+     if(RUSER_WIDTH > 0)
+       ruser = 0;
+   }
+    
     template <unsigned int Size>
     void Marshall(Marshaller<Size> &m) {
       m &id;
@@ -181,6 +208,14 @@ class axi4 {
 
     static const unsigned int width = RESP_WIDTH + BID_WIDTH + BUSER_WIDTH;
 
+   WRespPayload() {
+     if(ID_WIDTH > 0)
+       id = 0;
+     resp = 0; // NVUINT, RESP_WIDTH always > 0
+     if(BUSER_WIDTH > 0)
+       buser = 0;
+    }
+
     template <unsigned int Size>
     void Marshall(Marshaller<Size> &m) {
       m &id;
@@ -207,8 +242,13 @@ class axi4 {
     WUser wuser;
 
     WritePayload() {
-      if(WSTRB_WIDTH > 0)
+     data = 0; // NVUINT, DATA_WIDTH always > 0 
+     if(LAST_WIDTH > 0)
+       last = 0;
+     if(WSTRB_WIDTH > 0)
         wstrb = ~0;
+     if(WUSER_WIDTH > 0)
+       wuser = 0;
     }
     
     static const unsigned int width =

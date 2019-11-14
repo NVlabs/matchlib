@@ -127,7 +127,7 @@
  */
 #ifndef CONNECTIONS_CONCAT
 
-#if defined(__SYNTHESIS__) && defined(HLS_CATAPULT) && _cplusplus >= 201103L
+#if defined(__SYNTHESIS__) && defined(HLS_CATAPULT) && __cplusplus >= 201103L
 #define CONNECTIONS_CONCAT(s1,s2) (std::string(s2)).c_str()
 #else
 #define CONNECTIONS_CONCAT(s1,s2) (std::string(s1) + "_" + std::string(s2)).c_str()

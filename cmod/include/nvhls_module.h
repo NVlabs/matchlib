@@ -53,7 +53,7 @@
  * Catapult synthesis in C++11 mode currently doesn't support + operators on
  * strings, so only s2 is used.
  */
-#if defined(__SYNTHESIS__) && defined(HLS_CATAPULT) && _cplusplus >= 201103L
+#if defined(__SYNTHESIS__) && defined(HLS_CATAPULT) && __cplusplus >= 201103L
 #define nvhls_concat(s1,s2) (std::string(s2)).c_str()
 #else
 #define nvhls_concat(s1,s2) (std::string(s1) + "_" + std::string(s2)).c_str()
