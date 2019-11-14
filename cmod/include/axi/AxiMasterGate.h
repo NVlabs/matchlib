@@ -96,6 +96,7 @@ class AxiMasterGate : public sc_module {
     bool wrRequestIdValid = false;
     bool isBurstInFlight = false;
 
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
 #ifdef DEBUGMODE
@@ -255,6 +256,7 @@ class AxiMasterGate : public sc_module {
     bool rdBurstInFlight = false;
     bool rdReceivingBurstBeats = false;
 
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
 

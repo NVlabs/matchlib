@@ -14,15 +14,4 @@
 
 source ../../../nvhls_exec.tcl
 
-proc nvhls::usercmd_post_assembly {} {
-    upvar TOP_NAME TOP_NAME
-    directive set /$TOP_NAME/axi_remove_wresp/axi_read_ar -PIPELINE_INIT_INTERVAL 1
-    directive set /$TOP_NAME/axi_remove_wresp/axi_read_r -PIPELINE_INIT_INTERVAL 1
-    directive set /$TOP_NAME/axi_remove_wresp/axi_write -PIPELINE_INIT_INTERVAL 2
-    directive set /$TOP_NAME/axi_add_wresp/axi_read_ar -PIPELINE_INIT_INTERVAL 1
-    directive set /$TOP_NAME/axi_add_wresp/axi_read_r -PIPELINE_INIT_INTERVAL 1
-    directive set /$TOP_NAME/axi_add_wresp/axi_write_aw -PIPELINE_INIT_INTERVAL 1
-    directive set /$TOP_NAME/axi_add_wresp/axi_write_w -PIPELINE_INIT_INTERVAL 1
-}
-
 nvhls::run

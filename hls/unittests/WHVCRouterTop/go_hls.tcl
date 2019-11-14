@@ -14,10 +14,4 @@
 
 source ../../nvhls_exec.tcl
 
-set MAIN_PIPELINE_II 1
-
-proc nvhls::usercmd_post_assembly {} {
-    directive set /WHVCRouterTop/WHVCSourceRouter<1,4,1,8,WHVCRouterTop::Flit_t,16>/process/while -PIPELINE_INIT_INTERVAL 1
-}
-
 nvhls::run

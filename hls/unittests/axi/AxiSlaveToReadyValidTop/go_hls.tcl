@@ -14,9 +14,4 @@
 
 source ../../../nvhls_exec.tcl
 
-proc nvhls::usercmd_post_assembly {} {
-    upvar TOP_NAME TOP_NAME
-    directive set /$TOP_NAME/top/run/while -PIPELINE_INIT_INTERVAL 1
-}
-
 nvhls::run

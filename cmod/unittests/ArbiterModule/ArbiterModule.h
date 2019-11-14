@@ -60,6 +60,7 @@ void ArbiterModule::Process() {
   select_out.Reset();
   wait();
 
+  #pragma hls_pipeline_init_interval 1
   while (1) {
     mask_t valid_reg;
     mask_t select_reg;

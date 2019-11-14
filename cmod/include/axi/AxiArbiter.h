@@ -123,6 +123,7 @@ class AxiArbiter : public sc_module {
     NVUINTW(numMasters) select_mask = 0;
     Arbiter<numMasters> arb;
 
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
 
@@ -166,6 +167,8 @@ class AxiArbiter : public sc_module {
 
     bool read_inProgress = 0;
 
+    #pragma hls_pipeline_init_interval 1
+    #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 
@@ -237,6 +240,8 @@ class AxiArbiter : public sc_module {
         active_write_master.Push(active_master);
         write_in_flight.Push(active_master);
 
+        #pragma hls_pipeline_init_interval 1
+        #pragma pipeline_stall_mode flush
         while (w_last.Pop() == false) {
         }
 
@@ -261,6 +266,8 @@ class AxiArbiter : public sc_module {
     while (1) {
       inFlight_t active_master = active_write_master.Pop();
 
+      #pragma hls_pipeline_init_interval 1
+      #pragma pipeline_stall_mode flush
       do {
         W_reg = axi_wr_m_w[active_master].Pop();
         axi_wr_s.w.Push(W_reg);
@@ -283,6 +290,7 @@ class AxiArbiter : public sc_module {
     inFlight_t inFlight_resp_reg;
     bool write_inProgress = 0;
 
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
 

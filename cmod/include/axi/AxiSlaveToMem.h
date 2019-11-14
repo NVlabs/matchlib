@@ -87,6 +87,7 @@ class AxiSlaveToMem : public sc_module {
     sc_uint<axi4_::ALEN_WIDTH> rd_beat_cnt = 0;
     sc_uint<axi4_::ALEN_WIDTH> wr_beat_cnt = 0;
 
+    #pragma hls_pipeline_init_interval 2
     while (1) {
       wait();
 

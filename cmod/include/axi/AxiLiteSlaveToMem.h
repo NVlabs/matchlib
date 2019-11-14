@@ -79,6 +79,7 @@ class AxiLiteSlaveToMem : public sc_module {
     rd_resp_pend = false;
     wr_resp_pend = false;
 
+    #pragma hls_pipeline_init_interval 4
     while (1) {
       wait();
 

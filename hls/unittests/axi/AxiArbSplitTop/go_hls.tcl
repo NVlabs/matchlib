@@ -14,16 +14,4 @@
 
 source ../../../nvhls_exec.tcl
 
-proc nvhls::usercmd_post_assembly {} {
-    upvar TOP_NAME TOP_NAME
-    set II 1
-    directive set /$TOP_NAME/axi_arbiter/run_ar/while -PIPELINE_INIT_INTERVAL $II
-    directive set /$TOP_NAME/axi_arbiter/run_r/while -PIPELINE_INIT_INTERVAL $II
-    directive set /$TOP_NAME/axi_arbiter/run_aw/while:if:while -PIPELINE_INIT_INTERVAL $II
-    directive set /$TOP_NAME/axi_arbiter/run_w/while:do -PIPELINE_INIT_INTERVAL $II
-    directive set /$TOP_NAME/axi_arbiter/run_b/while -PIPELINE_INIT_INTERVAL $II
-    directive set /$TOP_NAME/axi_splitter/run_r/while -PIPELINE_INIT_INTERVAL $II
-    directive set /$TOP_NAME/axi_splitter/run_w/while -PIPELINE_INIT_INTERVAL $II
-}
-
 nvhls::run

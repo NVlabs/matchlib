@@ -105,6 +105,7 @@ class AxiAddWriteResponse : public sc_module {
   void axi_read_ar() {
     axiM_read.ar.Reset();
     axiS_read.ar.Reset();
+    #pragma hls_pipeline_init_interval 1
     while(1) {
       wait();
       if (axiM_read.ar.PopNB(AR)) {
@@ -116,6 +117,7 @@ class AxiAddWriteResponse : public sc_module {
   void axi_read_r() {
     axiM_read.r.Reset();
     axiS_read.r.Reset();
+    #pragma hls_pipeline_init_interval 1
     while(1) {
       wait();
       if (axiS_read.r.PopNB(R)) {
@@ -127,6 +129,7 @@ class AxiAddWriteResponse : public sc_module {
   void axi_write_aw() {
     axiM_write.aw.Reset();
     axiS_write.aw.Reset();
+    #pragma hls_pipeline_init_interval 1
     while(1) {
       wait();
       if (axiM_write.aw.PopNB(AW)) {
@@ -138,6 +141,7 @@ class AxiAddWriteResponse : public sc_module {
   void axi_write_w() {
     axiM_write.w.Reset();
     axiS_write.w.Reset();
+    #pragma hls_pipeline_init_interval 1
     while(1) {
       wait();
       if (axiM_write.w.PopNB(W)) {

@@ -202,7 +202,7 @@ public:
       credit_recv[i] = buffersize;
     }
 
-
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
       run();
@@ -524,6 +524,7 @@ public:
     }
   }
 
+  
   void run() {
     this->receive_credit();
     this->fill_ififo();

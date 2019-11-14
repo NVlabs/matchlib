@@ -16,7 +16,6 @@ source ../../../nvhls_exec.tcl
 
 proc nvhls::usercmd_post_assembly {} {
     upvar TOP_NAME TOP_NAME
-    directive set /$TOP_NAME/slave/run/while -PIPELINE_INIT_INTERVAL 2
     directive set /$TOP_NAME/slave/run/memarray.bank.array_impl.data0:rsc -MAP_TO_MODULE ram_sample-065nm-separate_beh_dc.RAM_separateRW
 }
 

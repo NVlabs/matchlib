@@ -108,7 +108,8 @@ class AxiSlaveToReadyValid : public sc_module {
 
     bool read_inFlight = 0;
     bool arb_needs_update = 1;
-
+    
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
 

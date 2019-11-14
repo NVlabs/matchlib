@@ -105,6 +105,7 @@ class AxiRemoveWriteResponse : public sc_module {
   void axi_read_ar() {
     axiM_read.ar.Reset();
     axiS_read.ar.Reset();
+    #pragma hls_pipeline_init_interval 1
     while(1) {
       wait();
       if (axiM_read.ar.PopNB(AR)) {
@@ -116,6 +117,7 @@ class AxiRemoveWriteResponse : public sc_module {
   void axi_read_r() {
     axiM_read.r.Reset();
     axiS_read.r.Reset();
+    #pragma hls_pipeline_init_interval 1
     while(1) {
       wait();
       if (axiS_read.r.PopNB(R)) {
@@ -138,6 +140,7 @@ class AxiRemoveWriteResponse : public sc_module {
     bool wresp_id_q_out_full = 0;
     bool wresp_id_q_out_empty = 0;
 
+    #pragma hls_pipeline_init_interval 2
     while(1) {
       wait();
 

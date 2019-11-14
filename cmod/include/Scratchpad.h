@@ -123,6 +123,7 @@ class Scratchpad : public sc_module {
     cli_rsp.Reset();
     wait();
 
+    #pragma hls_pipeline_init_interval 1
     while (true) {
 
       bool is_load;

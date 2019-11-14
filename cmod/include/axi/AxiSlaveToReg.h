@@ -104,6 +104,7 @@ class AxiSlaveToReg : public sc_module {
     NVUINTW(2) select_mask = 0;
     Arbiter<2> arb;
 
+    #pragma hls_pipeline_init_interval 1
     while (1) {
       wait();
 
