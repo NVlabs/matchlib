@@ -23,7 +23,7 @@ LIBDIR ?=
 LIBDIR += -L. -L$(SYSTEMC_HOME)/lib-linux64 -L$(BOOST_HOME)/lib
 
 CFLAGS ?= 
-CFLAGS += -Wall -Wno-unknown-pragmas $(INCDIR) $(LIBDIR)
+CFLAGS += -Wall -Wno-unknown-pragmas -std=c++11 $(INCDIR) $(LIBDIR)
 
 HLS_CATAPULT ?= 1
 ifeq ($(HLS_CATAPULT),1)

@@ -85,6 +85,8 @@ struct masterCfg {
  */
 template <typename axiCfg, typename cfg>
 class Master : public sc_module {
+  BOOST_STATIC_ASSERT_MSG(axiCfg::useWriteResponses || cfg::numReads == 0 || cfg::readDelay != 0,
+                "Must use a substantial read delay if reading without write responses");
  public:
   static const int kDebugLevel = 0;
   typedef axi::axi4<axiCfg> axi4_;
@@ -116,8 +118,6 @@ class Master : public sc_module {
 
  protected:
   void run() {
-    BOOST_ASSERT_MSG(axiCfg::useWriteResponses || cfg::numReads == 0 || cfg::readDelay != 0,
-                "Must use a substantial read delay if reading without write responses");
     static const int bytesPerWord = axi4_::DATA_WIDTH >> 3;
     static const int axiAddrBitsPerWord = nvhls::log2_ceil<bytesPerWord>::val;
     // Workaround for useBurst=0, which sets ALEN field to 0 width

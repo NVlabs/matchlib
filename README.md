@@ -15,7 +15,7 @@ latency-insensitive channel implementation can be found in the [Connections Guid
 
 MatchLib is regressed against the following tool/dependency verions:
 
-* `gcc` - 4.9.3
+* `gcc` - 4.9.3 (with C++11)
 * `systemc` - 2.3.1
 * `boost` - 1.55.0
 * `doxygen` - 1.8.11

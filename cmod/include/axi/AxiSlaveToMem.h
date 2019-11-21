@@ -115,7 +115,7 @@ class AxiSlaveToMem : public sc_module {
         data_pld.resp = axi4_::Enc::XRESP::OKAY;
         data_pld.id = rd_addr_pld.id;
 
-        sc_uint<axi4_::ALEN_WIDTH> rd_beat_cnt_local = rd_beat_cnt;
+        auto rd_beat_cnt_local = rd_beat_cnt;
 
         if (rd_beat_cnt_local == rd_addr_pld.len) {
           rd_beat_cnt_local = 0;
@@ -155,7 +155,7 @@ class AxiSlaveToMem : public sc_module {
         typename axi4_::WritePayload write_pld;
 
         if (if_wr.w.PopNB(write_pld)) {
-          sc_uint<axi4_::ALEN_WIDTH> wr_beat_cnt_local = wr_beat_cnt;
+          auto wr_beat_cnt_local = wr_beat_cnt;
           memarray.write(static_cast<typename Memarray::LocalIndex>(static_cast<sc_uint<axi4_::ADDR_WIDTH> >
                         (wr_addr_pld.addr) + bytesPerWord*wr_beat_cnt_local), 0, static_cast<Data>
                         (static_cast<sc_uint<axi4_::DATA_WIDTH> >(write_pld.data)));
