@@ -19,7 +19,7 @@
 
 #include <nvhls_connections_utils.h>
 
-#include "../../connections/cmod/include/connections/annotate.h"
+#include <connections/annotate.h>
 
 namespace nvhls {
   void annotate_design(const sc_object &root, std::string base_name = "", std::string input_dir_path = "", std::string output_dir_path = "") {

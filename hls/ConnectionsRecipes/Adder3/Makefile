@@ -14,23 +14,20 @@
 # limitations under the License.
 #
 
-ROOT          := ../../..
-
-RAPIDJSON_HOME ?= $(ROOT)/rapidjson
-
-TOP_NAME      :=  Adder2
-SRC_PATH      := $(ROOT)/cmod/examples/ConnectionsRecipes
-SEARCH_PATH   := $(ROOT)/cmod \
-                 $(ROOT)/cmod/include \
-                 $(ROOT)/cmod/examples/ConnectionsRecipes/$(TOP_NAME) \
-                 $(RAPIDJSON_HOME)/include
+TOP_NAME      =  Adder2
+SRC_PATH      = $(ROOT)/cmod/examples/ConnectionsRecipes
+SEARCH_PATH   = $(ROOT)/cmod \
+                $(ROOT)/cmod/include \
+                $(ROOT)/cmod/examples/ConnectionsRecipes/$(TOP_NAME) \
+		$(CONNECTIONS_HOME)/include \
+                $(RAPIDJSON_HOME)/include
 
 
-COMPILER_FLAGS  := SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM
+COMPILER_FLAGS  = SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM
 
 # Must always use these modes for this test, since it is cycle count
 # dependent.
 override SIM_MODE=1
 override RAND_STALL=0
 
-include $(ROOT)/hls/hls_Makefile
+include ../../../hls/hls_Makefile

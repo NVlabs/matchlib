@@ -19,7 +19,7 @@
 
 #include <nvhls_connections_utils.h>
 
-#include "../../connections/cmod/include/connections/message.h"
+#include <connections/message.h>
 
 class nvhls_message : public Connections::message {};
 

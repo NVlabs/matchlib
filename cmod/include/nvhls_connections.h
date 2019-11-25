@@ -20,7 +20,7 @@
 #include <nvhls_connections_utils.h>
 
 // Include connections tree nvhls_connections.h
-#include "../../connections/cmod/include/connections/connections.h"
+#include <connections/connections.h>
 
 // Include dependencies that we no longer include in Connections' nvhls_connections.h
 #include <nvhls_packet.h>

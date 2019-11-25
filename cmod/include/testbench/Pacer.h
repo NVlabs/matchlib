@@ -19,6 +19,6 @@
 
 #include <nvhls_connections_utils.h>
 
-#include "../../../connections/cmod/include/connections/Pacer.h"
+#include <connections/Pacer.h>
 
 #endif // PACER_H_

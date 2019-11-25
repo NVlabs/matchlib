@@ -14,10 +14,19 @@
 # limitations under the License.
 #
 
+TOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../)
+ROOT ?= $(TOT)
+
+# Location of submodules
+CONNECTIONS_HOME ?= $(ROOT)/connections
+RAPIDJSON_HOME ?= $(ROOT)/rapidjson
+
 CC = g++
 
 INCDIR ?=
 INCDIR += -I. -I$(SYSTEMC_HOME)/include -I$(BOOST_HOME)/include -I$(CATAPULT_HOME)/Mgc_home/shared/include
+INCDIR += -I$(CONNECTIONS_HOME)/include
+INCDIR += -I$(RAPIDJSON_HOME)/include 
 
 LIBDIR ?=
 LIBDIR += -L. -L$(SYSTEMC_HOME)/lib-linux64 -L$(BOOST_HOME)/lib

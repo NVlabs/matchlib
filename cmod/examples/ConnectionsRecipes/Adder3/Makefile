@@ -23,14 +23,11 @@ include ../../../cmod_Makefile
 
 all: sim_adder3
 
-# Location of rapidjson
-RAPIDJSON_HOME ?= ../../../../rapidjson
-
 run:
 	./sim_adder3
 
 sim_adder3: $(wildcard *.h) $(wildcard *.cpp)
-	$(CC) -o sim_adder3 $(CFLAGS) $(USER_FLAGS) -I../Adder2 -I../../../include -I${RAPIDJSON_HOME}/include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+	$(CC) -o sim_adder3 $(CFLAGS) $(USER_FLAGS) -I../Adder2 -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
 
 sim_clean:
 	rm -rf *.o sim_*

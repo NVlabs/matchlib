@@ -19,7 +19,7 @@
 
 #include <nvhls_connections_utils.h>
 
-#include "../../connections/cmod/include/connections/marshaller.h"
+#include <connections/marshaller.h>
 
 #include <nvhls_assert.h>
 
