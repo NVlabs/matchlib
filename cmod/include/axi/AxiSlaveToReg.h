@@ -105,6 +105,7 @@ class AxiSlaveToReg : public sc_module {
     Arbiter<2> arb;
 
     #pragma hls_pipeline_init_interval 1
+    #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 

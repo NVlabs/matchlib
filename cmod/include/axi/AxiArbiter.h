@@ -124,6 +124,7 @@ class AxiArbiter : public sc_module {
     Arbiter<numMasters> arb;
 
     #pragma hls_pipeline_init_interval 1
+    #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 
@@ -291,6 +292,7 @@ class AxiArbiter : public sc_module {
     bool write_inProgress = 0;
 
     #pragma hls_pipeline_init_interval 1
+    #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 

@@ -124,6 +124,7 @@ class Scratchpad : public sc_module {
     wait();
 
     #pragma hls_pipeline_init_interval 1
+    #pragma pipeline_stall_mode flush
     while (true) {
 
       bool is_load;
