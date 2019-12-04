@@ -25,7 +25,7 @@
 #include <fifo.h>
 
 /**
- * \brief An AXI slave SRAM for the AXI-Lite protocol.
+ * \brief An AXI slave SRAM.
  * \ingroup AXI
  *
  * \tparam axiCfg     A valid AXI config.
@@ -37,6 +37,20 @@
  * The module only handles AXI addresses within the range of its internal memory, with a base address of 0.
  * It does not support write strobes.
  * It has internal queues to handle multiple simultaneous requests in flight, and can handle read and write requests independently, but it does not reorder requests.
+ *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiSlaveToMem/run/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
  *
  */
 template <typename axiCfg, int capacity, int fifoDepth = 8>

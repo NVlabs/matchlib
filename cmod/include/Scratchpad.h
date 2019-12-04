@@ -62,7 +62,21 @@
  *      ...
  *
  * \endcode
+ *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/Scratchpad/run/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
  * \par
+ *
  *
  */
 

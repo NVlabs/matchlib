@@ -36,6 +36,20 @@
  * \par Overview
  * This block converts AXI read and write requests into a simplified format consisting of a single ready-valid interface that has address, data, and write strobe fields, as well as a read/write indicator.  Read responses are returned to the block via a second ready-valid interface (there are no write responses expected).  AxiSlaveToReadyValid handles all of the AXI-specific protocol, generating write responses and packing/unpacking bursts as necessary.
  *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiSlaveToReadyValid/run/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <typename axiCfg, typename rvCfg>
 class AxiSlaveToReadyValid : public sc_module {

@@ -35,6 +35,20 @@
  * This block converts between an AXI master that uses write responses and an AXI slave that does not use write responses.  Most signals are simply passed through from master to slave.  When a write request is received from the master, it is passed through to the slave, and a write response is also sent back to the master.
  * - Apart from support for write responses, the two AXI configs must otherwise be the same.
  *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiRemoveWriteResponse/axi_read_ar/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <typename CfgMaster, typename CfgSlave, int maxInFlight>
 class AxiRemoveWriteResponse : public sc_module {

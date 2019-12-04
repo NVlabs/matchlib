@@ -35,6 +35,20 @@
  * The module only handles AXI addresses within the range of its internal memory, with a base address of 0.
  * It does not support write strobes.
  *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiLiteSlaveToMem/run/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <int capacity>
 class AxiLiteSlaveToMem : public sc_module {

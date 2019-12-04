@@ -43,6 +43,20 @@
  * - As implemented, the splitter directs all writes from a burst to the destination indicated by the base address of the burst.  Guards against crossing address boundaries are not implemented.
  * - The AXI configs of all ports must be the same.
  *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiSplitter/run_r/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <typename axiCfg, int numSlaves, int numAddrBitsToInspect = axiCfg::addrWidth, bool default_output = false, bool translate_addr = false>
 class AxiSplitter : public sc_module {

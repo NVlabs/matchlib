@@ -39,6 +39,20 @@
  * - The arbiter assumes that responses are returned in the order that requests are sent.  Downstream request reordering is currently not supported. 
  * - The AXI configs of all ports must be the same.
  *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiArbiter/run_ar/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <typename axiCfg, int numMasters, int maxOutstandingRequests>
 class AxiArbiter : public sc_module {

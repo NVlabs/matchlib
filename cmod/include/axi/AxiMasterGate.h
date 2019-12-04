@@ -40,6 +40,21 @@
  * This block takes as inputs RdRequest and WrRequest Connections. The block converts the requests into
  * AXI format, sends them to AXI master ports, and processes the responses into RdResponse and WrResponse ports.
  * ReorderBuf and ReorderBufWBeats are used to allow reordering via use of the AXI ID field.
+ *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiMasterGate/run_rd/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <typename Cfg, int ROBDepth = 8, int MaxInFlightTrans = 4>
 class AxiMasterGate : public sc_module {

@@ -36,6 +36,20 @@
  * \par Overview
  * AxiSlaveToReg is an AXI slave that saves its state in a bank of registers.  The register state is accessible as an array of sc_out.
  *
+ * \par Usage Guidelines
+ *
+ * This module sets the stall mode to flush by default to mitigate possible RTL
+ * bugs that can occur in the default stall mode. If you are confident that
+ * this class of bugs will not occur in your use case, you can change the stall
+ * mode via TCL directive:
+ *
+ * \code
+ * directive set /path/to/AxiSlaveToReg/run/while -PIPELINE_STALL_MODE stall
+ * \endcode
+ *
+ * This may reduce area/power.
+ * \par
+ *
  */
 template <typename axiCfg, int numReg, int numAddrBitsToInspect = axiCfg::addrWidth>
 class AxiSlaveToReg : public sc_module {
