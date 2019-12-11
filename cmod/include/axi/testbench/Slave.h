@@ -88,10 +88,8 @@ class Slave : public sc_module {
       if (if_rd.nb_aread(rd_addr_pld)) {
         typename axi4_::Addr addr = rd_addr_pld.addr;
         NVHLS_ASSERT_MSG(addr % bytesPerBeat == 0, "Addresses_must_be_word_aligned");
-        CDCOUT(sc_time_stamp() << " " << name() << " Received read request:"
-                      << " addr=" << hex << addr
-                      << " burstlen=" << dec << rd_addr_pld.len.to_uint64()
-                      << " id="   << hex << rd_addr_pld.id
+        CDCOUT(sc_time_stamp() << " " << name() << " Received read request: ["
+                      << rd_addr_pld << "]"
                       << endl, kDebugLevel);
         NVUINTW(axi4_::ALEN_WIDTH) len = (axiCfg::useBurst ? rd_addr_pld.len : NVUINTW(axi4_::ALEN_WIDTH)(0));
         for (unsigned int i=0; i<(len+1); i++) {
@@ -132,10 +130,9 @@ class Slave : public sc_module {
         typename axi4_::Addr addr = rd_resp_addr.front();
         if (if_rd.nb_rwrite(data_pld)) {
           CDCOUT(sc_time_stamp() << " " << name() << " Returned read data:"
-                        << " data=" << hex << data_pld.data.to_uint64()
+                        << " data=[" << data_pld << "]"
                         << " addr=" << hex << addr.to_uint64()
                         << " beat=" << dec << (axiCfg::useBurst ? static_cast< sc_uint<32> >(rdBeatInFlight++) : "N/A")
-                        << " id="   << hex << data_pld.id
                         << endl, kDebugLevel);
           if (data_pld.last == 1) {
             rdBeatInFlight = 0;
@@ -168,8 +165,8 @@ class Slave : public sc_module {
           resp_pld = wr_resp.front();
           if (if_wr.nb_bwrite(resp_pld)) {
             wr_resp.pop();
-            CDCOUT(sc_time_stamp() << " " << name() << " Sent write response"
-                                   << " id="   << hex << resp_pld.id
+            CDCOUT(sc_time_stamp() << " " << name() << " Sent write response: ["
+                                   << resp_pld << "]"
                                    << endl, kDebugLevel);
           }
         }
@@ -179,10 +176,8 @@ class Slave : public sc_module {
       if (if_wr.aw.PopNB(wr_addr_pld)) {
         NVHLS_ASSERT_MSG(wr_addr_pld.addr.to_uint64() % bytesPerBeat == 0, "Addresses_must_be_word_aligned");
         wr_addr.push(wr_addr_pld);
-        CDCOUT(sc_time_stamp() << " " << name() << " Received write request:"
-                      << " addr=" << hex << wr_addr_pld.addr.to_uint64()
-                      << " burstlen=" << dec << wr_addr_pld.len.to_uint64()
-                      << " id="   << hex << wr_addr_pld.id
+        CDCOUT(sc_time_stamp() << " " << name() << " Received write request: ["
+                      << wr_addr_pld << "]"
                       << endl, kDebugLevel);
       }
 
@@ -190,8 +185,7 @@ class Slave : public sc_module {
       if (if_wr.w.PopNB(wr_data_pld)) {
         wr_data.push(wr_data_pld);
         CDCOUT(sc_time_stamp() << " " << name() << " Received write data:"
-                      << " data=" << hex << wr_data_pld.data.to_uint64()
-                      << " wstrb=" << hex << (axiCfg::useWriteStrobes ? wr_data_pld.wstrb : "N/A")
+                      << " data=[" << wr_data_pld << "]"
                       << " beat=" << dec << (axiCfg::useBurst ? static_cast< sc_uint<32> >(wrBeatInFlight++) : "N/A")
                       << endl, kDebugLevel);
         if (wr_data_pld.last == 1) {

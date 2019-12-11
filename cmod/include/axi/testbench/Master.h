@@ -208,9 +208,8 @@ class Master : public sc_module {
         if (!wr_conflict) {
           rd_addr_next = addr_pld.addr;
           if (if_rd.ar.PushNB(addr_pld)) {
-            CDCOUT(sc_time_stamp() << " " << name() << " Sent read request:"
-                          << " addr=" << hex << addr_pld.addr.to_uint64()
-                          << " burstlen=" << dec << addr_pld.len.to_uint64()
+            CDCOUT(sc_time_stamp() << " " << name() << " Sent read request: ["
+                          << addr_pld << "]"
                           << endl, kDebugLevel);
             numReads++;
             for (unsigned int i=0; i<(rd_len+1); i++) {
@@ -263,8 +262,8 @@ class Master : public sc_module {
             << std::endl;
         BOOST_ASSERT_MSG( (data_pld.resp == axi4_::Enc::XRESP::OKAY) |
                           (data_pld.resp == axi4_::Enc::XRESP::EXOKAY), ms2.str().c_str() );
-        CDCOUT(sc_time_stamp() << " " << name() << " Received correct read response:"
-                      << " data=" << hex << data_pld.data.to_uint64()
+        CDCOUT(sc_time_stamp() << " " << name() << " Received correct read response: ["
+                      << data_pld << "]"
                       << endl, kDebugLevel);
         raddr_queue.pop();
         if (numReadsOfBurst++ == rlen_queue.front()) {
@@ -289,9 +288,8 @@ class Master : public sc_module {
         }
         if (!rd_conflict) {
           if (if_wr.aw.PushNB(wr_addr_pld)) {
-            CDCOUT(sc_time_stamp() << " " << name() << " Sent write request:"
-                          << " addr=" << hex << wr_addr
-                          << " burstlen=" << dec << wr_addr_pld.len.to_uint64()
+            CDCOUT(sc_time_stamp() << " " << name() << " Sent write request: ["
+                          << wr_addr_pld << "]"
                           << endl, kDebugLevel);
             for (unsigned int i=0; i<(wr_len+1); i++) {
               waddr_queue.push(wr_addr+bytesPerBeat*i);
@@ -327,8 +325,7 @@ class Master : public sc_module {
         if (if_wr.w.PushNB(wr_data_pld)) {
           CDCOUT(sc_time_stamp() << " " << name() << " Sent write data:"
                         << " addr=" << hex << wr_addr
-                        << " data=" << hex << wr_data_pld.data.to_uint64()
-                        << " wstrb=" << hex << wr_data_pld.wstrb
+                        << " data=[" << wr_data_pld << "]"
                         << " beat=" << dec << numWritesOfBurst
                         << endl, kDebugLevel);
           if (axiCfg::useWriteStrobes) {

@@ -177,8 +177,7 @@ class AxiSlaveToReadyValid : public sc_module {
             }
             if_axi_rd.r.Push(axi_rd_resp);
             CDCOUT(sc_time_stamp() << " " << name() << " RV read response:"
-                          << " data=" << hex << axi_rd_resp.data.to_int64()
-                          << " last=" << dec << axi_rd_resp.last
+                          << axi_rd_resp
                           << endl, kDebugLevel);
             read_inFlight = 0;
           }

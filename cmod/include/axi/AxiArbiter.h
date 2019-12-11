@@ -159,7 +159,7 @@ class AxiArbiter : public sc_module {
           valid_mask = ~(~valid_mask | (1 << i));
           CDCOUT(sc_time_stamp() << " " << name() << " Pushed read request:"
                         << " from_port=" << i
-                        << " addr=" << hex << AR_reg[i].addr.to_int64()
+                        << " request=[" << AR_reg[i] << "]"
                         << endl, kDebugLevel);
           read_in_flight.Push(i);
         }
@@ -203,7 +203,7 @@ class AxiArbiter : public sc_module {
           axi_rd_m_r[inFlight_resp_reg].Push(R_reg);
           CDCOUT(sc_time_stamp() << " " << name() << " Pushed read response:"
                         << " to_port=" << inFlight_resp_reg
-                        << " data=" << hex << R_reg.data.to_int64()
+                        << " response=[" << R_reg << "]"
                         << endl, kDebugLevel);
           if (R_reg.last == 1)
             read_inProgress = 0;

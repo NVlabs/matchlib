@@ -160,19 +160,19 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         wdata_q.pop();
         if_wr.b.Pop();
         CDCOUT(sc_time_stamp() << " " << name() << " Sent write request:"
-                      << " addr=" << hex << addr_pld.addr.to_uint64()
-                      << " data=" << hex << wr_data_pld.data.to_uint64()
+                      << " addr=[" << addr_pld << "]"
+                      << " data=[" << wr_data_pld << "]"
                       << endl, kDebugLevel);
       } else {
         addr_pld = raddr_q.front();
         if_rd.ar.Push(addr_pld);
         raddr_q.pop();
-        CDCOUT(sc_time_stamp() << " " << name() << " Sent read request:"
-                      << " addr=" << hex << addr_pld.addr.to_uint64()
+        CDCOUT(sc_time_stamp() << " " << name() << " Sent read request: "
+                      << addr_pld
                       << endl, kDebugLevel);
         data_pld = if_rd.r.Pop();
-        CDCOUT(sc_time_stamp() << " " << name() << " Received read response:"
-                      << " data=" << hex << data_pld.data.to_uint64()
+        CDCOUT(sc_time_stamp() << " " << name() << " Received read response: ["
+                      << data_pld << "]"
                       << endl, kDebugLevel);
         NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read_response_did_not_match_expected_value");
         rresp_q.pop();

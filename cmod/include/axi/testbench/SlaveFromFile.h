@@ -120,9 +120,8 @@ protected:
       typename axi4_::AddrPayload rd_addr_pld;
       if (if_rd.nb_aread(rd_addr_pld)) {
         typename axi4_::Addr addr = rd_addr_pld.addr;
-        CDCOUT(sc_time_stamp() << " " << name() << " Received read request:"
-                      << " addr=" << hex << addr
-                      << " burstlen=" << dec << (axiCfg::useBurst ? rd_addr_pld.len : "N/A")
+        CDCOUT(sc_time_stamp() << " " << name() << " Received read request: ["
+                      << rd_addr_pld << "]"
                       << endl, kDebugLevel);
         NVUINTW(axi4_::ALEN_WIDTH) len = (axiCfg::useBurst ? rd_addr_pld.len : NVUINTW(axi4_::ALEN_WIDTH)(0));
         for (unsigned int i=0; i<(len+1); i++) {
@@ -163,7 +162,7 @@ protected:
         typename axi4_::Addr addr = rd_resp_addr.front();
         if (if_rd.nb_rwrite(data_pld)) {
           CDCOUT(sc_time_stamp() << " " << name() << " Returned read data:"
-                        << " data=" << hex << data_pld.data.to_uint64()
+                        << " data=[" << data_pld << "]"
                         << " addr=" << hex << addr.to_uint64()
                         << " beat=" << dec << (axiCfg::useBurst ? static_cast< sc_uint<32> >(rdBeatInFlight++) : "N/A")
                         << endl, kDebugLevel);

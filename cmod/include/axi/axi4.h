@@ -152,6 +152,25 @@ class axi4 {
       sc_trace(tf,v.len,   NAME + ".len");
     }
 #endif
+
+    inline friend std::ostream& operator<<(ostream& os, const AddrPayload& rhs)
+    {
+      if (ID_WIDTH > 0)
+        os << dec << "id:" << rhs.id << " ";
+      os << hex << "addr:" << rhs.addr << " ";
+      if (ALEN_WIDTH > 0)
+        os << dec << "len:" << rhs.len << " ";
+      if (ASIZE_WIDTH > 0)
+        os << dec << "size:" << rhs.size << " ";
+      if (BURST_WIDTH > 0)
+        os << dec << "burst:" << rhs.burst << " ";
+      if (CACHE_WIDTH > 0)
+        os << dec << "cache:" << rhs.cache << " ";
+      if (AUSER_WIDTH > 0)
+        os << hex << "auser:" << rhs.auser << " ";
+      return os;
+    }
+
   };
 
   /**
@@ -195,6 +214,19 @@ class axi4 {
       sc_trace(tf,v.last,  NAME + ".last");
     }
 #endif
+
+    inline friend std::ostream& operator<<(ostream& os, const ReadPayload& rhs)
+    {
+      if (ID_WIDTH > 0)
+        os << dec << "id:" << rhs.id << " ";
+      os << hex << "data:" << rhs.data << " ";
+      os << dec << "resp:" << rhs.resp << " ";
+      if (LAST_WIDTH > 0)
+        os << dec << "last:" << rhs.last << " ";
+      if (RUSER_WIDTH > 0)
+        os << hex << "user:" << rhs.ruser << " ";
+      return os;
+    }
   };
 
   /**
@@ -229,6 +261,16 @@ class axi4 {
       sc_trace(tf,v.resp,  NAME + ".resp");
     }
 #endif
+
+    inline friend std::ostream& operator<<(ostream& os, const WRespPayload& rhs)
+    {
+      if (ID_WIDTH > 0)
+        os << dec << "id:" << rhs.id << " ";
+      os << dec << "resp:" << rhs.resp << " ";
+      if (BUSER_WIDTH > 0)
+        os << hex << "buser:" << rhs.buser << " ";
+      return os;
+    }
   };
 
   /**
@@ -269,6 +311,18 @@ class axi4 {
       sc_trace(tf,v.wstrb, NAME + ".wstrb");
     }
 #endif
+
+    inline friend std::ostream& operator<<(ostream& os, const WritePayload& rhs)
+    {
+      os << hex << "data:" << rhs.data << " ";
+      if (LAST_WIDTH > 0)
+        os << dec << "last:" << rhs.last << " ";
+      if (WSTRB_WIDTH > 0)
+        os << hex << "wstrb:" << rhs.wstrb << " ";
+      if (WUSER_WIDTH > 0)
+        os << hex << "wuser:" << rhs.wuser << " ";
+      return os;
+    }
   };
 
   /**

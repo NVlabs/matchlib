@@ -120,9 +120,8 @@ class AxiSlaveToMem : public sc_module {
         typename axi4_::AddrPayload rd_addr_pld;
         rd_addr_pld = rd_addr.peek();
 
-        CDCOUT(sc_time_stamp() << " " << name() << " Received read request:"
-                      << " addr=" << hex << static_cast<sc_uint<axi4_::ADDR_WIDTH> >(rd_addr_pld.addr)
-                      << " burstlen=" << dec << rd_addr_pld.len
+        CDCOUT(sc_time_stamp() << " " << name() << " Received read request: "
+                      << rd_addr_pld
                       << endl, kDebugLevel);
 
         typename axi4_::ReadPayload data_pld;
@@ -175,11 +174,9 @@ class AxiSlaveToMem : public sc_module {
                         (wr_addr_pld.addr) + bytesPerWord*wr_beat_cnt_local), 0, static_cast<Data>
                         (static_cast<sc_uint<axi4_::DATA_WIDTH> >(write_pld.data)));
           CDCOUT(sc_time_stamp() << " " << name() << " Received write request:"
-                        << " addr=" << hex << wr_addr_pld.addr.to_uint64()
-                        << " burstlen=" << dec << wr_addr_pld.len
-                        << " data=" << hex << write_pld.data.to_uint64()
+                        << " addr=[" << wr_addr_pld << "]"
+                        << " data=[" << write_pld << "]"
                         << " beat=" << dec << wr_beat_cnt_local
-                        << " last=" << dec << write_pld.last
                         << endl, kDebugLevel);
 
           if (wr_beat_cnt_local == wr_addr_pld.len) {
