@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -85,10 +85,10 @@ template <typename axiCfg> class SlaveFromFile : public sc_module {
       ss << hex << vec[0];
       ss >> addr_sc_uint;
       std::stringstream ss_data;
-      sc_uint<axi4_::DATA_WIDTH> data;
+      sc_biguint<axi4_::DATA_WIDTH> data;
       ss_data << hex << vec[1];
       ss_data >> data;
-      load_data_pld.data = static_cast<typename axi4_::Data>(data);
+      load_data_pld.data = TypeToNVUINT(data);
       typename axi4_::Addr addr = static_cast<typename axi4_::Addr>(addr_sc_uint);
       if (axiCfg::useWriteStrobes) {
         for (int j=0; j<axi4_::WSTRB_WIDTH; j++) {
@@ -205,16 +205,14 @@ protected:
       if (if_wr.aw.PopNB(wr_addr_pld)) {
         wr_addr.push(wr_addr_pld);
         CDCOUT(sc_time_stamp() << " " << name() << " Received write request:"
-                      << " addr=" << hex << wr_addr_pld.addr.to_uint64()
-                      << endl, kDebugLevel);
+                      << wr_addr_pld << endl, kDebugLevel);
       }
 
       // Grab a write request (data) and put it in the local queue
       if (if_wr.w.PopNB(wr_data_pld)) {
         wr_data.push(wr_data_pld);
         CDCOUT(sc_time_stamp() << " " << name() << " Received write data:"
-                      << " data=" << hex << wr_data_pld.data.to_uint64()
-                      << " wstrb=" << hex << (axiCfg::useWriteStrobes ? wr_data_pld.wstrb : "N/A")
+                      << " data=[" << wr_data_pld << "]"
                       << " beat=" << dec << (axiCfg::useBurst ? static_cast< sc_uint<32> >(wrBeatInFlight++) : "N/A")
                       << endl, kDebugLevel);
         if (wr_data_pld.last == 1) {
@@ -229,7 +227,6 @@ protected:
           wresp_addr = wr_addr_pld.addr;
           first_beat = 0;
         }
-        NVUINTW(axi4_::ALEN_WIDTH) len = (axiCfg::useBurst ? wr_addr_pld.len : NVUINTW(axi4_::ALEN_WIDTH)(0));
         wr_data_pld = wr_data.front(); wr_data.pop();
         // Store the data
         if (axiCfg::useWriteStrobes) {

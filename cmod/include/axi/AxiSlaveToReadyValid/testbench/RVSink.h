@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ SC_MODULE(RVSink) {
       wait();
       if (rv_write.PopNB(rv_req_reg)) {
         CDCOUT(sc_time_stamp() << " " << name() << " RV request received:"
-                               << " data=" << hex << rv_req_reg.data.to_uint64()
+                               << " data=" << hex << rv_req_reg.data
                                << " addr=" << hex << rv_req_reg.addr.to_uint64()
                                << " wstrb=" << hex
                                << rv_req_reg.wstrb.to_uint64()
@@ -138,7 +138,7 @@ SC_MODULE(RVSink) {
           rv_read.Push(rv_resp_reg);
           CDCOUT(sc_time_stamp() << " " << name() << " Sending RV read response"
                                  << " data=" << hex
-                                 << rv_resp_reg.data.to_uint64() << endl,
+                                 << rv_resp_reg.data << endl,
                  kDebugLevel);
         }
       }

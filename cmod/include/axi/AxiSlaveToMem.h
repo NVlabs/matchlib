@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2016-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -171,8 +171,7 @@ class AxiSlaveToMem : public sc_module {
         if (if_wr.w.PopNB(write_pld)) {
           auto wr_beat_cnt_local = wr_beat_cnt;
           memarray.write(static_cast<typename Memarray::LocalIndex>(static_cast<sc_uint<axi4_::ADDR_WIDTH> >
-                        (wr_addr_pld.addr) + bytesPerWord*wr_beat_cnt_local), 0, static_cast<Data>
-                        (static_cast<sc_uint<axi4_::DATA_WIDTH> >(write_pld.data)));
+                        (wr_addr_pld.addr) + bytesPerWord*wr_beat_cnt_local), 0, write_pld.data);
           CDCOUT(sc_time_stamp() << " " << name() << " Received write request:"
                         << " addr=[" << wr_addr_pld << "]"
                         << " data=[" << write_pld << "]"

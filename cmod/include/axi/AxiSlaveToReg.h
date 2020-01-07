@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -173,13 +173,13 @@ class AxiSlaveToReg : public sc_module {
         CDCOUT(sc_time_stamp() << " " << name() << " Read from local reg:"
                       << " axi_addr=" << hex << axiRdAddr.to_int64()
                       << " reg_addr=" << regAddr.to_int64()
-                      << " data=" << hex << axi_rd_resp.data.to_uint64()
+                      << " data=" << hex << axi_rd_resp.data
                       << endl, kDebugLevel);
       } else if (select_mask == 2) {
         if (if_axi_wr.w.PopNB(axi_wr_req_data)) {
           valid_wr_addr = (axiWrAddr >= baseAddr.read() && axiWrAddr <= maxValidAddr);
           NVHLS_ASSERT_MSG(valid_wr_addr, "Write_address_is_out_of_bounds");
-          NVUINTW(axi4_::DATA_WIDTH) axiData(static_cast<sc_uint<axi4_::DATA_WIDTH> >(axi_wr_req_data.data));
+          NVUINTW(axi4_::DATA_WIDTH) axiData(static_cast<typename axi4_::Data>(axi_wr_req_data.data));
           NVUINTW(regAddrWidth) regAddr = (axiWrAddr - baseAddr.read()) >> axiAddrBitsPerReg;
           if (!axi_wr_req_data.wstrb.and_reduce()) { // Non-uniform write strobe - need to do read-modify-write
             NVUINTW(axi4_::DATA_WIDTH) old_data = reg[regAddr];
@@ -199,7 +199,7 @@ class AxiSlaveToReg : public sc_module {
           CDCOUT(sc_time_stamp() << " " << name() << " Wrote to local reg:"
                         << " axi_addr=" << hex << axiWrAddr.to_int64()
                         << " reg_addr=" << regAddr.to_int64()
-                        << " data=" << hex << axi_wr_req_data.data.to_uint64()
+                        << " data=" << hex << axi_wr_req_data.data
                         << " wstrb=" << hex << axi_wr_req_data.wstrb.to_uint64()
                         << endl, kDebugLevel);
           if (axi_wr_req_data.last == 1) {

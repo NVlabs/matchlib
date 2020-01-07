@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
  * \ingroup AXI
  *
  * \tparam axiCfg    A valid AXI config.
- * \tparam rvCfg     A config for the ready-valid interface that is the output of the slave.
+ * \tparam rvCfg     A config for the ready-valid interface that is the output of the slave. The data and strobe fields are assumed to match the widths of their AXI counterparts.
  *
  * \par Overview
  * This block converts AXI read and write requests into a simplified format consisting of a single ready-valid interface that has address, data, and write strobe fields, as well as a read/write indicator.  Read responses are returned to the block via a second ready-valid interface (there are no write responses expected).  AxiSlaveToReadyValid handles all of the AXI-specific protocol, generating write responses and packing/unpacking bursts as necessary.
@@ -188,11 +188,11 @@ class AxiSlaveToReadyValid : public sc_module {
           rv_wr.rw = 1;
           NVUINTW(axi4_::WSTRB_WIDTH) wstrb_temp_cast(static_cast<sc_uint<axi4_::WSTRB_WIDTH> >(axi_wr_req_data.wstrb));
           rv_wr.wstrb = wstrb_temp_cast;
-          NVUINTW(axi4_::DATA_WIDTH) data_temp_cast(static_cast<sc_uint<axi4_::DATA_WIDTH> >(axi_wr_req_data.data));
+          NVUINTW(axi4_::DATA_WIDTH) data_temp_cast(static_cast<typename axi4_::Data>(axi_wr_req_data.data));
           rv_wr.data = data_temp_cast;
           if_rv_wr.Push(rv_wr);
           CDCOUT(sc_time_stamp() << " " << name() << " RV write:"
-                        << " data=" << hex << rv_wr.data.to_uint64()
+                        << " data=" << hex << rv_wr.data
                         << " addr=" << hex << rv_wr.addr.to_uint64()
                         << " strb=" << hex << rv_wr.wstrb.to_uint64()
                         << endl, kDebugLevel);

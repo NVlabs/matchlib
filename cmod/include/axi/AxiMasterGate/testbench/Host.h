@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ SC_MODULE(Host) {
   static const int read_count = 50;
 
   std::deque<unsigned int> read_ref;
-  std::queue<sc_uint<Cfg::dataWidth> > dataQ;
+  std::queue<typename axi::axi4<Cfg>::Data> dataQ;
 
   SC_CTOR(Host) : reset_bar("reset_bar"), clk("clk") {
     SC_THREAD(run_wr_source);
@@ -115,12 +115,12 @@ SC_MODULE(Host) {
           wrRequest.data = nvhls::gen_random_payload<Data>().d;
           std::cout << "@" << sc_time_stamp()
                     << " write source initiated a request:"
-                    << "\t addr = " << hex << wrRequest.addr.to_uint64()
-                    << "\t data = " << hex << wrRequest.data.to_uint64() 
-                    << "\t len = " << dec << wrRequest.len.to_uint64()
+                    << "\t addr = " << hex << wrRequest.addr
+                    << "\t data = " << hex << wrRequest.data
+                    << "\t len = " << dec << wrRequest.len
                     << std::endl;
           wrRequestOut.Push(wrRequest);
-          dataQ.push(static_cast<sc_uint<Cfg::dataWidth> >(wrRequest.data));
+          dataQ.push(wrRequest.data);
           addr += bytesPerBeat;
         }
       }
@@ -162,8 +162,8 @@ SC_MODULE(Host) {
           rdRequest.len = len;
 
           std::cout << "@" << sc_time_stamp() << " read source initiated a request:"
-                    << "\t addr = " << hex << rdRequest.addr.to_uint64()
-                    << "\t len = " << dec << rdRequest.len.to_uint64()
+                    << "\t addr = " << hex << rdRequest.addr
+                    << "\t len = " << dec << rdRequest.len
                     << std::endl;
           rdRequestOut.Push(rdRequest);
           addr += (len+1)*bytesPerBeat;
@@ -181,14 +181,14 @@ SC_MODULE(Host) {
     while (1) {
       wait();
       RdResp<Cfg> rdResp = rdRespIn.Pop();
-      sc_uint<Cfg::dataWidth> rd_data_expected = dataQ.front(); dataQ.pop();
+      typename axi::axi4<Cfg>::Data rd_data_expected = dataQ.front(); dataQ.pop();
 
       std::cout << "@" << sc_time_stamp() << " read sink received response:"
                 << "\t last = " << rdResp.last
-                << "\t data = " << hex << rdResp.data.to_uint64()
+                << "\t data = " << hex << rdResp.data
                 << "\t expected = " << hex << rd_data_expected
                 << std::endl;
-      NVHLS_ASSERT_MSG(static_cast<sc_uint<Cfg::dataWidth> >(rdResp.data) == rd_data_expected, "Read_response_data_did_not_match_expected_value");
+      NVHLS_ASSERT_MSG(rdResp.data == rd_data_expected, "Read_response_data_did_not_match_expected_value");
 
       if (rdResp.last == 1) ctr++;
       if (ctr == read_count) done_read = 1;

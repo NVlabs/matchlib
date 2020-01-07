@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef __AXI_T_MASTER_FROM_FILE__
 #define __AXI_T_MASTER_FROM_FILE__
 
+#include <nvhls_int.h>
 #include <systemc.h>
 #include <ac_reset_signal_is.h>
 
@@ -66,7 +67,6 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
   std::queue< typename axi4_::AddrPayload > raddr_q;
   std::queue< typename axi4_::AddrPayload > waddr_q;
   std::queue< typename axi4_::WritePayload > wdata_q;
-  /* std::queue< sc_uint<axi4_::DATA_WIDTH> > rresp_q; */
   std::queue<typename axi4_::Data> rresp_q;
     
   typename axi4_::AddrPayload addr_pld;
@@ -98,14 +98,11 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         addr_pld.addr = static_cast<typename axi4_::Addr>(addr);
         addr_pld.len = 0;
         raddr_q.push(addr_pld);
-        //CDCOUT(sc_time_stamp() << " " << name() << " Stored read request:"
-        //              << " addr=" << hex << addr_pld.addr.to_uint64()
-        //              << endl, kDebugLevel);
         std::stringstream ss_data;
-        sc_uint<axi4_::DATA_WIDTH> data;
+        sc_biguint<axi4_::DATA_WIDTH> data;
         ss_data << hex << vec[3];
         ss_data >> data;
-        rresp_q.push(static_cast<typename axi4_::Data>(data));
+        rresp_q.push(TypeToNVUINT(data));
       } else if (vec[1] == "W") {
         isWrite_q.push(1);
         std::stringstream ss;
@@ -116,17 +113,13 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         addr_pld.len = 0;
         waddr_q.push(addr_pld);
         std::stringstream ss_data;
-        sc_uint<axi4_::DATA_WIDTH> data;
+        sc_biguint<axi4_::DATA_WIDTH> data;
         ss_data << hex << vec[3];
         ss_data >> data;
-        wr_data_pld.data = static_cast<typename axi4_::Data>(data);
-        wr_data_pld.wstrb = 0xFF;
+        wr_data_pld.data = TypeToNVUINT(data);
+        wr_data_pld.wstrb = ~0;
         wr_data_pld.last = 1;
         wdata_q.push(wr_data_pld);
-        //CDCOUT(sc_time_stamp() << " " << name() << " Stored write request:"
-        //              << " addr=" << hex << addr_pld.addr.to_uint64()
-        //              << " data=" << hex << wr_data_pld.data.to_uint64()
-        //              << endl, kDebugLevel);
       } else {
         NVHLS_ASSERT_MSG(1,"Requests_must_be_R_or_W");
       }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@ class Master : public sc_module {
 
     typename axi4_::Addr wr_addr = cfg::addrBoundLower;
     typename axi4_::Data wr_data = 0xf00dcafe12345678;
-    NVUINTW(WSTRB_W) wstrb = 0xFF;
+    NVUINTW(WSTRB_W) wstrb = ~0;
     NVUINTW(ALEN_W) wr_len = 0;
     typename axi4_::Addr rd_addr_next;
     typename axi4_::Addr rd_addr;
@@ -352,12 +352,15 @@ class Master : public sc_module {
           } else { // Only this beat is done
             wr_addr += bytesPerBeat;
           }
-          wr_data = ((static_cast<typename axi4_::Data>(wr_addr)) << 16) ^ 0xf00dcafe12345678 ^ uniform_rand(gen);
+          wr_data = 0xf00dcafe12345678
+                      ^ ((static_cast<typename axi4_::Data>(wr_addr)) << 16) // Typically touches bits 47:16
+                      ^ uniform_rand(gen); // Touches the 32 LSBs
+          wr_data.set_slc(axi4_::DATA_WIDTH-8,NVUINT8(uniform_rand(gen))); // Touches the 8 MSBs, in case of wide data words
           if (axiCfg::useWriteStrobes) {
             if (uniform_rand(gen) % 5 == 0) { // 20% of writes have nonuniform strobe
               wstrb = random_wstrb(gen);
             } else {
-              wstrb = 0xFF;
+              wstrb = ~0;
             }
           }
         }
