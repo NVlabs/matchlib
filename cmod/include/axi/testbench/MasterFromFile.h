@@ -38,16 +38,23 @@
  * \ingroup AXI
  *
  * \tparam axiCfg                   A valid AXI config.
+ * \tparam enable_interrupts        Set true to enable support for interrupt instructions (default false)
  *
  * \par Overview
- * AxiMasterFromFile reads write and read requests from a CSV and issues them as an AXI master.  Read responses are checked agains the expected values provided in the file.  The format of the CSV is as follows:
+ * AxiMasterFromFile reads write and read requests from a CSV and issues them as an AXI master.  Read responses are checked agains the expected values provided in the file.  If enable_interrupts is true, the file can also specify a wait-for-interrupt mode in which the interrupt input must go high before further instructions are processed. The format of the CSV is as follows:
  * - Writes: delay_from_previous_request,W,address_in_hex,data_in_hex
  * - Reads: delay_from_previous_request,R,address_in_hex,expected_response_data_in_hex
+ * - Interrupts: delay_from_previous_request,Q,arbitrary,arbitrary
  * 
  *  For reads, it's best to specify the full DATA_WIDTH of expected response data.
  *
  */
-template <typename axiCfg> class MasterFromFile : public sc_module {
+
+// Allow an sc_in to be present only if a template parameter is enabled
+template <typename T, bool enable> class sc_in_conditional : public sc_signal<T> {};
+template <typename T> class sc_in_conditional <T,1> : public sc_in<T> {};
+
+template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile : public sc_module {
  public:
   static const int kDebugLevel = 0;
   typedef axi::axi4<axiCfg> axi4_;
@@ -58,12 +65,14 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
 
+  sc_in_conditional<bool,enable_interrupts> interrupt;
+
   static const int bytesPerBeat = axi4_::DATA_WIDTH >> 3;
   static const int bytesPerWord = axi4_::DATA_WIDTH >> 3;
   static const int axiAddrBitsPerWord = nvhls::log2_ceil<bytesPerWord>::val;
 
   std::queue< int > delay_q;
-  std::queue< bool > isWrite_q;
+  std::queue< int > req_q;
   std::queue< typename axi4_::AddrPayload > raddr_q;
   std::queue< typename axi4_::AddrPayload > waddr_q;
   std::queue< typename axi4_::WritePayload > wdata_q;
@@ -90,7 +99,7 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
       NVHLS_ASSERT_MSG(vec.size() == 4, "Each_request_must_have_four_elements");
       delay_q.push(atoi(vec[0].c_str()));
       if (vec[1] == "R") {
-        isWrite_q.push(0);
+        req_q.push(0);
         std::stringstream ss;
         sc_uint<axi4_::ADDR_WIDTH> addr;
         ss << hex << vec[2];
@@ -104,7 +113,7 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         ss_data >> data;
         rresp_q.push(TypeToNVUINT(data));
       } else if (vec[1] == "W") {
-        isWrite_q.push(1);
+        req_q.push(1);
         std::stringstream ss;
         sc_uint<axi4_::ADDR_WIDTH> addr;
         ss << hex << vec[2];
@@ -120,8 +129,11 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         wr_data_pld.wstrb = ~0;
         wr_data_pld.last = 1;
         wdata_q.push(wr_data_pld);
+      } else if (vec[1] == "Q") {
+        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt_command_read_but_interrupts_are_not_enabled");
+        req_q.push(2);
       } else {
-        NVHLS_ASSERT_MSG(1,"Requests_must_be_R_or_W");
+        NVHLS_ASSERT_MSG(1,"Requests_must_be_R_or_W_or_Q");
       }
     }
 
@@ -144,7 +156,14 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
       int delay = delay_q.front();
       if (delay > 0) wait(delay);
       delay_q.pop();
-      if (isWrite_q.front()) {
+      if (req_q.front() == 2) {
+        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt_command_found_but_interrupts_are_not_enabled");
+        CDCOUT(sc_time_stamp() << " " << name() << " Beginning wait for interrupt"
+                      << endl, kDebugLevel);
+        while (interrupt.read() == 0) wait();
+        CDCOUT(sc_time_stamp() << " " << name() << " Interrupt received"
+                      << endl, kDebugLevel);
+      } else if (req_q.front() == 1) {
         addr_pld = waddr_q.front();
         if_wr.aw.Push(addr_pld);
         waddr_q.pop();
@@ -170,7 +189,7 @@ template <typename axiCfg> class MasterFromFile : public sc_module {
         NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read_response_did_not_match_expected_value");
         rresp_q.pop();
       }
-      isWrite_q.pop();
+      req_q.pop();
     }
     done = 1;
   }

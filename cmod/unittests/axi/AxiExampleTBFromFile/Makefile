@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2016-2020, NVIDIA CORPORATION.  All rights reserved.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -16,4 +16,19 @@
 
 USER_FLAGS +=  -Wno-unused-local-typedefs
 
-include ../../unittests_Makefile
+all: sim_test sim_test_interrupts
+
+include ../../../cmod_Makefile
+
+sim_test: testbench.cpp $(wildcard *.h) $(wildcard $(CWD)/../include/*.h)
+	$(CC) -o $@ $(CFLAGS) $(USER_FLAGS) -I../../../include $< $(BOOSTLIBS) $(LIBS)
+
+sim_test_interrupts: testbench_interrupts.cpp $(wildcard *.h) $(wildcard $(CWD)/../include/*.h)
+	$(CC) -o $@ $(CFLAGS) $(USER_FLAGS) -I../../../include $< $(BOOSTLIBS) $(LIBS)
+
+run:
+	./sim_test
+	./sim_test_interrupts
+
+sim_clean:
+	rm -rf *.o sim_*
