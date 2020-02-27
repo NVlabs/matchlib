@@ -69,6 +69,8 @@ class AxiMasterGate : public sc_module {
   FIFO<RdRequest<Cfg>, 4> rdReqFifo;
   FIFO<WrRequest<Cfg>, 4> wrReqFifo;
 
+  static_assert(MaxInFlightTrans <= (1 << axi4_::ID_WIDTH) , "Number of inflight transactions cannot exceed number of unique IDs");
+
  public:
   typename axi4_::read::template master<> if_rd;
   typename axi4_::write::template master<> if_wr;
@@ -95,8 +97,6 @@ class AxiMasterGate : public sc_module {
   typedef sc_uint<axi4_::ID_WIDTH> Id;
 
   void run_wr() {
-
-    NVHLS_ASSERT_MSG( MaxInFlightTrans <= (1 << axi4_::ID_WIDTH) , "Number_of_inflight_transactions_cannot_exceed_number_of_unique_IDs");
 
     if_wr.reset();
     wrRequestIn.Reset();
