@@ -45,11 +45,11 @@ class AxiArbSplitTop : public sc_module {
   typedef typename axi_::write::template master<>::WPort axi_wr_master_w;
   typedef typename axi_::write::template master<>::BPort axi_wr_master_b;
 
-  nvhls::nv_array<axi_rd_slave_ar, numMasters> axi_rd_m_ar;
-  nvhls::nv_array<axi_rd_slave_r, numMasters> axi_rd_m_r;
-  nvhls::nv_array<axi_wr_slave_aw, numMasters> axi_wr_m_aw;
-  nvhls::nv_array<axi_wr_slave_w, numMasters> axi_wr_m_w;
-  nvhls::nv_array<axi_wr_slave_b, numMasters> axi_wr_m_b;
+  axi_rd_slave_ar axi_rd_m_ar[numMasters];
+  axi_rd_slave_r axi_rd_m_r[numMasters];
+  axi_wr_slave_aw axi_wr_m_aw[numMasters];
+  axi_wr_slave_w axi_wr_m_w[numMasters];
+  axi_wr_slave_b axi_wr_m_b[numMasters];
 
   AxiArbiter<axi::cfg::standard, numSlaves, 16> axi_arbiter;
 
@@ -58,11 +58,11 @@ class AxiArbSplitTop : public sc_module {
 
   AxiSplitter<axi::cfg::standard, numSlaves, numAddrBitsToInspect> axi_splitter;
 
-  nvhls::nv_array<axi_rd_master_ar, numSlaves> axi_rd_s_ar;
-  nvhls::nv_array<axi_rd_master_r, numSlaves> axi_rd_s_r;
-  nvhls::nv_array<axi_wr_master_aw, numSlaves> axi_wr_s_aw;
-  nvhls::nv_array<axi_wr_master_w, numSlaves> axi_wr_s_w;
-  nvhls::nv_array<axi_wr_master_b, numSlaves> axi_wr_s_b;
+  axi_rd_master_ar axi_rd_s_ar[numSlaves];
+  axi_rd_master_r axi_rd_s_r[numSlaves];
+  axi_wr_master_aw axi_wr_s_aw[numSlaves];
+  axi_wr_master_w axi_wr_s_w[numSlaves];
+  axi_wr_master_b axi_wr_s_b[numSlaves];
 
   sc_signal<NVUINTW(numAddrBitsToInspect)> addrBound[numSlaves][2];
 
@@ -72,20 +72,10 @@ class AxiArbSplitTop : public sc_module {
       : sc_module(name),
         clk("clk"),
         reset_bar("reset_bar"),
-        axi_rd_m_ar("axi_rd_m_ar"),
-        axi_rd_m_r("axi_rd_m_r"),
-        axi_wr_m_aw("axi_wr_m_aw"),
-        axi_wr_m_w("axi_wr_m_w"),
-        axi_wr_m_b("axi_wr_m_b"),
         axi_arbiter("axi_arbiter"),
         axi_read_int("axi_read_int"),
         axi_write_int("axi_write_int"),
-        axi_splitter("axi_splitter"),
-        axi_rd_s_ar("axi_rd_s_ar"),
-        axi_rd_s_r("axi_rd_s_r"),
-        axi_wr_s_aw("axi_wr_s_aw"),
-        axi_wr_s_w("axi_wr_s_w"),
-        axi_wr_s_b("axi_wr_s_b")
+        axi_splitter("axi_splitter")
     {
 
     axi_arbiter.clk(clk);
