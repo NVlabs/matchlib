@@ -386,7 +386,7 @@ SC_MODULE(Source) {
         if ((route_type == MultiCast) || (route_type == MultiCast_SingleSource) || (route_type == MultiCast_DualSource)) {
           assert(dest.size() == 1 || id==0 || num_flits > 1 || DEST_WIDTH!=Flit_t::data_width);  // only id==0 can write to local ports for single flit packets (and thus create a snigle flit multicast)
         } else {
-	  assert(dest.size() == 1); 
+	      assert(dest.size() <= 1); 
         }
 
         cout << "###### " << dest.size() << endl;
