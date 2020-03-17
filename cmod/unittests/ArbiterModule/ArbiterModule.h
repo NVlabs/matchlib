@@ -43,8 +43,6 @@ public:
 
   arbiter_t arbiter;
 
-  void Process();
-
   SC_HAS_PROCESS(ArbiterModule);
   ArbiterModule(sc_module_name name)
       : sc_module(name), clk("clk"), rst("rst"), valid_in("valid_in"),
@@ -53,25 +51,25 @@ public:
     sensitive << clk.pos();
     NVHLS_NEG_RESET_SIGNAL_IS(rst);
   };
-};
 
-void ArbiterModule::Process() {
-  valid_in.Reset();
-  select_out.Reset();
-  wait();
-
-  #pragma hls_pipeline_init_interval 1
-  while (1) {
-    mask_t valid_reg;
-    mask_t select_reg;
-
-    if (valid_in.PopNB(valid_reg)){
-       select_reg = arbiter.pick(valid_reg);
-       select_out.Push(select_reg);
-    }
+  void Process() {
+    valid_in.Reset();
+    select_out.Reset();
     wait();
-  }
-}
 
+    #pragma hls_pipeline_init_interval 1
+    while (1) {
+      mask_t valid_reg;
+      mask_t select_reg;
+
+      if (valid_in.PopNB(valid_reg)){
+         select_reg = arbiter.pick(valid_reg);
+         select_out.Push(select_reg);
+      }
+      wait();
+    }
+  }
+
+};
 
 #endif
