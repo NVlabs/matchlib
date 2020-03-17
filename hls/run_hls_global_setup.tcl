@@ -35,6 +35,8 @@ if { [info exist env(VG_GNU_PACKAGE)] } {
 }
 solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
 solution options set /Flows/VCS/SYSC_VERSION 2.3.1
+# SystemVerilog assertions
+solution options set /Output/InlinedPropertyLang sva
 
 # Verilog/VHDL
 solution options set Output OutputVerilog true
