@@ -65,6 +65,9 @@ hls:
 shell:
 	catapult -shell -product ultra
 
+gui:
+	catapult -product ultra
+
 cdc:
 	env RUN_CDESIGN_CHECKER=1 catapult -shell -product ultra -file go_hls.tcl
 	$(ROOT)/hls/design_checker_summary.py
