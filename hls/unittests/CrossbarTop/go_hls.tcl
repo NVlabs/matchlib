@@ -40,6 +40,7 @@ foreach NUM_INPUTS $NUM_INPUTS_LIST {
             proc nvhls::usercmd_post_assembly {} {
                 upvar TOP_NAME TOP_NAME
                 directive set /$TOP_NAME/core/main -PIPELINE_INIT_INTERVAL 1
+                directive set /$TOP_NAME/core/main -PIPELINE_STALL_MODE flush
                 directive set /$TOP_NAME/data_in:rsc -MAP_TO_MODULE mgc_ioport.mgc_in_wire
                 directive set /$TOP_NAME/source:rsc -MAP_TO_MODULE mgc_ioport.mgc_in_wire
                 directive set /$TOP_NAME/data_out:rsc -MAP_TO_MODULE mgc_ioport.mgc_out_reg

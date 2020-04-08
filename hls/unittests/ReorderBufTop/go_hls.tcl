@@ -17,6 +17,7 @@ source ../../nvhls_exec.tcl
 proc nvhls::usercmd_post_assembly {} {
     upvar TOP_NAME TOP_NAME
     directive set /$TOP_NAME/core/main -PIPELINE_INIT_INTERVAL 1
+    directive set /$TOP_NAME/core/main -PIPELINE_STALL_MODE flush
     directive set /$TOP_NAME/op:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
     directive set /$TOP_NAME/in_data:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
     directive set /$TOP_NAME/in_id:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld

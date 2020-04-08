@@ -47,6 +47,7 @@ foreach DATA_TYPE $DATA_TYPE_LIST {
                         upvar TOP_NAME TOP_NAME
                         set DESIGN_TOP "/$TOP_NAME/core"
                         directive set ${DESIGN_TOP}/main -PIPELINE_INIT_INTERVAL ${MAIN_PIPELINE_II}
+                        directive set ${DESIGN_TOP}/main -PIPELINE_STALL_MODE flush
 
                         directive set -REGISTER_THRESHOLD 2048
                         directive set -MEM_MAP_THRESHOLD  2048

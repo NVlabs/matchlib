@@ -45,6 +45,7 @@ foreach LEN_INPUT_BUFFER $LEN_INPUT_BUFFER_LIST {
                     upvar TOP_NAME TOP_NAME
                     set DESIGN_TOP "/$TOP_NAME/core"
                     directive set ${DESIGN_TOP}/main -PIPELINE_INIT_INTERVAL ${MAIN_PIPELINE_II}
+                    directive set ${DESIGN_TOP}/main -PIPELINE_STALL_MODE flush
                     # TODO - memory mapping
                 }
                 

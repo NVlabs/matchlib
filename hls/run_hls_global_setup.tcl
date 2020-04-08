@@ -27,6 +27,7 @@ solution options set /Flows/LowPower/SWITCHING_ACTIVITY_TYPE fsdb
 solution options set /Flows/SCVerify/USE_MSIM false
 solution options set /Flows/SCVerify/USE_OSCI false
 solution options set /Flows/SCVerify/USE_VCS true
+solution options set /Flows/SCVerify/DISABLE_EMPTY_INPUTS true
 solution options set /Flows/VCS/VCS_HOME $env(VCS_HOME)
 if { [info exist env(VG_GNU_PACKAGE)] } {
     solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VG_GNU_PACKAGE)

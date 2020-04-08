@@ -17,6 +17,10 @@ source ../../nvhls_exec.tcl
 proc nvhls::usercmd_post_assembly {} {
     upvar TOP_NAME TOP_NAME
     directive set /$TOP_NAME/core/main -PIPELINE_INIT_INTERVAL 1
+    directive set /$TOP_NAME/core/main -PIPELINE_STALL_MODE flush
+    directive set /$TOP_NAME/op:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
+    directive set /$TOP_NAME/data:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
+    directive set /$TOP_NAME/idx:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
     directive set /FifoTop/core/fifo.fifo_body.bank.array_impl.data0:rsc -MAP_TO_MODULE ram_sample-065nm-separate_beh_dc.RAM_separateRW
 }
 
