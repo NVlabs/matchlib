@@ -40,9 +40,7 @@ DIRS = \
 	unittests/axi/AxiSlaveToMemTop \
 	unittests/axi/AxiSlaveToReadyValidTop \
 	unittests/axi/AxiSlaveToRegTop \
-
-# Fails HLS in Catapult 10.5
-# unittests/WHVCRouterTop \
+	unittests/WHVCRouterTop \
 
 .PHONY: all $(DIRS)
 
