@@ -17,14 +17,13 @@
 TOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../)
 
 # Location of submodules
-CONNECTIONS_HOME ?= $(ROOT)/connections
 RAPIDJSON_HOME ?= $(ROOT)/rapidjson
 
 export ROOT           ?= $(TOT)
 export TOP_NAME       ?= $(shell basename `pwd`)
 export CLK_PERIOD     ?= 2
 export SRC_PATH       ?= $(ROOT)/cmod/unittests
-export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include $(CONNECTIONS_HOME)/include $(RAPIDJSON_HOME)/include $(BOOST_HOME)/include
+export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include $(RAPIDJSON_HOME)/include $(BOOST_HOME)/include
 export HLS_CATAPULT   ?= 1
 export RUN_SCVERIFY   ?= 1
 export SYSTEMC_DESIGN ?= 1

@@ -2,6 +2,3 @@
 	path = rapidjson
 	url = https://github.com/Tencent/rapidjson.git
 
-[submodule "connections"]
-	path = connections
-	url = https://github.com/hlslibs/matchlib_connections.git

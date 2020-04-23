@@ -6,8 +6,12 @@ MatchLib is a SystemC/C++ library of commonly-used hardware functions and compon
 be synthesized by most commercially-available HLS tools into RTL.
 
 Doxygen-generated documentation can be found [here](https://NVlabs.github.io/matchlib/).
-Additional documentation on the Connections
-latency-insensitive channel implementation can be found in the [Connections Guide](doc/connections-guide.pdf).
+
+MatchLib is based on the Connections latency-insensitive channel implementation.
+Connections is included with the Catapult HLS tool and is available open-source on
+[HLSLibs](https://github.com/hlslibs/matchlib_connections).
+Additional documentation on the Connections latency-insensitive channel implementation
+can be found in the [Connections Guide](doc/connections-guide.pdf).
 
 # Getting Started
 
@@ -21,6 +25,7 @@ MatchLib is regressed against the following tool/dependency verions:
 * `doxygen` - 1.8.11
 * `make` - 3.82
 * `catapult` - 10.5a
+*  connections - included with catapult
 * `vcs` - 2017.03-SP2-11
 * `verdi` - 2017.12-SP2-11
 * `rapidjson` - v1.1.0
@@ -73,7 +78,6 @@ In addition, the boost and systemc library locations are expected to be in `LD_L
 * `cmod/unittests/<module>` sub-directories contain SystemC wrappers, testbenches and tests for various MatchLib functions, classes, and modules
 * `hls/<module>` sub-directories contain HLS scripts for modules
 * `doc` contains Makefiles for building Doxygen-based documentation
-* `connections` factors out the Connections latency-insensitive channel library components
 
 # Preprocessor Macro Definitions
 
