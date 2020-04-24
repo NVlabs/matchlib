@@ -22,7 +22,7 @@ void FifoTop( const OpType& op, const DataType& data, const BankIdx& idx, OutTyp
 {
     static Fifo_ fifo;
     out = 0;
-    NVHLS_ASSERT_MSG(idx < NUM_BANKS, "Bank_index_is_less_than_number_of_banks");
+    NVHLS_ASSERT_MSG(idx < NUM_BANKS, "Bank index is less than number of banks");
     switch (op)
     {
         case push:      fifo.push(data, idx); break;
@@ -35,7 +35,7 @@ void FifoTop( const OpType& op, const DataType& data, const BankIdx& idx, OutTyp
         case get_head:  out = fifo.get_head(idx); break;
         case get_tail:  out = fifo.get_tail(idx); break;
         default:
-            NVHLS_ASSERT_MSG(0, "op_not_supported");
+            NVHLS_ASSERT_MSG(0, "op not supported");
             fifo.reset(); break;
     }
 }

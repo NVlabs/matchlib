@@ -100,7 +100,7 @@ class FIFO {
 
   // Function to push data to FIFO
   void push(DataType wr_data, BankIdx bidx = 0) {
-    NVHLS_ASSERT_MSG(!isFull(bidx), "Pushing_data_to_full_FIFO");
+    NVHLS_ASSERT_MSG(!isFull(bidx), "Pushing data to full FIFO");
     FifoIdx tail_local = tail[bidx];
     fifo_body.write(tail_local, bidx, wr_data);
     tail[bidx] = ModIncr(tail_local);
@@ -109,7 +109,7 @@ class FIFO {
 
   // Function to pop data from FIFO
   DataType pop(BankIdx bidx = 0) {
-    NVHLS_ASSERT_MSG(!isEmpty(bidx), "Popping_data_from_empty_FIFO");
+    NVHLS_ASSERT_MSG(!isEmpty(bidx), "Popping data from empty FIFO");
     FifoIdx head_local = head[bidx];
     DataType rd_data = fifo_body.read(head_local, bidx);
     head[bidx] = ModIncr(head_local);
@@ -119,7 +119,7 @@ class FIFO {
 
   // Function to increment the head pointer (emulate a pop)
   void incrHead(BankIdx bidx = 0) {
-    NVHLS_ASSERT_MSG(!isEmpty(bidx), "Incrementing_Head_of_empty_FIFO");
+    NVHLS_ASSERT_MSG(!isEmpty(bidx), "Incrementing Head of empty FIFO");
     FifoIdx head_local = head[bidx];
     head[bidx] = ModIncr(head_local);
     last_action_was_push[bidx] = false;
@@ -127,7 +127,7 @@ class FIFO {
 
   // Function to peek from FIFO
   DataType peek(BankIdx bidx = 0) {
-    NVHLS_ASSERT_MSG(!isEmpty(bidx), "Peeking_data_from_empty_FIFO");
+    NVHLS_ASSERT_MSG(!isEmpty(bidx), "Peeking data from empty FIFO");
     FifoIdx head_local = head[bidx];
     return fifo_body.read(head_local, bidx);
   }
@@ -205,21 +205,21 @@ class FIFO<DataType, 0, NumBanks> {  // 0 entries, NumBanks
   typedef NVUINTW(1) FifoIdx;
   FIFO() {}
 
-  void push(DataType wr_data, BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero");}
+  void push(DataType wr_data, BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO size is zero");}
 
-  DataType pop(BankIdx bidx = 0) { NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); return DataType(); }
+  DataType pop(BankIdx bidx = 0) { NVHLS_ASSERT_MSG(0, "FIFO size is zero"); return DataType(); }
 
-  void incrHead(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); }
+  void incrHead(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO size is zero"); }
 
-  DataType peek(BankIdx bidx = 0) { NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); return DataType(); }
+  DataType peek(BankIdx bidx = 0) { NVHLS_ASSERT_MSG(0, "FIFO size is zero"); return DataType(); }
 
-  bool isEmpty(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); return true; }
+  bool isEmpty(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO size is zero"); return true; }
 
-  bool isFull(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); return true; }
+  bool isFull(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO size is zero"); return true; }
 
-  FifoIdx NumFilled(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); return 0; }
+  FifoIdx NumFilled(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO size is zero"); return 0; }
 
-  FifoIdx NumAvailable(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO_size_is_zero"); return 0; }
+  FifoIdx NumAvailable(BankIdx bidx = 0) {NVHLS_ASSERT_MSG(0, "FIFO size is zero"); return 0; }
 
   void reset() {}
 };
@@ -244,7 +244,7 @@ class FIFO<DataType, 1, 1> {
 
     inline void push(DataType wr_data, T bidx = 0) 
     {        
-        NVHLS_ASSERT_MSG(!isFull(), "Pushing_data_to_full_FIFO");
+        NVHLS_ASSERT_MSG(!isFull(), "Pushing data to full FIFO");
         data = wr_data;
         valid = true;
     }
@@ -257,13 +257,13 @@ class FIFO<DataType, 1, 1> {
 
     inline void incrHead(T bidx = 0)
     {
-        NVHLS_ASSERT_MSG(!isEmpty(), "Incrementing_head_of_empty_FIFO");
+        NVHLS_ASSERT_MSG(!isEmpty(), "Incrementing head of empty FIFO");
         valid = false;
     }
 
     inline DataType peek(T bidx = 0) 
     { 
-        NVHLS_ASSERT_MSG(!isEmpty(), "Peeking_data_from_empty_FIFO");
+        NVHLS_ASSERT_MSG(!isEmpty(), "Peeking data from empty FIFO");
         return data;
     }
 
@@ -320,7 +320,7 @@ class FIFO<DataType, 1, NumBanks> {
     }
 
     inline void push(DataType wr_data, BankIdx bidx = 0) {        
-      NVHLS_ASSERT_MSG(!isFull(bidx), "Pushing_data_to_full_FIFO");
+      NVHLS_ASSERT_MSG(!isFull(bidx), "Pushing data to full FIFO");
       data[bidx]  = wr_data;
       valid[bidx] = true;
     }
@@ -331,12 +331,12 @@ class FIFO<DataType, 1, NumBanks> {
     }
 
     inline void incrHead(BankIdx bidx = 0) {
-      NVHLS_ASSERT_MSG(!isEmpty(bidx), "Incrementing_Head_of_empty_FIFO");
+      NVHLS_ASSERT_MSG(!isEmpty(bidx), "Incrementing Head of empty FIFO");
       valid[bidx] = false;
     }
 
     inline DataType peek(BankIdx bidx = 0) { 
-      NVHLS_ASSERT_MSG(!isEmpty(bidx), "Peeking_data_from_empty_FIFO");
+      NVHLS_ASSERT_MSG(!isEmpty(bidx), "Peeking data from empty FIFO");
       return data[bidx];
     }
 

@@ -31,6 +31,6 @@ void VectorUnit( const OpType& op,
         case MAC:       nvhls::vector_mac<InScalarType, InScalarType, InScalarType, OutScalarType, VECTOR_LENGTH, true>(in1, in2, in3, out); break;
         case DPACC:     nvhls::dpacc<InScalarType, InScalarType, InScalarType, OutScalarType, VECTOR_LENGTH, true>(in1, in2, in3[0], out[0]); break;
         default:
-            NVHLS_ASSERT_MSG(0, "op_not_supported");
+            NVHLS_ASSERT_MSG(0, "op not supported");
     }
 }

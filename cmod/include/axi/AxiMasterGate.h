@@ -191,7 +191,7 @@ class AxiMasterGate : public sc_module {
         }
 
         if (wrRequestIdValid_local) {
-          NVHLS_ASSERT_MSG(wrRequestValid_local, "Should_be_impossible_to_reach_this_state");
+          NVHLS_ASSERT_MSG(wrRequestValid_local, "Should be impossible to reach this state");
 
           bool addr_sent_local = addr_sent;
           if (!addr_sent_local) {

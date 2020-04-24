@@ -151,7 +151,7 @@ class AxiSplitter : public sc_module {
               pushedTo = numSlaves-1;
             }
             // If the address did not fall in any valid range, that's bad
-            NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Read_address_did_not_fall_into_any_output_address_range,_and_default_output_is_not_set");
+            NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Read address did not fall into any output address range, and default output is not set");
 
             if (translate_addr)
               AR_reg.addr -= addrBound[pushedTo][0].read();
@@ -213,7 +213,7 @@ class AxiSplitter : public sc_module {
             if (default_output && pushedTo == numSlaves) {
               pushedTo = numSlaves-1;
             }
-            NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write_address_did_not_fall_into_any_output_address_range,_and_default_output_is_not_set");
+            NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write address did not fall into any output address range, and default output is not set");
             if (translate_addr)
               AW_reg.addr -= addrBound[pushedTo][0].read();
 
@@ -222,7 +222,7 @@ class AxiSplitter : public sc_module {
           }
           break;
         case WRITE_INFLIGHT:
-          NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write_address_did_not_fall_into_any_output_address_range,_and_default_output_is_not_set");
+          NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write address did not fall into any output address range, and default output is not set");
           if (axi_wr_m.w.PopNB(W_reg)) {
             axi_wr_s_w[pushedTo].Push(W_reg);
             if (W_reg.last == 1) {
@@ -242,7 +242,7 @@ class AxiSplitter : public sc_module {
             }
           } 
           else {
-            NVHLS_ASSERT_MSG(0, "Should_never_reach_this_state_if_write_responses_are_disabled");
+            NVHLS_ASSERT_MSG(0, "Should never reach this state if write responses are disabled");
           }
           break;
       }

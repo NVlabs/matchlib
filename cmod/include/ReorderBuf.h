@@ -54,7 +54,7 @@
  *         case reset:                     rob.reset();                    break;
  *         case isEmpty:       out_resp =  rob.isEmpty();                  break;
  *         default:
- *             NVHLS_ASSERT_MSG(0,"invalid_op"); //never get here
+ *             NVHLS_ASSERT_MSG(0,"invalid op"); //never get here
  *     }
  * }
  *      ...
@@ -112,7 +112,7 @@ public:
     {
         Id id;
         bool success = get_next_avail_id(id, idrep);
-        NVHLS_ASSERT_MSG(success, "get_next_avail_id_unsuccessful");
+        NVHLS_ASSERT_MSG(success, "get_next_avail_id unsuccessful");
 
         id2entry.write(static_cast<typename Id2Entry::LocalIndex>(id), 0, vbits.get_tail()); 
         vbits.push(false);

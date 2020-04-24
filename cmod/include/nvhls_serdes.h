@@ -405,7 +405,7 @@ void deserializer<packet_t, flit_t, buffersize, Rtype>::Process() {
       // First flit or Single-flit packet. Allocate new buffer and set valid to
       // 1
       if (flit_reg.flit_id.isHeader()) {
-        NVHLS_ASSERT_MSG(!fifo.isEmpty(), "FIFO_empty");
+        NVHLS_ASSERT_MSG(!fifo.isEmpty(), "FIFO empty");
         packet_pos = fifo.pop();
         buffer[packet_pos].packet_id = flit_reg.packet_id;
         buffer[packet_pos].dest = flit_reg.dest;
@@ -437,7 +437,7 @@ void deserializer<packet_t, flit_t, buffersize, Rtype>::Process() {
       if (flit_reg.flit_id.isTail()) {
         out_packet.Push(buffer[packet_pos]);
         // Release buffer and insert to fifo
-        NVHLS_ASSERT_MSG(!fifo.isFull(), "FIFO_full");
+        NVHLS_ASSERT_MSG(!fifo.isFull(), "FIFO full");
         fifo.push(packet_pos);
       }
     }
@@ -532,7 +532,7 @@ class deserializer<
         // First flit or Single-flit packet. Allocate new buffer and set valid
         // to 1
         if (flit_reg.flit_id.isHeader()) {
-          NVHLS_ASSERT_MSG(!fifo.isEmpty(), "FIFO_empty");
+          NVHLS_ASSERT_MSG(!fifo.isEmpty(), "FIFO empty");
           packet_pos = fifo.pop();
           buffer[packet_pos].packet_id = flit_reg.packet_id;
           buffer[packet_pos].dest = flit_reg.data;
@@ -561,7 +561,7 @@ class deserializer<
         if (flit_reg.flit_id.isTail()) {
           out_packet.Push(buffer[packet_pos]);
           // Release buffer
-          NVHLS_ASSERT_MSG(!fifo.isFull(), "FIFO_full");
+          NVHLS_ASSERT_MSG(!fifo.isFull(), "FIFO full");
           fifo.push(packet_pos);
         }
       }

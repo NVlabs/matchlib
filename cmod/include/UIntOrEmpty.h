@@ -35,7 +35,7 @@ namespace nvhls {
 struct EmptyField : public nvhls_message {
   template <typename T>
   EmptyField operator=(T const &) {
-    NVHLS_ASSERT_MSG(true,"EmptyField_should_never_be_assigned_or_accessed");   // If an assignment actually occurs during runtime
+    NVHLS_ASSERT_MSG(true,"EmptyField should never be assigned or accessed");   // If an assignment actually occurs during runtime
                                                                                 // you've done something wrong
     return EmptyField();
   }

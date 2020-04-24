@@ -193,7 +193,7 @@ class ArbitratedScratchpadDP {
 
         if (bankwrite_req_valid[bank] == true) {
           banks.write(bankwrite_req[bank].localindex, bank, bankwrite_req[bank].data);
-          NVHLS_ASSERT_MSG(bankread_req_valid[bank] == false, "Bank_read_and_write_valid_cannot_be_true_simultaneously_for_single-port_RAM");
+          NVHLS_ASSERT_MSG(bankread_req_valid[bank] == false, "Bank read and write valid cannot be true simultaneously for single-port RAM");
           bankread_rsp[bank].rdata = 0;
           bankread_rsp[bank].valid = false;
         } else {

@@ -91,8 +91,8 @@ namespace Connections {
     }
 
     // Overload these so we don't accidently call them
-    virtual bool PopNB(Message& data) { NVHLS_ASSERT_MSG(0,"Calling_PopNB_on_Buffered_port_is_not_valid"); return false; }
-    virtual bool PushNB(const Message& m) { NVHLS_ASSERT_MSG(0,"Calling_PushNB_on_Buffered_port_is_not_valid"); return false; }
+    virtual bool PopNB(Message& data) { NVHLS_ASSERT_MSG(0,"Calling PopNB on Buffered port is not valid"); return false; }
+    virtual bool PushNB(const Message& m) { NVHLS_ASSERT_MSG(0,"Calling PushNB on Buffered port is not valid"); return false; }
   };
 
 
@@ -135,7 +135,7 @@ namespace Connections {
     }
     
     // Overload these so we don't accidently call them
-    virtual bool PopNB(Message& data) { NVHLS_ASSERT_MSG(0,"Calling_PopNB_on_Buffered_port_is_not_valid"); return false; }
+    virtual bool PopNB(Message& data) { NVHLS_ASSERT_MSG(0,"Calling PopNB on Buffered port is not valid"); return false; }
   };
   
   template <typename Message, int BufferSizeWrite>
@@ -178,7 +178,7 @@ namespace Connections {
     }
 
     // Overload these so we don't accidently call them
-    virtual bool PushNB(const Message& m) { NVHLS_ASSERT_MSG(0,"Calling_PushNB_on_Buffered_port_is_not_valid"); return false; }
+    virtual bool PushNB(const Message& m) { NVHLS_ASSERT_MSG(0,"Calling PushNB on Buffered port is not valid"); return false; }
   };
   
 };

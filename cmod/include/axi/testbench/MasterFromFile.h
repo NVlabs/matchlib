@@ -96,7 +96,7 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
     std::vector< std::vector<std::string> > dataList = reader.readCSV();
     for (unsigned int i=0; i < dataList.size(); i++) {
       std::vector<std::string> vec = dataList[i];
-      NVHLS_ASSERT_MSG(vec.size() == 4, "Each_request_must_have_four_elements");
+      NVHLS_ASSERT_MSG(vec.size() == 4, "Each request must have four elements");
       delay_q.push(atoi(vec[0].c_str()));
       if (vec[1] == "R") {
         req_q.push(0);
@@ -130,10 +130,10 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
         wr_data_pld.last = 1;
         wdata_q.push(wr_data_pld);
       } else if (vec[1] == "Q") {
-        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt_command_read_but_interrupts_are_not_enabled");
+        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt command read, but interrupts are not enabled");
         req_q.push(2);
       } else {
-        NVHLS_ASSERT_MSG(1,"Requests_must_be_R_or_W_or_Q");
+        NVHLS_ASSERT_MSG(1,"Requests must be R or W or Q");
       }
     }
 
@@ -157,7 +157,7 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
       if (delay > 0) wait(delay);
       delay_q.pop();
       if (req_q.front() == 2) {
-        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt_command_found_but_interrupts_are_not_enabled");
+        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt command found, but interrupts are not enabled");
         CDCOUT(sc_time_stamp() << " " << name() << " Beginning wait for interrupt"
                       << endl, kDebugLevel);
         while (interrupt.read() == 0) wait();
@@ -186,7 +186,7 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
         CDCOUT(sc_time_stamp() << " " << name() << " Received read response: ["
                       << data_pld << "]"
                       << endl, kDebugLevel);
-        NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read_response_did_not_match_expected_value");
+        NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read response did not match expected value");
         rresp_q.pop();
       }
       req_q.pop();

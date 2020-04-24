@@ -37,6 +37,6 @@ void ReorderBufTop( const OpType& op,
         case reset:                     rob.reset();                    break;
         case isEmpty:       out_resp =  rob.isEmpty();                  break;
         default:
-            NVHLS_ASSERT_MSG(0, "op_not_supported"); //never get here
+            NVHLS_ASSERT_MSG(0, "op not supported"); //never get here
     }
 }
