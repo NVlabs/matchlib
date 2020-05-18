@@ -21,7 +21,7 @@ MatchLib is regressed against the following tool/dependency verions:
 
 * `gcc` - 4.9.3 (with C++11)
 * `systemc` - 2.3.1
-* `boost` - 1.55.0
+* `boost` - 1.68.0
 * `doxygen` - 1.8.11
 * `make` - 3.82
 * `catapult` - 10.5a
