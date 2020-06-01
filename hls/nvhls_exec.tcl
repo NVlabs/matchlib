@@ -106,8 +106,8 @@ namespace eval nvhls {
     } 
 
     proc run_design_checker {} {
-      flow run /CDesignChecker/write_options {{-abr -severity error } {-abw -severity error } {-acc -severity warning } {-acs -severity warning } {-aic -severity warning } {-aob -severity error } {-apt -severity info } {-cas -severity error } {-ccc -severity warning } {-cia -severity warning } {-cns -severity warning } {-cwb -severity warning } {-dbz -severity error } {-fxd -severity warning } {-ise -severity error } {-mxs -severity info } {-ovl -severity error } {-pdd -severity warning } {-rrt -severity error } {-stf -severity info } {-sud -severity warning } {-umr -severity error }}
-      flow run /CDesignChecker/launch_sleccpc_sh ./CDesignChecker/design_checker.sh
+      flow run /CDesignChecker/write_options {VER_MODE Custom RULES {{-abr -severity error } {-abw -severity error } {-acc -severity warning } {-acs -severity warning } {-aic -severity warning } {-als -severity warning } {-aob -severity error } {-apt -severity info } {-cas -severity error } {-ccc -severity warning } {-cia -severity warning } {-cmc -severity info } {-cns -severity warning } {-cwb -severity warning } {-dbz -severity error } {-fxd -severity warning } {-ise -severity error } {-lrc -severity info } {-mxs -severity info } {-ovl -severity error } {-pdd -severity warning } {-rrt -severity error } {-sat -severity warning } {-stf -severity info } {-sud -severity warning } {-umr -severity error }}} 
+      flow run /CDesignChecker/launch_sleccpc_sh ./CDesignChecker/design_checker.sh Custom
     }
 
     proc usercmd_pre_analyze {} {}
