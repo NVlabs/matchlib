@@ -92,7 +92,7 @@ class nv_array {
     }                                                                      \
   };
 
-#define MAX_SPECIALIZATIONS 64
+#define MAX_SPECIALIZATIONS 256
 
   BOOST_PP_REPEAT(MAX_SPECIALIZATIONS, SPECIALIZATION, BOOST_PP_EMPTY)
 
