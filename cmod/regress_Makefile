@@ -15,38 +15,46 @@
 #
 # Integration tests with a set of existing units.
 
-DIRS = 			ArbiterModule \
-						ArbiterTop \
-						ArbitratedCrossbarTop \
-						ArbitratedScratchpadDPTop \
-						ArbitratedScratchpadTop \
-						CrossbarTop \
-						FifoTop \
-						LzdTop \
-						ReorderBufTop \
-						ScratchpadTop \
-						WHVCRouterTop \
-						axi/AxiAddWriteResp \
-						axi/AxiArbiter \
-						axi/AxiExampleTB \
-						axi/AxiExampleTBFromFile \
-						axi/AxiRemoveWriteResp \
-						axi/AxiSlaveToReadyValidTop \
-						axi/AxiSlaveToRegTop \
-						axi/AxiSplitter \
-						axi/AxiArbSplitTop \
-						axi/AxiAddRemoveWRespTop \
-						axi/AxiLiteSlaveToMemTop \
-  					ConnectionsTop \
-						axi/AxiMasterGateTop \
-						axi/AxiSlaveToMemTop \
+DESIGNS ?= 	unittests/ArbiterModule \
+						unittests/ArbiterTop \
+						unittests/ArbitratedCrossbarTop \
+						unittests/ArbitratedScratchpadDPTop \
+						unittests/ArbitratedScratchpadTop \
+						unittests/ConnectionsTop \
+						unittests/CrossbarTop \
+						unittests/FifoTop \
+						unittests/LzdTop \
+						unittests/ReorderBufTop \
+						unittests/ScratchpadTop \
+						unittests/VectorUnit \
+						unittests/WHVCRouterTop \
+						unittests/axi/AxiAddWriteResp \
+						unittests/axi/AxiArbiter \
+						unittests/axi/AxiExampleTB \
+						unittests/axi/AxiExampleTBFromFile \
+						unittests/axi/AxiRemoveWriteResp \
+						unittests/axi/AxiSlaveToReadyValidTop \
+						unittests/axi/AxiSlaveToRegTop \
+						unittests/axi/AxiSplitter \
+						unittests/axi/AxiArbSplitTop \
+						unittests/axi/AxiAddRemoveWRespTop \
+						unittests/axi/AxiLiteSlaveToMemTop \
+						unittests/axi/AxiMasterGateTop \
+						unittests/axi/AxiSlaveToMemTop \
+						MemModel \
+						examples/ConnectionsRecipes/Adder \
+						examples/ConnectionsRecipes/Adder2 \
+						examples/ConnectionsRecipes/Adder3 \
+						examples/ConnectionsRecipes/Adder4 \
+						examples/Counter \
 
-.PHONY: all $(DIRS)
+SKIP_DESIGNS ?=
 
-all: $(DIRS)
+RUN_DESIGNS := $(filter-out $(SKIP_DESIGNS),$(DESIGNS))
 
-$(DIRS):
-	$(MAKE) -C unittests/$@ sim_clean
-	$(MAKE) -C unittests/$@
-	$(MAKE) -C unittests/$@ run
+PARALLEL_LIMIT ?= 8
 
+.PHONY: all
+
+all:
+	parallel --lb -k -j$(PARALLEL_LIMIT) "cd {} && $(MAKE) sim_clean && $(MAKE) && $(MAKE) run" ::: $(RUN_DESIGNS)

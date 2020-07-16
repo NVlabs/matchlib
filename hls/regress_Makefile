@@ -15,13 +15,15 @@
 #
 # Integration tests with a set of existing units.
 
-DIRS = \
-	Counter \
-	ConnectionsRecipes/Adder \
-	ConnectionsRecipes/Adder2 \
-	ConnectionsRecipes/Adder3 \
-	ConnectionsRecipes/Adder4 \
-	MemModel \
+DESIGNS ?= \
+	unittests/axi/AxiAddRemoveWRespTop \
+	unittests/axi/AxiArbSplitTop \
+	unittests/axi/AxiLiteSlaveToMemTop \
+	unittests/axi/AxiMasterGateTop \
+	unittests/axi/AxiSlaveToMemTop \
+	unittests/axi/AxiSlaveToReadyValidTop \
+	unittests/axi/AxiSlaveToRegTop \
+	unittests/WHVCRouterTop \
 	unittests/ArbiterModule \
 	unittests/ArbiterTop \
 	unittests/ArbitratedCrossbarTop \
@@ -33,23 +35,27 @@ DIRS = \
 	unittests/ReorderBufTop \
 	unittests/ScratchpadTop \
 	unittests/VectorUnit \
-	unittests/axi/AxiAddRemoveWRespTop \
-	unittests/axi/AxiArbSplitTop \
-	unittests/axi/AxiLiteSlaveToMemTop \
-	unittests/axi/AxiMasterGateTop \
-	unittests/axi/AxiSlaveToMemTop \
-	unittests/axi/AxiSlaveToReadyValidTop \
-	unittests/axi/AxiSlaveToRegTop \
-	unittests/WHVCRouterTop \
+	MemModel \
+	ConnectionsRecipes/Adder \
+	ConnectionsRecipes/Adder2 \
+	ConnectionsRecipes/Adder3 \
+	ConnectionsRecipes/Adder4 \
+	Counter \
 
-.PHONY: all $(DIRS)
+SKIP_DESIGNS ?=
 
-all: $(DIRS)
+RUN_DESIGNS := $(filter-out $(SKIP_DESIGNS),$(DESIGNS))
 
-$(DIRS):
-	$(MAKE) -C $@ clean 
+PARALLEL_LIMIT ?= 8
+
+CUSTOM_MAKE ?= $(MAKE)
+RUN_CMD := $(MAKE) clean && $(CUSTOM_MAKE)
+
 ifdef RUN_CDESIGN_CHECKER
-	$(MAKE) -C $@ cdc
-else
-	$(MAKE) -C $@ 
+RUN_CMD += cdc
 endif
+
+.PHONY: all
+
+all:
+	parallel --lb -k -j$(PARALLEL_LIMIT) "cd {} && $(RUN_CMD)" ::: $(RUN_DESIGNS)
