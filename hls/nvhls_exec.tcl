@@ -96,7 +96,7 @@ namespace eval nvhls {
 
     proc setup_clocks {period} {
         set name clk
-        set CLK_PERIODby2 [expr $period/2]
+        set CLK_PERIODby2 [expr $period/2.0]
         directive set -CLOCKS "$name \"-CLOCK_PERIOD $period -CLOCK_EDGE rising -CLOCK_UNCERTAINTY 0.0 -CLOCK_HIGH_TIME $CLK_PERIODby2 -RESET_SYNC_NAME rst -RESET_ASYNC_NAME arst_n -RESET_KIND sync -RESET_SYNC_ACTIVE high -RESET_ASYNC_ACTIVE low -ENABLE_NAME {} -ENABLE_ACTIVE high\"    "
         directive set -CLOCK_NAME $name
     }
