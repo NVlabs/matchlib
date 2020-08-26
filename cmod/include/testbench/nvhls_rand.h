@@ -33,6 +33,9 @@ namespace nvhls {
  *        -# The setting of the RAND_SEED CFLAG at compile time (or via #define in a source file)
  *        -# A random seed based on the unix timestamp at runtime
  *
+ *      WARNING: The RAND_SEED will be overriden in cosimulation, causing SCVerify to always simulate with an
+ *      effective seed of 0.  To work around this, call set_random_seed() inside an SC_THREAD instead of in sc_main.
+ *
  * \par A Simple Example
  * \code
  *   #include <nvhls_rand.h>
