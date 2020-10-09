@@ -8,3 +8,4 @@
 */Catapult*
 *.output.json
 *.csv
+catapult_cache

@@ -14,6 +14,11 @@
 
 #global setup file that runs to right before the go analyze step
 
+set ROOT $::env(ROOT)
+
+options set Cache/UserCacheHome "${ROOT}/hls/catapult_cache"
+options set Cache/DefaultCacheHomeEnabled false
+
 solution new -state initial
 solution options defaults
 flow package require /SCVerify

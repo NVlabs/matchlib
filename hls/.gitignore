@@ -10,3 +10,4 @@
 *.pinfo
 *.output.json
 *.csv
+catapult_cache
