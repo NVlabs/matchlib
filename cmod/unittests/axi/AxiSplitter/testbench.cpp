@@ -76,8 +76,6 @@ SC_MODULE(testbench) {
       axi_read_s;
   nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::template chan<>, numSlaves>
       axi_write_s;
-  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read_m;
-  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write_m;
 
   sc_signal<NVUINTW(numAddrBitsToInspect)> addrBound[numSlaves][2];
 
@@ -94,9 +92,7 @@ SC_MODULE(testbench) {
         axi_write_tb_int("axi_write_tb_int"),
         axi_splitter("axi_splitter"),
         axi_read_s("axi_read_s"),
-        axi_write_s("axi_write_s"),
-        axi_read_m("axi_read_m"),
-        axi_write_m("axi_write_m") {
+        axi_write_s("axi_write_s") {
     Connections::set_sim_clk(&clk);
 
     master0.clk(clk);
