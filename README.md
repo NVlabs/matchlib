@@ -24,7 +24,7 @@ MatchLib is regressed against the following tool/dependency verions:
 * `boost` - 1.68.0
 * `doxygen` - 1.8.11
 * `make` - 3.82
-* `catapult` - 10.5a
+* `catapult` - 10.6a
 *  connections - included with catapult
 * `vcs` - 2017.03-SP2-11
 * `verdi` - 2017.12-SP2-11
