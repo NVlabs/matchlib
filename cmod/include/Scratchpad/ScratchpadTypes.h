@@ -23,16 +23,16 @@
 
 
 // Define enums for request type
-static const unsigned int kScratchpadOpcodeSize = 1;
-enum ScratchpadOpcode {LOAD, STORE};
-MarshallEnum(ScratchpadOpcode, kScratchpadOpcodeSize);
+enum ScratchpadOpcode_enum {LOAD, STORE, ScratchpadOpcode_Length};
+static const unsigned int kScratchpadOpcodeSize = ac::log2_ceil<ScratchpadOpcode_Length>::val;
+typedef NVUINTW(kScratchpadOpcodeSize) ScratchpadOpcode;
 
 template <typename T, unsigned int AddrWidth, unsigned int N>
 class cli_req_t : public nvhls_message 
 {
  public:
   static const unsigned int type_width = Wrapped<T>::width;
-  static const unsigned int width = 1 + N + N * (AddrWidth + type_width);
+  static const unsigned int width = kScratchpadOpcodeSize + N + N * (AddrWidth + type_width);
   
   ScratchpadOpcode opcode;
   sc_lv<N> valids;
