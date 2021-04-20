@@ -94,8 +94,8 @@ struct WrRequest : public Request<Cfg> {
     wuser = rhs.wuser;
   };
   typename Request<Cfg>::axi4_::Data data;
-  typename Request<Cfg>::axi4_::WUser wuser;
   typename Request<Cfg>::axi4_::Last last;
+  typename Request<Cfg>::axi4_::WUser wuser;
 
   static const unsigned int width =
       Request<Cfg>::width + Request<Cfg>::axi4_::DATA_WIDTH +
@@ -104,12 +104,12 @@ struct WrRequest : public Request<Cfg> {
   template <unsigned int Size>
   void Marshall(Marshaller<Size>& m) {
     m& Request<Cfg>::addr;
-    m& data;
     m& Request<Cfg>::len;
     m& Request<Cfg>::size;
     m& Request<Cfg>::burst;
     m& Request<Cfg>::cache;
     m& Request<Cfg>::auser;
+    m& data;
     m& last;
     m& wuser;
   }
