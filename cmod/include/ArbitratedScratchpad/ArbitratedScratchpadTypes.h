@@ -46,12 +46,16 @@ class cli_req_t : public nvhls_message {
 
   template <unsigned int Size>
   void Marshall(Marshaller<Size>& m) {
+    m& type;
     for(unsigned i=0; i<N; i++) {
-      m& data[i];
-      m& addr[i];
       m& valids[i];
     }
-    m& type;
+    for(unsigned i=0; i<N; i++) {
+      m& addr[i];
+    }
+    for(unsigned i=0; i<N; i++) {
+      m& data[i];
+    }
   }
 };
 
@@ -66,8 +70,10 @@ class cli_rsp_t : public nvhls_message {
   template <unsigned int Size>
   void Marshall(Marshaller<Size>& m) {
     for(unsigned i=0; i<N; i++) {
-      m& data[i];
       m& valids[i];
+    }
+    for(unsigned i=0; i<N; i++) {
+      m& data[i];
     }
   }
 };

@@ -185,10 +185,14 @@ class FIFO {
   void Marshall(Marshaller<Size>& m) {
     for (unsigned i = 0; i < NumBanks; i++) {
       m & head[i];
+    }
+    for (unsigned i = 0; i < NumBanks; i++) {
       m & tail[i];
-      m & last_action_was_push[i];
     }
     m & fifo_body;
+    for (unsigned i = 0; i < NumBanks; i++) {
+      m & last_action_was_push[i];
+    }
   }
 
 };  // end FIFO class
@@ -366,6 +370,8 @@ class FIFO<DataType, 1, NumBanks> {
     void Marshall(Marshaller<Size>& m) {
       for (unsigned i = 0; i < NumBanks; i++) {
         m & valid[i];
+      }
+      for (unsigned i = 0; i < NumBanks; i++) {
         m & data[i];
       }
     }

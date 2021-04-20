@@ -138,9 +138,9 @@ class axi4 {
     void Marshall(Marshaller<Size> &m) {
       m &id;
       m &addr;
+      m &burst;
       m &len;
       m &size;
-      m &burst;
       m &cache;
       m &auser;
     }
