@@ -31,7 +31,7 @@ proc nvhls::usercmd_post_assembly {} {
     upvar TOP_NAME TOP_NAME
 
     for {set k 0} {$k < $BANKS} {incr k} {
-        directive set /${TOP_NAME}/Scratchpad<data32_t,$BANKS,$CAPACITY>/run/banks.bank.array_impl.data$k:rsc -MAP_TO_MODULE ram_sample-065nm-separate_beh_dc.RAM_separateRW
+        directive set /${TOP_NAME}/Scratchpad<data32_t,$BANKS,$CAPACITY>/run/banks.bank.array_impl.data$k:rsc -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
     }
 }
 

@@ -21,7 +21,7 @@ proc nvhls::usercmd_post_assembly {} {
     set MAIN_PIPELINE_II 1
 
     for {set k 0} {$k < $NUM_BANKS} {incr k} {
-        directive set ${DESIGN_TOP}/scratchpad_inst.banks.bank.array_impl.data$k:rsc -MAP_TO_MODULE ram_sample-065nm-separate_beh_dc.RAM_separateRW
+        directive set ${DESIGN_TOP}/scratchpad_inst.banks.bank.array_impl.data$k:rsc -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
     }
     directive set ${DESIGN_TOP}/main -PIPELINE_INIT_INTERVAL ${MAIN_PIPELINE_II}
     directive set ${DESIGN_TOP}/main -PIPELINE_STALL_MODE flush

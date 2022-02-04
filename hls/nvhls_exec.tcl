@@ -89,9 +89,9 @@ namespace eval nvhls {
     }
 
     proc setup_libs {} {
-        solution library add mgc_sample-065nm-dw_beh_dc -- -rtlsyntool DesignCompiler -vendor Sample -technology 065nm -Designware Yes
-        solution library add ram_sample-065nm-singleport_beh_dc
-        solution library add ram_sample-065nm-separate_beh_dc
+        solution library add nangate-45nm_beh -- -rtlsyntool OasysRTL
+        solution library add ram_nangate-45nm-singleport_beh
+        solution library add ram_nangate-45nm-separate_beh
     }
 
     proc setup_clocks {period} {

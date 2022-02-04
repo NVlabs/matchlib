@@ -42,7 +42,7 @@ foreach WORDSIZE $WORDSIZE_LIST {
                 global BANKS PIPE_INIT_INTERVAL
                 upvar TOP_NAME TOP_NAME
                 for {set k 0} {$k < $BANKS} {incr k} {
-                    directive set /$TOP_NAME/core/banks.bank.array_impl.data$k:rsc/MAP_TO_MODULE ram_sample-065nm-singleport_beh_dc.RAM
+                    directive set /$TOP_NAME/core/banks.bank.array_impl.data$k:rsc/MAP_TO_MODULE ram_nangate-45nm-singleport_beh.RAM
                 }
                 directive set /$TOP_NAME/core/main -PIPELINE_INIT_INTERVAL $PIPE_INIT_INTERVAL
             }
