@@ -34,6 +34,7 @@ class TestHarnessBlocking : public sc_module {
   SC_HAS_PROCESS(TestHarnessBlocking);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_clock              clk;
   sc_signal< bool >     rst;
@@ -68,10 +69,10 @@ class TestHarnessBlocking : public sc_module {
 
     void line_trace() {
       if (rst.read()) {
-        std::cout << std::dec << "[" << std::setw(3) << cycle++ << "] ";
+        CDCOUT(std::dec << "[" << std::setw(3) << cycle++ << "] ", kDebugLevel);
         sink.line_trace();
         src_line_trace();
-        std::cout << std::endl;
+        CDCOUT(std::endl, kDebugLevel);
       }
     }
 
@@ -97,7 +98,7 @@ class TestHarnessBlocking : public sc_module {
     while (!done) {
       if (src_go) {
         chan.Push(*it);
-        //cout << "@" << sc_time_stamp() << "\t" << name() << " Push x: " << x << endl;
+        //CDCOUT("@" << sc_time_stamp() << "\t" << name() << " Push x: " << x << endl, kDebugLevel);
         ++it;
         if (it == src_msgs.end()) {
           done = true;
@@ -105,7 +106,7 @@ class TestHarnessBlocking : public sc_module {
         }
         wait();
         while (src_pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -119,12 +120,12 @@ class TestHarnessBlocking : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (chan.val.read() && chan.rdy.read()) {
-        std::cout << sc_time_stamp() << " " << std::hex << std::setw(width) << chan.msg.read();
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << chan.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << sc_time_stamp() << " " << std::setw(width+1) << " ";
+        CDCOUT(sc_time_stamp() << " " << std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
 #endif    
   }

@@ -36,6 +36,7 @@ class InNetwork : public sc_module {
   SC_HAS_PROCESS(InNetwork);
 
  public:
+  static const int kDebugLevel = 3;
   typedef Wrapped<Message> WMessage;
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
@@ -99,20 +100,20 @@ class InNetwork : public sc_module {
       unsigned int pwidth = (Packet_t::width / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(pwidth) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(pwidth) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(pwidth + 1) << " ";
+        CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Dequeue port
       unsigned int mwidth = (Message().length() / 4);
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(mwidth) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(mwidth) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(mwidth + 1) << " ";
+        CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif
@@ -128,6 +129,7 @@ class OutNetwork : public sc_module {
   SC_HAS_PROCESS(OutNetwork);
 
  public:
+  static const int kDebugLevel = 3;
   typedef Wrapped<Message> WMessage;
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
@@ -228,20 +230,20 @@ class OutNetwork : public sc_module {
       unsigned int mwidth = (Message().length() / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(mwidth) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(mwidth) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(mwidth + 1) << " ";
+        CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Dequeue port
       unsigned int pwidth = (Packet_t::width / 4);
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(pwidth) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(pwidth) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(pwidth + 1) << " ";
+        CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif
@@ -259,6 +261,7 @@ class InNetworkCredit : public sc_module {
   SC_HAS_PROCESS(InNetworkCredit);
 
  public:
+  static const int kDebugLevel = 3;
   typedef Wrapped<Message> WMessage;
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
@@ -422,32 +425,32 @@ class InNetworkCredit : public sc_module {
       unsigned int pwidth = (Packet_t::width / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(pwidth) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(pwidth) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(pwidth + 1) << " ";
+        CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Dequeue port
       unsigned int mwidth = (Message().length() / 4);
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(mwidth) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(mwidth) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(mwidth + 1) << " ";
+        CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Pending credits
-      std::cout << std::hex << " ( " << credits.read() << " ) ";
+      CDCOUT(std::hex << " ( " << credits.read() << " ) ", kDebugLevel);
 
       // Credit
       unsigned int cwidth = (CreditPacket_t::width / 4);
       if (credit.val.read() && credit.rdy.read()) {
-        std::cout << std::hex << std::setw(cwidth) << credit.msg.read();
+        CDCOUT(std::hex << std::setw(cwidth) << credit.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(cwidth + 1) << " ";
+        CDCOUT(std::setw(cwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif
@@ -465,6 +468,7 @@ class OutNetworkCredit : public sc_module {
   SC_HAS_PROCESS(OutNetworkCredit);
 
  public:
+  static const int kDebugLevel = 3;
   typedef Wrapped<Message> WMessage;
   static const unsigned int width = WMessage::width;
   typedef sc_lv<WMessage::width> MsgBits;
@@ -633,32 +637,32 @@ class OutNetworkCredit : public sc_module {
       unsigned int mwidth = (Message().length() / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(mwidth) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(mwidth) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(mwidth + 1) << " ";
+        CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Dequeue port
       unsigned int pwidth = (Packet_t::width / 4);
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(pwidth) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(pwidth) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(pwidth + 1) << " ";
+        CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Pending credits
-      std::cout << std::hex << " ( " << credits.read() << " ) ";
+      CDCOUT(std::hex << " ( " << credits.read() << " ) ", kDebugLevel);
 
       // Credit
       unsigned int cwidth = (CreditPacket_t::width / 4);
       if (credit.val.read() && credit.rdy.read()) {
-        std::cout << std::hex << std::setw(cwidth) << credit.msg.read();
+        CDCOUT(std::hex << std::setw(cwidth) << credit.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(cwidth + 1) << " ";
+        CDCOUT(std::setw(cwidth + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif

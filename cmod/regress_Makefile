@@ -54,6 +54,8 @@ RUN_DESIGNS := $(filter-out $(SKIP_DESIGNS),$(DESIGNS))
 
 PARALLEL_LIMIT ?= 8
 
+export DEBUG_LEVEL := 0
+
 .PHONY: all
 
 all:

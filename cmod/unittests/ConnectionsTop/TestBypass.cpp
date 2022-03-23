@@ -36,6 +36,7 @@ class TestHarnessNonBlocking : public sc_module {
   SC_HAS_PROCESS(TestHarnessNonBlocking);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_clock                      clk;
   sc_signal< bool >             rst;
@@ -78,13 +79,13 @@ class TestHarnessNonBlocking : public sc_module {
 
     void line_trace() {
       if (rst.read()) {
-        std::cout << std::dec << "[" << std::setw(3) << cycle++ << "] ";
+        CDCOUT(std::dec << "[" << std::setw(3) << cycle++ << "] ", kDebugLevel);
         src.line_trace();
         #ifndef __SYNTHESIS__
         byp.line_trace();
         #endif
         sink.line_trace();
-        std::cout << std::endl;
+        CDCOUT(std::endl, kDebugLevel);
       }
     }
 

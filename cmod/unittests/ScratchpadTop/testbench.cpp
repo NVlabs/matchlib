@@ -34,6 +34,7 @@
 #endif
 
 //#define DEBUG 1
+static const int kDebugLevel = 1;
 typedef cli_req_t<data32_t, SCRATCHPAD_ADDR_WIDTH, SCRATCHPAD_BANKS> tb_cli_req_t;
 typedef cli_rsp_t<data32_t, SCRATCHPAD_BANKS> tb_cli_rsp_t;
 
@@ -153,7 +154,7 @@ void TbIO::source() {
       curr_cli_req.addr[j] = SCRATCHPAD_BANKS*i + j;
       //curr_cli_req.data[j] = SCRATCHPAD_BANKS*i + j;
       curr_cli_req.data[j] = rand();
-      DCOUT("@" << sc_time_stamp() << hex << ":  Lane " << j << ": addr 0x" << curr_cli_req.addr[j].to_uint64() << ", data 0x" << curr_cli_req.data[j].to_uint64() << endl);
+      CDCOUT("@" << sc_time_stamp() << hex << ":  Lane " << j << ": addr 0x" << curr_cli_req.addr[j].to_uint64() << ", data 0x" << curr_cli_req.data[j].to_uint64() << endl, kDebugLevel);
     }
     // Send the store request to the DUT here:
     cli_req.Push(curr_cli_req);
@@ -207,26 +208,25 @@ void TbIO::sink() {
       wait();
       curr_cli_rsp = cli_rsp.Pop();
       ref_cli_req = fifo.front();
-      DCOUT("=========================================================" << endl);
+      CDCOUT("=========================================================" << endl, kDebugLevel);
       std::stringstream ss;
       for (int j=0; j<SCRATCHPAD_BANKS; j++) {
-	if (curr_cli_rsp.valids[j]==true) {
-	  DCOUT("  Lane " << j << ": Requested addr 0x" << ref_cli_req.addr[j].to_uint64() << ", received data 0x" << curr_cli_rsp.data[j].to_uint64() << endl);
-	} else {
-	  DCOUT("  Lane " << j << ": No valid data received." << endl);
-	}
+        if (curr_cli_rsp.valids[j]==true) {
+          CDCOUT("  Lane " << j << ": Requested addr 0x" << ref_cli_req.addr[j].to_uint64() << ", received data 0x" << curr_cli_rsp.data[j].to_uint64() << endl, kDebugLevel);
+        } else {
+          CDCOUT("  Lane " << j << ": No valid data received." << endl, kDebugLevel);
+        }
       }
       pass = refmem.check_response(curr_cli_rsp, ref_cli_req);
       if (!pass) {
-	DCOUT("ERROR: Mismatch " << "\n");
-	DCOUT("@" << sc_time_stamp() << "\t **FAIL**" << endl);
-	for (int j=0; j<SCRATCHPAD_BANKS; j++) {
-	  DCOUT("\t\t   Expected data[" << j << "]: " << refmem.read(ref_cli_req.addr[j]).to_uint64() << endl);
-	}
-	assert(false);
-      }
-      else {
-	DCOUT("@" << sc_time_stamp() << "\t Memory check passed!" << endl);
+        DCOUT("ERROR: Mismatch " << "\n");
+        DCOUT("@" << sc_time_stamp() << "\t **FAIL**" << endl);
+        for (int j=0; j<SCRATCHPAD_BANKS; j++) {
+          DCOUT("\t\t   Expected data[" << j << "]: " << refmem.read(ref_cli_req.addr[j]).to_uint64() << endl);
+        }
+        assert(false);
+      } else {
+        CDCOUT("@" << sc_time_stamp() << "\t Memory check passed!" << endl, kDebugLevel);
       }
       fifo.pop_front();
     }

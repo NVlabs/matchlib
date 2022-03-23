@@ -20,6 +20,7 @@
 
 
 SC_MODULE(testbench) {
+    static const int kDebugLevel = 1;
     CCS_DESIGN(Counter) counter;
     sc_clock clk;
     sc_signal<bool> rst;
@@ -53,12 +54,12 @@ SC_MODULE(testbench) {
 
         // operation
         for (unsigned int i=0; i < 100; i++) {
-            cout << "@" << sc_time_stamp() << " VALUE = " << out << endl;
+            CDCOUT("@" << sc_time_stamp() << " VALUE = " << out << endl, kDebugLevel);
             assert(out == counter_ref);
 
             if (i & 2) {  // this way I cover all "inc" signal transitions
                 inc = 1;
-                cout << "@" << sc_time_stamp() << " ++" << endl;
+                CDCOUT("@" << sc_time_stamp() << " ++" << endl, kDebugLevel);
                 ++counter_ref;
             } else {
                 inc = 0;

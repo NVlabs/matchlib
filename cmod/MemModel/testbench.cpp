@@ -30,6 +30,8 @@ CCS_MAIN(int argc, char *argv[]) {
 
   nvhls::set_random_seed();
 
+  static const int kDebugLevel = 1;
+
   const int count = NUM_ITER;
   int start = 0;
 
@@ -56,7 +58,7 @@ CCS_MAIN(int argc, char *argv[]) {
     //MemAddr_t addr = i;
     address[i] = addr;
     ref[addr] = write_data;
-    DCOUT("Memory Op: Write, Address: " << hex << addr.to_uint64() << " Data: " << write_data.to_uint64() << endl);
+    CDCOUT("Memory Op: Write, Address: " << hex << addr.to_uint64() << " Data: " << write_data.to_uint64() << endl, kDebugLevel);
     CCS_DESIGN(MemModel)(write_data, read_data, mem_op, addr);
   }
 
@@ -64,7 +66,7 @@ CCS_MAIN(int argc, char *argv[]) {
     MemOp_t mem_op = READ;
     MemAddr_t addr = address[i];
     CCS_DESIGN(MemModel)(write_data, read_data, mem_op, addr);
-    DCOUT("Memory Op: Read, Address: "<< addr.to_uint64() << " Data: "<< read_data.to_uint64() << " " << ref[addr] << endl);
+    CDCOUT("Memory Op: Read, Address: "<< addr.to_uint64() << " Data: "<< read_data.to_uint64() << " " << ref[addr] << endl, kDebugLevel);
     assert(ref[addr]==read_data);
   }
   CCS_RETURN(0) ;

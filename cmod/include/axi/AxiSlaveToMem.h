@@ -65,7 +65,7 @@ class AxiSlaveToMem : public sc_module {
   Memarray memarray;
 
  public:
-  static const int kDebugLevel = 1;
+  static const int kDebugLevel = 2;
 
   typedef typename axi::axi4<axiCfg> axi4_;
   static const int bytesPerWord = axiCfg::dataWidth >> 3;

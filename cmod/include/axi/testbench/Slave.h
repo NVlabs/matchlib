@@ -44,7 +44,7 @@
 template <typename axiCfg>
 class Slave : public sc_module {
  public:
-  static const int kDebugLevel = 0;
+  static const int kDebugLevel = 1;
   typedef axi::axi4<axiCfg> axi4_;
 
   typename axi4_::read::template slave<> if_rd;

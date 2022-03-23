@@ -88,7 +88,7 @@ class Master : public sc_module {
   BOOST_STATIC_ASSERT_MSG(axiCfg::useWriteResponses || cfg::numReads == 0 || cfg::readDelay != 0,
                 "Must use a substantial read delay if reading without write responses");
  public:
-  static const int kDebugLevel = 0;
+  static const int kDebugLevel = 1;
   typedef axi::axi4<axiCfg> axi4_;
 
   typename axi4_::read::template master<> if_rd;

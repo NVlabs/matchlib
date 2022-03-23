@@ -35,6 +35,7 @@ class TestHarness: public sc_module {
   SC_HAS_PROCESS(TestHarness);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   typedef Packet<Wrapped<T>::width,4,1,2> Packet_t;
   typedef Flit<16,4,1,2,FlitId2bit> Flit_t;
@@ -128,12 +129,12 @@ class TestHarness: public sc_module {
 
     void line_trace() {
       if (rst.read()) {
-        std::cout << std::dec << "[" << std::setw(3) << cycle++ << "] ";
+        CDCOUT(std::dec << "[" << std::setw(3) << cycle++ << "] ", kDebugLevel);
         src.line_trace();
         enq_net.line_trace();
         deq_net.line_trace();
         sink.line_trace();
-        std::cout << std::endl;
+        CDCOUT(std::endl, kDebugLevel);
       }
     }
 

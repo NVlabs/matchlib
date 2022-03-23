@@ -72,6 +72,7 @@ class AxiMasterGate : public sc_module {
   static_assert(MaxInFlightTrans <= (1 << axi4_::ID_WIDTH) , "Number of inflight transactions cannot exceed number of unique IDs");
 
  public:
+  static const int kDebugLevel = 2;
   typename axi4_::read::template master<> if_rd;
   typename axi4_::write::template master<> if_wr;
 
@@ -115,27 +116,21 @@ class AxiMasterGate : public sc_module {
     #pragma pipeline_stall_mode flush
     while (1) {
       wait();
-#ifdef DEBUGMODE
-      cout << "@" << sc_time_stamp() << "\t wr_rob is empty? "
-           << wr_rob.isEmpty() << endl;
-#endif
+      CDCOUT("@" << sc_time_stamp() << "\t wr_rob is empty? "
+           << wr_rob.isEmpty() << endl, kDebugLevel);
       // send response
       if (wr_rob.topResponseReady()) {
         WrResp<Cfg> wrResp;
         wrResp = wr_rob.popResponse();
 
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp()
+        CDCOUT("@" << sc_time_stamp()
              << "\t\t Pop first response from rob and push it into host"
-             << "\tresp = " << wrResp.resp << endl;
-#endif
+             << "\tresp = " << wrResp.resp << endl, kDebugLevel);
 
         wrRespOut.Push(wrResp);  // I expect the other side to be always ready,
                                  // therefore using blocking push here
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp() << "\t\t Done pushing resp to host"
-             << endl;
-#endif
+        CDCOUT("@" << sc_time_stamp() << "\t\t Done pushing resp to host"
+             << endl, kDebugLevel);
       }
 
       WrRequest<Cfg> wrRequest_local = wrRequest;
@@ -150,27 +145,21 @@ class AxiMasterGate : public sc_module {
         wrRequestValid_local = true;
         wrRequestIdValid_local = false;
 
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp() << "\t\t wr:pop wrReqFifo" << endl;
-#endif
+        CDCOUT("@" << sc_time_stamp() << "\t\t wr:pop wrReqFifo" << endl, kDebugLevel);
       }
 
       // receive responses
       {
         typename axi4_::WRespPayload resp_pld;
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp() << "\t\t Receiving resp from slave"
-             << endl;
-#endif
+        CDCOUT("@" << sc_time_stamp() << "\t\t Receiving resp from slave"
+             << endl, kDebugLevel);
         if (if_wr.b.PopNB(resp_pld)) {
           WrResp<Cfg> wrResp;
           wrResp.resp = resp_pld.resp;
 
-#ifdef DEBUGMODE
-          cout << "@" << sc_time_stamp() << "\t\t wr:Post response to rob"
+          CDCOUT("@" << sc_time_stamp() << "\t\t wr:Post response to rob"
                << "\tid = " << resp_pld.id << "\tresp = " << resp_pld.resp
-               << endl;
-#endif
+               << endl, kDebugLevel);
           wr_rob.addResponse(static_cast<sc_uint<axi4_::ID_WIDTH> >(resp_pld.id), wrResp);
         }
       }
@@ -184,10 +173,8 @@ class AxiMasterGate : public sc_module {
         if (!wrRequestIdValid_local && wr_rob.canAcceptRequest()) {
           wrRequestId_local = wr_rob.addRequest();
           wrRequestIdValid_local = true;
-#ifdef DEBUGMODE
-          cout << "@" << sc_time_stamp()
-               << "\t\t wr:new id allocated = " << wrRequestId_local << endl;
-#endif
+          CDCOUT("@" << sc_time_stamp()
+               << "\t\t wr:new id allocated = " << wrRequestId_local << endl, kDebugLevel);
         }
 
         if (wrRequestIdValid_local) {
@@ -201,14 +188,12 @@ class AxiMasterGate : public sc_module {
             addr_pld.id = static_cast<typename axi4_::Id>(wrRequestId_local);
 
             addr_sent_local = if_wr.aw.PushNB(addr_pld);
-#ifdef DEBUGMODE
-            cout << "@" << sc_time_stamp() << "\t\t wr:sending addr pass? "
+            CDCOUT("@" << sc_time_stamp() << "\t\t wr:sending addr pass? "
                  << addr_sent_local << "\taddr = " << wrRequest_local.addr
                  << "\tid = " << wrRequestId_local
                  << "\tlen = " << wrRequest_local.len
                  << "\tsize = " << wrRequest_local.size
-                 << "\tburst = " << wrRequest_local.burst << endl;
-#endif
+                 << "\tburst = " << wrRequest_local.burst << endl, kDebugLevel);
           } else {
             // send data
             typename axi4_::WritePayload write_pld;
@@ -220,11 +205,9 @@ class AxiMasterGate : public sc_module {
             pushed = if_wr.w.PushNB(write_pld);
             wrRequestValid_local = wrRequestValid_local && !pushed;
             wrRequestIdValid_local = wrRequestIdValid_local && !pushed;
-#ifdef DEBUGMODE
-            cout << "@" << sc_time_stamp() << "\t\t sending data pass? "
+            CDCOUT("@" << sc_time_stamp() << "\t\t sending data pass? "
                  << !addr_sent_local << "\tdata = " << wrRequest_local.data
-                 << "\tlast = " << wrRequest_local.last << endl;
-#endif
+                 << "\tlast = " << wrRequest_local.last << endl, kDebugLevel);
             isBurstInFlight_local = (wrRequest_local.last != 1);
 
             // if this is a burst, and not the last beat next time we need to
@@ -250,9 +233,7 @@ class AxiMasterGate : public sc_module {
         if (wrRequestIn.PopNB(wrRequest1)) {
           wrReqFifo.push(wrRequest1);
 
-#ifdef DEBUGMODE
-          cout << "@" << sc_time_stamp() << "\t\t wr:m got request!" << endl;
-#endif
+          CDCOUT("@" << sc_time_stamp() << "\t\t wr:m got request!" << endl, kDebugLevel);
         }
       }
     }
@@ -277,28 +258,22 @@ class AxiMasterGate : public sc_module {
     while (1) {
       wait();
 
-#ifdef DEBUGMODE
-      cout << "@" << sc_time_stamp() << "\t rd_rob is empty? "
-           << rd_rob.isEmpty() << endl;
-#endif
+      CDCOUT("@" << sc_time_stamp() << "\t rd_rob is empty? "
+           << rd_rob.isEmpty() << endl, kDebugLevel);
       // send response
       if (rd_rob.topResponseReady()) {
         RdResp<Cfg> rdResp;
         rdResp = rd_rob.popResponse();
 
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp()
+        CDCOUT("@" << sc_time_stamp()
              << "\t\t rd:Pop first response from rob and push it into host"
              //<< "\tresp = " << rdResp
-             << endl;
-#endif
+             << endl, kDebugLevel);
 
         rdRespOut.Push(rdResp);  // I expect the other side to be always ready,
                                  // therefore using blocking push here
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp() << "\t\t rd:Done pushing resp to host"
-             << endl;
-#endif
+        CDCOUT("@" << sc_time_stamp() << "\t\t rd:Done pushing resp to host"
+             << endl, kDebugLevel);
       }
 
       RdRequest<Cfg> rdRequest_local = rdRequest;
@@ -312,9 +287,7 @@ class AxiMasterGate : public sc_module {
         rdRequest_local = rdReqFifo.pop();
         rdRequestValid_local = true;
         rdRequestIdValid_local = false;
-#ifdef DEBUGMODE
-        cout << "@" << sc_time_stamp() << "\t\t rd:pop rdReqFifo" << endl;
-#endif
+        CDCOUT("@" << sc_time_stamp() << "\t\t rd:pop rdReqFifo" << endl, kDebugLevel);
       }
 
       if (rdRequestValid_local) {
@@ -331,10 +304,8 @@ class AxiMasterGate : public sc_module {
           rdRequestId_local = rd_rob.addRequest();
           rdRequestIdValid_local = true;
           rdBurstInFlight_local = isBurst;
-#ifdef DEBUGMODE
-          cout << "@" << sc_time_stamp()
-               << "\t\t rd:new id allocated = " << rdRequestId << endl;
-#endif
+          CDCOUT("@" << sc_time_stamp()
+               << "\t\t rd:new id allocated = " << rdRequestId << endl, kDebugLevel);
         }
 
         if (rdRequestIdValid_local) {
@@ -359,10 +330,8 @@ class AxiMasterGate : public sc_module {
         if (rdRequestIn.PopNB(rdRequest1)) {
           rdReqFifo.push(rdRequest1);
 
-#ifdef DEBUGMODE
-          cout << "@" << sc_time_stamp() << "\t\t rd:m got request ? "
-               << rdRequestValid << endl;
-#endif
+          CDCOUT("@" << sc_time_stamp() << "\t\t rd:m got request ? "
+               << rdRequestValid << endl, kDebugLevel);
         }
       }
 

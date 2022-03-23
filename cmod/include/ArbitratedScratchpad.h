@@ -59,6 +59,7 @@ class ArbitratedScratchpad {
 
  public:
   //------------Constants Here---------------------------
+  static const int kDebugLevel = 2;
   // Derived parameters
   static const int addr_width = nvhls::nbits<CapacityInBytes - 1>::val;
   static const int log2_nbanks = nvhls::nbits<NumBanks - 1>::val;
@@ -175,40 +176,40 @@ class ArbitratedScratchpad {
 		  bool       bank_req_valid[NumInputs],
 		  rsp_t &load_rsp, bool input_ready[NumInputs]) {
   #endif
-    DCOUT("\tinputs:" << endl);
+    CDCOUT("\tinputs:" << endl, kDebugLevel);
     for (unsigned i = 0; i < NumInputs; ++i) {
-      DCOUT("\t" << i << " :"
+      CDCOUT("\t" << i << " :"
            << " valid="  << bank_req_valid[i]
            << " select=" << bank_sel[i]
 	   << " addr="   << bank_req[i].addr
            << " wdata="  << bank_req[i].wdata
 	   << " load="   << !bank_req[i].do_store
            << " store="  << bank_req[i].do_store
-	   << " input="  << bank_req[i].input_chan << endl);
+	   << " input="  << bank_req[i].input_chan << endl, kDebugLevel);
     }
-    DCOUT("\t------" << endl);
+    CDCOUT("\t------" << endl, kDebugLevel);
 
     bank_req_t bank_req_winner[NumBanks];
     bool bank_req_winner_valid[NumBanks];
     request_xbar.run(bank_req, bank_sel, bank_req_valid, bank_req_winner,
                      bank_req_winner_valid, input_ready);
 
-    DCOUT("\t\tbank winner transactions:" << endl);
+    CDCOUT("\t\tbank winner transactions:" << endl, kDebugLevel);
     for (unsigned i = 0; i < NumBanks; ++i) {
-      DCOUT("\t\t" << i << " :"
+      CDCOUT("\t\t" << i << " :"
            << " valid=" << bank_req_winner_valid[i]
            << " addr="  << bank_req_winner[i].addr
            << " wdata=" << bank_req_winner[i].wdata
            << " load="  << !bank_req_winner[i].do_store
            << " store=" << bank_req_winner[i].do_store
-	   << " input=" << bank_req_winner[i].input_chan << endl);
+	   << " input=" << bank_req_winner[i].input_chan << endl, kDebugLevel);
     }
-    DCOUT("\t\t------" << endl);
-    DCOUT("\t\tinput_ready:" << endl);
+    CDCOUT("\t\t------" << endl, kDebugLevel);
+    CDCOUT("\t\tinput_ready:" << endl, kDebugLevel);
     for (unsigned i = 0; i < NumInputs; ++i) {
-      DCOUT("\t\t" << i << " : ready=" << input_ready[i] << endl);
+      CDCOUT("\t\t" << i << " : ready=" << input_ready[i] << endl, kDebugLevel);
     }
-    DCOUT("\t\t------" << endl);
+    CDCOUT("\t\t------" << endl, kDebugLevel);
 
     bank_rsp_t bank_rsp[NumBanks];
     banks_load_store(bank_req_winner, bank_req_winner_valid, bank_rsp);

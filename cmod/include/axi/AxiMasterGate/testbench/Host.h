@@ -40,6 +40,7 @@
 template <typename Cfg>
 SC_MODULE(Host) {
  public:
+  static const int kDebugLevel = 1;
   sc_in<bool> reset_bar;
   sc_in<bool> clk;
 
@@ -113,12 +114,12 @@ SC_MODULE(Host) {
             ctr++;
           }
           wrRequest.data = nvhls::gen_random_payload<Data>().d;
-          std::cout << "@" << sc_time_stamp()
+          CDCOUT("@" << sc_time_stamp()
                     << " write source initiated a request:"
                     << "\t addr = " << hex << wrRequest.addr
                     << "\t data = " << hex << wrRequest.data
                     << "\t len = " << dec << wrRequest.len
-                    << std::endl;
+                    << std::endl, kDebugLevel);
           wrRequestOut.Push(wrRequest);
           dataQ.push(wrRequest.data);
           addr += bytesPerBeat;
@@ -136,9 +137,9 @@ SC_MODULE(Host) {
       wait();
       WrResp<Cfg> wrResp = wrRespIn.Pop();
 
-      std::cout << "@" << sc_time_stamp() << " write sink received response:"
+      CDCOUT("@" << sc_time_stamp() << " write sink received response:"
                 << "\t resp = " << dec << wrResp.resp
-                << std::endl;
+                << std::endl, kDebugLevel);
       if (++ctr == write_count) done_write = 1;
     }
   }
@@ -161,10 +162,10 @@ SC_MODULE(Host) {
 
           rdRequest.len = len;
 
-          std::cout << "@" << sc_time_stamp() << " read source initiated a request:"
+          CDCOUT("@" << sc_time_stamp() << " read source initiated a request:"
                     << "\t addr = " << hex << rdRequest.addr
                     << "\t len = " << dec << rdRequest.len
-                    << std::endl;
+                    << std::endl, kDebugLevel);
           rdRequestOut.Push(rdRequest);
           addr += (len+1)*bytesPerBeat;
           ctr++;
@@ -183,11 +184,11 @@ SC_MODULE(Host) {
       RdResp<Cfg> rdResp = rdRespIn.Pop();
       typename axi::axi4<Cfg>::Data rd_data_expected = dataQ.front(); dataQ.pop();
 
-      std::cout << "@" << sc_time_stamp() << " read sink received response:"
+      CDCOUT("@" << sc_time_stamp() << " read sink received response:"
                 << "\t last = " << rdResp.last
                 << "\t data = " << hex << rdResp.data
                 << "\t expected = " << hex << rd_data_expected
-                << std::endl;
+                << std::endl, kDebugLevel);
       NVHLS_ASSERT_MSG(rdResp.data == rd_data_expected, "Read response data did not match expected value");
 
       if (rdResp.last == 1) ctr++;

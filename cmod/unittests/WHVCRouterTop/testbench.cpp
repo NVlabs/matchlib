@@ -46,6 +46,8 @@ const int DEST_WIDTHPERHOP = (LOCAL_DESTPORT_WIDTHPERHOP + REMOTE_DESTPORT_WIDTH
 const int DEST_WIDTH = DEST_WIDTHPERHOP*kNumMaxHops;
 typedef deque<Flit_t> flits_t;
 
+static const int kDebugLevel = 1;
+
 enum RouteType {
 UniCast,
 UniCast_NoCongestion,
@@ -74,9 +76,9 @@ class Reference {
   void flit_sent(const int& id, const deque<int>& dest, const int& out_vc,
                  const Flit_t& flit) {
     for (deque<int>::const_iterator it = dest.begin(); it != dest.end(); ++it) {
-      cout << hex << sc_time_stamp() << " sent flit: " << flit; 
-      cout <<"added to ref_tracking[" << *it << "][" << out_vc << "][" << id
-      << "]" << dec << endl;
+      CDCOUT(hex << sc_time_stamp() << " sent flit: " << flit, kDebugLevel);
+      CDCOUT("added to ref_tracking[" << *it << "][" << out_vc << "][" << id
+      << "]" << dec << endl, kDebugLevel);
       ref_tracking[*it][out_vc][id].push_back(flit);
         ++send_cnt;
     }
@@ -213,7 +215,7 @@ class Reference {
         ds.source[flit_packet_id].push_back(found_source);
         // only a single candidate should remain at the very end
       }
-      cout << hex << "Dest ID: : " << id << " Source ID: " << ds.source[flit_packet_id].front() << " Received: " << flit; 
+      CDCOUT(hex << "Dest ID: : " << id << " Source ID: " << ds.source[flit_packet_id].front() << " Received: " << flit, kDebugLevel); 
       assert(
           !ref_tracking[id][flit_packet_id][ds.source[flit_packet_id].front()]
                .empty());
@@ -226,7 +228,7 @@ class Reference {
         NVUINTW(DEST_WIDTH) next_dests_local = route >> DEST_WIDTHPERHOP;
         expected_flit.data = nvhls::set_slc(expected_flit.data,next_dests_local, 0);;
       }
-      cout << " Expected: " << expected_flit << dec << endl;
+      CDCOUT(" Expected: " << expected_flit << dec << endl, kDebugLevel);
       assert(flit_packet_id == expected_flit.get_packet_id());
       assert(flit.flit_id == expected_flit.flit_id);
       assert(flit.data == expected_flit.data);
@@ -317,7 +319,7 @@ SC_MODULE(Source) {
 
               ref.flit_sent(id, dest_per_vc[out_vc], out_vc, flit);
             } else {
-              cout << "ID: " << id << " Push Unsuccessful\n";
+              CDCOUT("ID: " << id << " Push Unsuccessful\n", kDebugLevel);
             }
           }
 
@@ -389,11 +391,11 @@ SC_MODULE(Source) {
 	      assert(dest.size() <= 1); 
         }
 
-        cout << "###### " << dest.size() << endl;
+        CDCOUT("###### " << dest.size() << endl, kDebugLevel);
       }
 
-      cout << "@" << sc_time_stamp() << " Source ID: " << id << " :: Write = "
-                << flit << endl;
+      CDCOUT("@" << sc_time_stamp() << " Source ID: " << id << " :: Write = "
+                << flit << endl, kDebugLevel);
       if (dest.size()!=0)
         packet.push_back(flit);
     }
@@ -528,8 +530,8 @@ SC_MODULE(Dest) {
     while (1) {
       // print_dest_ref(id);
       if (in.PopNB(flit)) {
-        cout << "@" << sc_time_stamp() << hex << ": " << name() << " received flit: "
-                  << flit << endl;
+        CDCOUT("@" << sc_time_stamp() << hex << ": " << name() << " received flit: "
+                  << flit << endl, kDebugLevel);
         ++credit_reg[flit.get_packet_id()];
         ref.flit_received(id, flit);
       }

@@ -23,6 +23,7 @@
 
 const int g_test_len = 100;
 const int TB_FIFO_LEN = g_test_len + 50;
+static const int kDebugLevel = 1;
 
 CCS_MAIN(int argc, char *argv[]) {
 
@@ -63,21 +64,20 @@ CCS_MAIN(int argc, char *argv[]) {
         int dest = rand()%NUM_OUTPUTS;
         dest_in[in] = dest;
         data_in[in] = in;
-        cout << "data_in[" << dest_in[in] << "][" << in << "] = " << data_in[in] << "\t valid: " << valid_in[in] << endl;
+        CDCOUT("data_in[" << dest_in[in] << "][" << in << "] = " << data_in[in] << "\t valid: " << valid_in[in] << endl, kDebugLevel);
       }
 
       // Run DUT
       CCS_DESIGN(ArbitratedCrossbarTop)(data_in, dest_in, valid_in, data_out, valid_out, ready);
       for (unsigned out = 0; out < NUM_OUTPUTS; out++) {
-        cout << "data_out[" << out << "] = " << data_out[out] << "\t valid: " << valid_out[out] << endl;
+        CDCOUT("data_out[" << out << "] = " << data_out[out] << "\t valid: " << valid_out[out] << endl, kDebugLevel);
       }
       for (unsigned in = 0; in < NUM_INPUTS; in++) {
-        cout << "ready[" << in << "] = " << ready[in] << "; ";
+        CDCOUT("ready[" << in << "] = " << ready[in] << "; ", kDebugLevel);
         if (ready[in]) {
-	  cout << "Pushing " << data_in[in] << " into tb_fifos[" << dest_in[in] << "][" << in << "]";
+	        CDCOUT("Pushing " << data_in[in] << " into tb_fifos[" << dest_in[in] << "][" << in << "]" << endl, kDebugLevel);
           tb_fifos[dest_in[in]][in].push(data_in[in]);
         }
-	cout << endl;
       }
 
       // Read from each output channel if it is not empty
@@ -86,7 +86,7 @@ CCS_MAIN(int argc, char *argv[]) {
           bool is_match = false;
           for (unsigned in = 0; in < NUM_INPUTS; in++) {
             if (!tb_fifos[out][in].isEmpty()) {
-              cout << " Checking data_out[" << out << "] = " << data_out[out] << " with tb_fifos[" << out << "][" << in << "] = " << tb_fifos[out][in].peek() << endl;
+              CDCOUT(" Checking data_out[" << out << "] = " << data_out[out] << " with tb_fifos[" << out << "][" << in << "] = " << tb_fifos[out][in].peek() << endl, kDebugLevel);
               if (data_out[out] == tb_fifos[out][in].peek()) {
                 tb_fifos[out][in].pop();
                 is_match = true;
@@ -95,7 +95,7 @@ CCS_MAIN(int argc, char *argv[]) {
             }
           }
           assert(is_match==true);
-	  cout << endl;
+          CDCOUT(endl, kDebugLevel);
         }
       }
     }
@@ -115,7 +115,7 @@ CCS_MAIN(int argc, char *argv[]) {
     while (!expected_fifo_empty) {
 	  CCS_DESIGN(ArbitratedCrossbarTop)(data_in, dest_in, valid_in, data_out, valid_out, ready);
 	  for (unsigned out = 0; out < NUM_OUTPUTS; out++) {
-        cout << "Output: " << out << "\t valid: " << valid_out[out] << "\t data: " << data_out[out] << endl;
+        CDCOUT("Output: " << out << "\t valid: " << valid_out[out] << "\t data: " << data_out[out] << endl, kDebugLevel);
       }
       // Read from each output channel if it is not empty
 	  for (unsigned out = 0; out < NUM_OUTPUTS; out++) {
@@ -137,10 +137,10 @@ CCS_MAIN(int argc, char *argv[]) {
 	    for (unsigned in = 0; in < NUM_INPUTS; in++) {
           fifo_empty_local &= tb_fifos[out][in].isEmpty();
           if (!tb_fifos[out][in].isEmpty())
-            cout << "Testbench fifo[" << out<<"]["<<in << "] not empty\n";
+            CDCOUT("Testbench fifo[" << out<<"]["<<in << "] not empty\n", kDebugLevel);
         }
       }
-      cout << "FIFO Empty? : " << fifo_empty_local << endl;
+      CDCOUT("FIFO Empty? : " << fifo_empty_local << endl, kDebugLevel);
       expected_fifo_empty = fifo_empty_local;
     }
 

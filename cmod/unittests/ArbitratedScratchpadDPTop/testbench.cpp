@@ -54,6 +54,8 @@ bool check_response(DATA_TYPE port_read_out[kNumReadPorts], bool port_read_out_v
   return valid_data_rcvd;
 }
 
+static const int kDebugLevel = 1;
+
 CCS_MAIN (int argc, char *argv[]) {
 
   nvhls::set_random_seed();
@@ -91,11 +93,11 @@ CCS_MAIN (int argc, char *argv[]) {
                         read_ack, write_ack, 
                         port_read_out, port_read_out_valid);
       complete = true;
-      cout << "Write Request: ";
+      CDCOUT("Write Request: ", kDebugLevel);
       for (unsigned k = 0; k < kNumWritePorts; k++) {
-        cout << "Port-" << k << " " << write_address[k] << " " << write_req_valid[k] << " " << write_data[k] <<  " " << write_ack[k];
+        CDCOUT("Port-" << k << " " << write_address[k] << " " << write_req_valid[k] << " " << write_data[k] <<  " " << write_ack[k] << "  ", kDebugLevel);
       }
-      cout << endl;
+      CDCOUT(endl, kDebugLevel);
       for(unsigned k=0; k<kNumWritePorts; k++) {
         if(write_req_valid[k]==true) {
           if(!write_ack[k]) {
@@ -126,11 +128,11 @@ CCS_MAIN (int argc, char *argv[]) {
                         write_address, write_req_valid, write_data, 
                         read_ack, write_ack, 
                         port_read_out, port_read_out_valid);
-      cout << "Read Request: \n";
+      CDCOUT("Read Request: ", kDebugLevel);
       for (unsigned k = 0; k < kNumReadPorts; k++) {
-        cout << "Port-" << k << " " << read_address[k] << " " << read_req_valid[k] << " " << read_ack[k] << " " << port_read_out[k] <<  " " << port_read_out_valid[k] << endl;
+        CDCOUT("Port-" << k << " " << read_address[k] << " " << read_req_valid[k] << " " << read_ack[k] << " " << port_read_out[k] <<  " " << port_read_out_valid[k] << "  ", kDebugLevel);
       }
-      cout << endl;
+      CDCOUT(endl, kDebugLevel);
       complete = true;
       for (unsigned k = 0; k < kNumReadPorts; k++) {
         if(read_req_valid[k]==true) {

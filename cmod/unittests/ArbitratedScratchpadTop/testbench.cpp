@@ -38,6 +38,8 @@ typedef NVUINTC(ScratchpadAddrWidth) LoadAddrType;
 const int LoadAddrFifoLen = NUM_ITERS*2;
 FIFO<LoadAddrType, LoadAddrFifoLen> load_addr_fifo[NumBanks][NumInputs];
 
+static const int kDebugLevel = 1;
+
 // *************************************************
 // Use a reference memory class for testing the code
 // *************************************************
@@ -71,7 +73,7 @@ void memmodel::exec_store(tb_cli_req_t cli_req) {
   for(unsigned i=0; i<NumInputs; i++) {
     if(cli_req.valids[i] == true) {
       mem[i][cli_req.addr[i]] = cli_req.data[i];
-      cout << "mem[" << i << "][" << cli_req.addr[i] << "]=" << cli_req.data[i] << endl;
+      CDCOUT("mem[" << i << "][" << cli_req.addr[i] << "]=" << cli_req.data[i] << endl, kDebugLevel);
     }
   }
 }
@@ -89,17 +91,17 @@ bool memmodel::check_response(tb_cli_rsp_t cli_rsp) {
 
       for(unsigned j=0; j<NumBanks; j++) {
         if(!load_addr_fifo[j][i].isEmpty()) {
-	      LoadAddrType load_addr_tmp;
-	      load_addr_tmp = load_addr_fifo[j][i].peek();
+          LoadAddrType load_addr_tmp;
+          load_addr_tmp = load_addr_fifo[j][i].peek();
           for(unsigned k=0; k<NumInputs; k++) {
-	        cout << "Comparing " << cli_rsp.data[i] << " with mem[" << k << "][" << load_addr_tmp << "] = " << mem[k][load_addr_tmp] << endl;
-	        if(cli_rsp.data[i] == mem[k][load_addr_tmp]) {
-	          load_data_matched = true;
-	          load_addr_fifo[j][i].pop();
-	          break;
-	        }
+            CDCOUT("Comparing " << cli_rsp.data[i] << " with mem[" << k << "][" << load_addr_tmp << "] = " << mem[k][load_addr_tmp] << endl, kDebugLevel);
+            if(cli_rsp.data[i] == mem[k][load_addr_tmp]) {
+              load_data_matched = true;
+              load_addr_fifo[j][i].pop();
+              break;
+            }
           }
-	    }
+        }
       }
       assert(load_data_matched);
     }
@@ -192,9 +194,9 @@ CCS_MAIN(int argc, char *argv[]) {
             curr_cli_req.valids[j] = false; 
 
             // Push the load address into a FIFO since the load request could be
-	    // serviced out of order in the event of a bank conflict.
-	    int bank_idx = curr_cli_req.addr[j] % NumBanks;
-	    load_addr_fifo[bank_idx][j].push(curr_cli_req.addr[j]);
+            // serviced out of order in the event of a bank conflict.
+            int bank_idx = curr_cli_req.addr[j] % NumBanks;
+            load_addr_fifo[bank_idx][j].push(curr_cli_req.addr[j]);
           }
         }
       }
@@ -205,7 +207,7 @@ CCS_MAIN(int argc, char *argv[]) {
   // Add nop cycles for all the loads to complete
   bool valid_data_rcvd;
   for(int it=0; it<NUM_ITERS/100; it++) {
-    cout << "Load-wait it = " << it << endl;
+    CDCOUT("Load-wait it = " << it << endl, kDebugLevel);
     for(unsigned i=0; i<NumInputs; i++) {
       curr_cli_req.data[i] = 0;
       curr_cli_req.addr[i] = 0;
@@ -229,7 +231,7 @@ CCS_MAIN(int argc, char *argv[]) {
   bool served;
   bool requested;
   for(int it=0; it<NUM_ITERS; it++) {
-    cout << "Store it = " << it << endl;
+    CDCOUT("Store it = " << it << endl, kDebugLevel);
     curr_cli_req.type.val = CLITYPE_T::STORE;
 
     requested = false;
@@ -257,7 +259,7 @@ CCS_MAIN(int argc, char *argv[]) {
 
   // Add nop cycles for the random stores to complete
   for(int it=0; it<NUM_ITERS/100; it++) {
-    cout << "Store-wait it = " << it << endl;
+    CDCOUT("Store-wait it = " << it << endl, kDebugLevel);
     for(unsigned i=0; i<NumInputs; i++) {
       curr_cli_req.data[i] = 0;
       curr_cli_req.addr[i] = 0;
@@ -270,7 +272,7 @@ CCS_MAIN(int argc, char *argv[]) {
   // Initiate loads from random addresses
   // ----------------------------------------
   for(int it=0; it<NUM_ITERS; it++) {
-    cout << "Load it = " << it << endl;
+    CDCOUT("Load it = " << it << endl, kDebugLevel);
     curr_cli_req.type.val = CLITYPE_T::LOAD;
 
     requested = false;
@@ -288,14 +290,14 @@ CCS_MAIN(int argc, char *argv[]) {
       if(ready[i]) {
         served =true;
 
-	// Push the load address into a FIFO since the load request could be
-	// serviced out of order in the event of a bank conflict.
-	if(curr_cli_req.valids[i]) {
-	  int bank_idx = curr_cli_req.addr[i] % NumBanks;
-	  load_addr_fifo[bank_idx][i].push(curr_cli_req.addr[i]);
-	  cout << "Pushing addr"          << curr_cli_req.addr[i]
-               << " into load_addr_fifo[" << bank_idx << "][" << i << "]" << endl;
-	}
+        // Push the load address into a FIFO since the load request could be
+        // serviced out of order in the event of a bank conflict.
+        if(curr_cli_req.valids[i]) {
+          int bank_idx = curr_cli_req.addr[i] % NumBanks;
+          load_addr_fifo[bank_idx][i].push(curr_cli_req.addr[i]);
+          CDCOUT("Pushing addr"          << curr_cli_req.addr[i]
+                   << " into load_addr_fifo[" << bank_idx << "][" << i << "]" << endl, kDebugLevel);
+        }
       }
     }
     assert(!requested || served); // At least one request should have been served or nothing was requested

@@ -57,6 +57,9 @@ ifeq ($(RAND_STALL),1)
 	COMPILER_FLAGS += CONN_RAND_STALL
 endif
 
+DEBUG_LEVEL ?= 1
+COMPILER_FLAGS += DEBUG_LEVEL=$(DEBUG_LEVEL)
+
 export FSDB_VCS_RD_SC_VALPTR_PROTECT=1
 hls:
 	catapult -shell -product ultra -file go_hls.tcl

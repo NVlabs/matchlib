@@ -36,6 +36,7 @@ class TestSinkBlocking : public sc_module {
   SC_HAS_PROCESS(TestSinkBlocking);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_in_clk            clk;
   sc_in<bool>          rst;
@@ -74,7 +75,7 @@ class TestSinkBlocking : public sc_module {
           sc_stop();
         wait();
         while (pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -88,12 +89,12 @@ class TestSinkBlocking : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (in_.val.read() && in_.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << in_.msg.read();
+        CDCOUT(std::hex << std::setw(width) << in_.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << std::setw(width+1) << " ";
+        CDCOUT(std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
 #endif    
   }
@@ -116,6 +117,7 @@ class TestSinkNonBlocking : public sc_module {
   SC_HAS_PROCESS(TestSinkNonBlocking);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_in_clk            clk;
   sc_in<bool>          rst;
@@ -156,7 +158,7 @@ class TestSinkNonBlocking : public sc_module {
         }
         wait();
         while (pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -169,12 +171,12 @@ class TestSinkNonBlocking : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (in_.val.read() && in_.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << in_.msg.read();
+        CDCOUT(std::hex << std::setw(width) << in_.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << std::setw(width+1) << " ";
+        CDCOUT(std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
   void Go() {
@@ -198,6 +200,7 @@ class TestSinkBuffered : public sc_module {
   SC_HAS_PROCESS(TestSinkBuffered);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_in_clk            clk;
   sc_in<bool>          rst;
@@ -240,7 +243,7 @@ class TestSinkBuffered : public sc_module {
         }
         wait();
         while (pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -254,12 +257,12 @@ class TestSinkBuffered : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (in_.val.read() && in_.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << in_.msg.read();
+        CDCOUT(std::hex << std::setw(width) << in_.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << std::setw(width+1) << " ";
+        CDCOUT(std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
 #endif    
   }

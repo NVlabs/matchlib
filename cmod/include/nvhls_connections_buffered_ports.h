@@ -175,6 +175,7 @@ class Bypass : public sc_module {
   SC_HAS_PROCESS(Bypass);
 
  public:
+  static const int kDebugLevel = 3;
   // Interface
   sc_in_clk clk;
   sc_in<bool> rst;
@@ -281,20 +282,20 @@ class Bypass : public sc_module {
       unsigned int width = (Message().length() / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
 
-      std::cout << " ( " << full.read() << " ) ";
+      CDCOUT(" ( " << full.read() << " ) ", kDebugLevel);
 
       // Dequeue port
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif
@@ -319,6 +320,7 @@ class Pipeline : public sc_module {
   SC_HAS_PROCESS(Pipeline);
 
  public:
+  static const int kDebugLevel = 3;
   // Interface
   sc_in_clk clk;
   sc_in<bool> rst;
@@ -420,20 +422,20 @@ class Pipeline : public sc_module {
       unsigned int width = (Message().length() / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
 
-      std::cout << " ( " << full.read() << " ) ";
+      CDCOUT(" ( " << full.read() << " ) ", kDebugLevel);
 
       // Dequeue port
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif
@@ -465,6 +467,7 @@ class BypassBuffered : public sc_module {
   SC_HAS_PROCESS(BypassBuffered);
 
  public:
+  static const int kDebugLevel = 3;
   // Interface
   sc_in_clk clk;
   sc_in<bool> rst;
@@ -661,20 +664,20 @@ class BypassBuffered : public sc_module {
       unsigned int width = (Message().length() / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
 
-      std::cout << " ( " << full.read() << " ) ";
+      CDCOUT(" ( " << full.read() << " ) ", kDebugLevel);
 
       // Dequeue port
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif
@@ -700,6 +703,7 @@ class Buffer : public sc_module {
   SC_HAS_PROCESS(Buffer);
 
  public:
+  static const int kDebugLevel = 3;
   // Interface
   sc_in_clk clk;
   sc_in<bool> rst;
@@ -885,20 +889,20 @@ class Buffer : public sc_module {
       unsigned int width = (Message().length() / 4);
       // Enqueue port
       if (enq.val.read() && enq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << enq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << enq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
 
-      std::cout << " ( " << full.read() << " ) ";
+      CDCOUT(" ( " << full.read() << " ) ", kDebugLevel);
 
       // Dequeue port
       if (deq.val.read() && deq.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << deq.msg.read();
+        CDCOUT(std::hex << std::setw(width) << deq.msg.read(), kDebugLevel);
       } else {
-        std::cout << std::setw(width + 1) << " ";
+        CDCOUT(std::setw(width + 1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
 #endif

@@ -55,6 +55,8 @@ ifdef RUN_CDESIGN_CHECKER
 RUN_CMD += cdc
 endif
 
+export DEBUG_LEVEL := 0
+
 .PHONY: all
 
 all:

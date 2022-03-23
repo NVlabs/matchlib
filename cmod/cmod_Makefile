@@ -29,8 +29,9 @@ INCDIR += -I$(RAPIDJSON_HOME)/include
 LIBDIR ?=
 LIBDIR += -L. -L$(SYSTEMC_HOME)/lib-linux64 -L$(BOOST_HOME)/lib
 
+DEBUG_LEVEL ?= 1
 CFLAGS ?= 
-CFLAGS += -Wall -Wno-unknown-pragmas -std=c++11 $(INCDIR) $(LIBDIR)
+CFLAGS += -Wall -Wno-unknown-pragmas -std=c++11 $(INCDIR) $(LIBDIR) -DDEBUG_LEVEL=$(DEBUG_LEVEL)
 
 HLS_CATAPULT ?= 1
 ifeq ($(HLS_CATAPULT),1)

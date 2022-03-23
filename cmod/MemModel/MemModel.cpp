@@ -25,6 +25,7 @@
 // mem_op is memory operation type (READ/WRITE)
 // addr is the memory address
 void MemModel(MemWord_t write_data, MemWord_t & read_data, NVUINT1 mem_op, MemAddr_t addr) {
+  static const int kDebugLevel = 1;
   static mem_array_sep <MemWord_t, NUM_ENTRIES, NBANKS> banks;
   BankSel_t bank_sel;
   BankAddr_t bank_addr;
@@ -39,12 +40,12 @@ void MemModel(MemWord_t write_data, MemWord_t & read_data, NVUINT1 mem_op, MemAd
 
   if (mem_op == READ) {
     read_data = banks.read(bank_addr,bank_sel);
-    DCOUT("Memory Op: Read, BankAddress: "<< hex << bank_addr.to_uint64() << " BankSel: " << bank_sel << " Data: " << read_data.to_uint64() << endl);
+    CDCOUT("Memory Op: Read, BankAddress: "<< hex << bank_addr.to_uint64() << " BankSel: " << bank_sel << " Data: " << read_data.to_uint64() << endl, kDebugLevel);
   }
   if (mem_op ==WRITE) {
     MemWord_t data_local = write_data;
     banks.write(bank_addr,bank_sel,data_local);
-    DCOUT("Memory Op: Write, BankAddress: "<< hex << bank_addr.to_uint64() << " BankSel: " << bank_sel << " Data: " << write_data.to_uint64() << endl);
+    CDCOUT("Memory Op: Write, BankAddress: "<< hex << bank_addr.to_uint64() << " BankSel: " << bank_sel << " Data: " << write_data.to_uint64() << endl, kDebugLevel);
   }
 
 }

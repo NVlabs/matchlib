@@ -31,6 +31,7 @@ class MultChain : public sc_module {
   SC_HAS_PROCESS(MultChain);
 
  public:
+  static const int kDebugLevel = 1;
   // Interface
   sc_in_clk           clk;
   sc_in<bool>         rst;
@@ -77,21 +78,21 @@ public:
       unsigned int width = (T().length()/4);
       // Input port
       if (in_.val.read() && in_.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << in_.msg.read();
+        CDCOUT(std::hex << std::setw(width) << in_.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << std::setw(width+1) << " ";
+        CDCOUT(std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
 
       // Output port
       if (out.val.read() && out.rdy.read()) {
-        std::cout << std::hex << std::setw(width) << out.msg.read();
+        CDCOUT(std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << std::setw(width+1) << " ";
+        CDCOUT(std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
 #endif    
   }

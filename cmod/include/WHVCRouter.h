@@ -49,6 +49,7 @@ template <int NumLPorts, int NumRports, int NumVchannels, int BufferSize,
           typename FlitType = Flit<64, 0, 0, 0, FlitId2bit, WormHole> >
 class WHVCRouterBase : public sc_module {
 public:
+  static const int kDebugLevel = 2;
   typedef FlitType Flit_t;
   // Declare constants
   enum {
@@ -105,9 +106,9 @@ public:
     for (int i = 0; i < num_ports * num_vchannels; i++) {
       if (in_credit[i].PopNB(credit_in)) {
         credit_recv[i] = credit_recv[i] + credit_in;
-        // DCOUT(sc_time_stamp()  << ": " << name()
-        //          << " Read credit from credit port-"
-        //          << i << " " << credit_recv[i] << endl);
+        CDCOUT(sc_time_stamp()  << ": " << name()
+                 << " Read credit from credit port-"
+                 << i << " " << credit_recv[i] << endl, kDebugLevel);
       }
       NVHLS_ASSERT_MSG(credit_recv[i] <= buffersize, "Total credits received cannot be larger than Buffer size");
     }
@@ -122,10 +123,9 @@ public:
         if (temp) {
           credit_send[i]--;
         }
-        // DCOUT(sc_time_stamp() << ": " << name() << " Returning credit to port
-        // "
-        //      << i << " credit_send=" << credit_send[i]
-        //      << " Success: " << temp << endl);
+        CDCOUT(sc_time_stamp() << ": " << name() << " Returning credit to port"
+             << i << " credit_send=" << credit_send[i]
+             << " Success: " << temp << endl, kDebugLevel);
       }
     }
   }
@@ -136,8 +136,8 @@ public:
 #pragma hls_unroll yes
     for (int i = 0; i < num_ports; i++) {
       if (in_port[i].PopNB(inflit[i])) {
-        DCOUT(sc_time_stamp() << ": " << name() << " Read input from port-" << i
-                              << endl);
+        CDCOUT(sc_time_stamp() << ": " << name() << " Read input from port-" << i
+                              << endl, kDebugLevel);
         if (num_vchannels > 1) {
           NVUINTW(log_num_vchannels) vcin_tmp = inflit[i].get_packet_id();
           NVHLS_ASSERT_MSG(!ififo.isFull(i * num_vchannels + vcin_tmp), "Input fifo is full");
@@ -159,10 +159,10 @@ public:
       // FIFO Read
       if (in_valid[i]) {
         flit_in[i] = ififo.peek(i * num_vchannels + vcin[i]);
-        DCOUT(sc_time_stamp()
+        CDCOUT(sc_time_stamp()
               << ": " << name() << hex << " Read from FIFO:"
               << i * num_vchannels + vcin[i] << " Flit< " << flit_in[i].flit_id
-              << "," << flit_in[i].data.to_uint64() << ">" << dec << endl);
+              << "," << flit_in[i].data.to_uint64() << ">" << dec << endl, kDebugLevel);
       }
     }
   }
@@ -258,6 +258,7 @@ class WHVCSourceRouter: public WHVCRouterBase<NumLPorts, NumRports, NumVchannels
 public:
   // Declare constants
   typedef WHVCRouterBase<NumLPorts, NumRports, NumVchannels, BufferSize, FlitType> BaseClass;
+  static const int kDebugLevel = 2;
   typedef FlitType Flit_t;
   enum {
     num_lports = BaseClass::num_lports,
@@ -373,12 +374,12 @@ public:
           out_stall[i] = 0;
           this->credit_recv[i * num_vchannels + vcout[i]]--;
         }
-        DCOUT(sc_time_stamp()
+        CDCOUT(sc_time_stamp()
               << ": " << this->name() << " OutPort " << i
               << " Push success??: " << temp << " Decrementing Credit status "
               << i * num_vchannels + vcout[i] << ": "
               << this->credit_recv[i * num_vchannels + vcout[i]]
-              << " [Router] Out_stall: " << out_stall[i] << endl);
+              << " [Router] Out_stall: " << out_stall[i] << endl, kDebugLevel);
       }
     }
   }
@@ -414,13 +415,13 @@ public:
                 (out_stall[k] == 0))
                    ? 1
                    : 0);
-          // DCOUT(sc_time_stamp() << ": " << name() << " Input Port:" << i << "
-          // Output port: " << k << " VC: " << vcin[i] << " valid: "<<
-          // valid[k][i] << " OutStall: " << out_stall[k] << " Credit: " <<
-          // credit_recv[out_idx] << " GetnewPacket: " <<
-          // is_get_new_packet[out_idx] << hex << " Flit " << " <" <<
-          // flit_in[i].flit_id << "," << flit_in[i].data.to_uint64() << dec <<
-          // ">" << endl);
+          CDCOUT(sc_time_stamp() << ": " << this->name() << " Input Port:" << i
+                    << "Output port: " << k << " VC: " << vcin[i] << " valid: "
+                    << valid[k][i] << " OutStall: " << out_stall[k]
+                    << " Credit: " << this->credit_recv[out_idx] << " GetnewPacket: "
+                    << is_get_new_packet[out_idx] << hex << " Flit " << " <"
+                    << flit_in[i].flit_id << "," << flit_in[i].data.to_uint64()
+                    << dec << ">" << endl, kDebugLevel);
         }
       }
     }
@@ -447,10 +448,11 @@ public:
               valid[l][i] = 0;
               valid[r][i] = 0; // valid of local port is 1 only is valid of
                                // remote port is 1
-              // DCOUT(sc_time_stamp() << ": " << name() << " Input Port:" << i
-              // << " Local port: " << l << " Remote port: " << r << " VC: " <<
-              // vcin[i] << " valid: "<< valid[l][i] << " Multicast: " <<
-              // is_multicast[i*num_vchannels + vcin[i]] << endl);
+              CDCOUT(sc_time_stamp() << ": " << this->name() << " Input Port:" << i
+                        << " Local port: " << l << " Remote port: " << r
+                        << " VC: " << vcin[i] << " valid: "<< valid[l][i]
+                        << " Multicast: " << is_multicast[i*num_vchannels + vcin[i]]
+                        << endl, kDebugLevel);
             }
           }
         }
@@ -470,13 +472,13 @@ public:
         NVUINTW(log_num_ports) select_id_temp;
         one_hot_to_bin<num_ports, log_num_ports>(select_temp, select_id_temp);
         select_id[i] = select_id_temp;
-        // DCOUT(sc_time_stamp() << ": " << name() << hex << " Output Port:" <<
-        // i
-        //          << " Valid: " << valid[i].to_uint64()
-        //          << " Select : " << select[i].to_int64() << dec << "
-        //          Multicast: " <<
-        //          is_multicast[(select_id[i]*num_vchannels+vcin[select_id[i]])]
-        //          << endl);
+        CDCOUT(sc_time_stamp() << ": " << this->name() << hex << " Output Port:"
+                    << i << " Valid: " << valid[i].to_uint64() << " Select : "
+                    << select[i].to_int64() << dec
+#ifdef ENABLE_MULTICAST
+                    << "Multicast: " << is_multicast[(select_id[i]*num_vchannels+vcin[select_id[i]])]
+#endif
+                    << endl, kDebugLevel);
       }
     }
 
@@ -490,11 +492,12 @@ public:
           valid[remote_portid[select_id[i]]][select_id[i]]) {
         select[remote_portid[select_id[i]]] = select[i];
         select_id[remote_portid[select_id[i]]] = select_id[i];
-        // DCOUT(sc_time_stamp() << ": " << name() << " Output Port:" << i << "
-        // Input port: " << select_id[i] << " Remote port: " <<
-        // remote_portid[select_id[i]] << " VC: " << vcin[select_id[i]] << "
-        // Remote Select: " << select[remote_portid[select_id[i]]] << " Local
-        // Select: " << select[i] << endl);
+        CDCOUT(sc_time_stamp() << ": " << this->name() << " Output Port:" << i
+                    << "Input port: " << select_id[i] << " Remote port: "
+                    << remote_portid[select_id[i]] << " VC: "
+                    << vcin[select_id[i]] << "Remote Select: "
+                    << select[remote_portid[select_id[i]]] << " Local Select: "
+                    << select[i] << endl, kDebugLevel);
       }
     }
 // For Multicast, if remote port is selected and not local port, reset remote
@@ -506,12 +509,13 @@ public:
           is_multicast[(select_id[i] * num_vchannels + vcin[select_id[i]])] &&
           (valid[i][select_id[local_portid[select_id[i]]]] == 0)) {
         select[i] = 0;
-        // DCOUT("Set Select = 0 for Output port: " << i << endl);
-        // DCOUT(sc_time_stamp() << ": " << name() << " Output Port:" << i << "
-        // Input port: " << select_id[i] << " Remote port: " <<
-        // remote_portid[select_id[i]] << " VC: " << vcin[select_id[i]] << "
-        // Remote Select: " << select[i] << " Local Select: " <<
-        // select[local_portid[select_id[i]]] << endl);
+        CDCOUT("Set Select = 0 for Output port: " << i << endl, kDebugLevel);
+        CDCOUT(sc_time_stamp() << ": " << this->name() << " Output Port:" << i
+                    << "Input port: " << select_id[i] << " Remote port: "
+                    << remote_portid[select_id[i]] << " VC: "
+                    << vcin[select_id[i]] << "Remote Select: " << select[i]
+                    << " Local Select: " << select[local_portid[select_id[i]]]
+                    << endl, kDebugLevel);
       }
     }
 #endif
@@ -574,11 +578,10 @@ public:
       if (select[i] != 0) {
         is_popfifo[select_id[i]] = 1;
         is_push[i] = true;
-        // DCOUT(sc_time_stamp() << ": " << name() << " Port:" << i << "
-        // Select: "
-        //          << select[i] << " select_id " << select_id[i]
-        //          << " Valid:" << valid[i] << "PopFifo: " <<
-        //          is_popfifo[select_id[i]] << endl);
+        CDCOUT(sc_time_stamp() << ": " << this->name() << " Port:" << i << "Select: "
+                 << select[i] << " select_id " << select_id[i]
+                 << " Valid:" << valid[i] << "PopFifo: " <<
+                 is_popfifo[select_id[i]] << endl, kDebugLevel);
       }
     }
 
@@ -587,9 +590,8 @@ public:
     for (int i = 0; i < num_ports; i++) { // Iterating over inputs here
       if (is_popfifo[i] == 1) {
         this->ififo.incrHead(i * num_vchannels + vcin[i]);
-        // DCOUT(sc_time_stamp() << ": " << name() << " Popped FIFO of port-"
-        // << i
-        //          << " VC-" << vcin[i] << endl);
+        CDCOUT(sc_time_stamp() << ": " << this->name() << " Popped FIFO of port-"
+        << i << " VC-" << vcin[i] << endl, kDebugLevel);
         this->credit_send[i * num_vchannels + vcin[i]]++;
         NVHLS_ASSERT_MSG(this->credit_send[i * num_vchannels + vcin[i]] <= BaseClass::buffersize, "Total credits cannot be larger than buffer size");
       }

@@ -36,6 +36,7 @@ class TestSourceBlocking : public sc_module {
   SC_HAS_PROCESS(TestSourceBlocking);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_in_clk           clk;
   sc_in<bool>         rst;
@@ -63,7 +64,7 @@ class TestSourceBlocking : public sc_module {
     while (!done) {
       if (go) {
         out.Push(*it);
-        //cout << "@" << sc_time_stamp() << "\t" << name() << " Push x: " << x << endl;
+        //CDCOUT("@" << sc_time_stamp() << "\t" << name() << " Push x: " << x << endl, kDebugLevel);
         ++it;
         if (it == msgs.end()) {
           done = true;
@@ -71,7 +72,7 @@ class TestSourceBlocking : public sc_module {
         }
         wait();
         while (pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -85,13 +86,13 @@ class TestSourceBlocking : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (out.val.read() && out.rdy.read()) {
-        std::cout << sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read();
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
       }
 
       else {
-        std::cout << sc_time_stamp() << " " << std::setw(width+1) << " ";
+        CDCOUT(sc_time_stamp() << " " << std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
 #endif
   }
@@ -111,6 +112,7 @@ class TestSourceNonBlocking : public sc_module {
   SC_HAS_PROCESS(TestSourceNonBlocking);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_in_clk           clk;
   sc_in<bool>         rst;
@@ -146,7 +148,7 @@ class TestSourceNonBlocking : public sc_module {
         }
         wait();
         while (pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -159,12 +161,12 @@ class TestSourceNonBlocking : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (out.val.read() && out.rdy.read()) {
-        std::cout << sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read();
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << sc_time_stamp() << " " << std::setw(width+1) << " ";
+        CDCOUT(sc_time_stamp() << " " << std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
   }
   void Go() {
@@ -183,6 +185,7 @@ class TestSourceBuffered : public sc_module {
   SC_HAS_PROCESS(TestSourceBuffered);
 
  public:
+  static const int kDebugLevel = 1;
   // Module Interface
   sc_in_clk           clk;
   sc_in<bool>         rst;
@@ -220,7 +223,7 @@ class TestSourceBuffered : public sc_module {
         }
         wait();
         while (pacer.tic()) {
-          cout << "@" << sc_time_stamp() << "\t" << name() << " STALL" << endl;
+          CDCOUT("@" << sc_time_stamp() << "\t" << name() << " STALL" << endl, kDebugLevel);
           wait();
         }
       } else {
@@ -234,12 +237,12 @@ class TestSourceBuffered : public sc_module {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       if (out.val.read() && out.rdy.read()) {
-        std::cout << sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read();
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
       }
       else {
-        std::cout << sc_time_stamp() << " " << std::setw(width+1) << " ";
+        CDCOUT(sc_time_stamp() << " " << std::setw(width+1) << " ", kDebugLevel);
       }
-      std::cout << " | ";
+      CDCOUT(" | ", kDebugLevel);
     }
 #endif    
   }

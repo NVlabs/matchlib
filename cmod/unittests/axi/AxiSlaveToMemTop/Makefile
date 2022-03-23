@@ -14,6 +14,4 @@
 # limitations under the License.
 #
 
-
-USER_FLAGS +=  -DDEBUG_LEVEL=1
 include ../../unittests_Makefile

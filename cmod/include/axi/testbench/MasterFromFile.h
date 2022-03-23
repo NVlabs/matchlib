@@ -56,7 +56,7 @@ template <typename T> class sc_in_conditional <T,1> : public sc_in<T> {};
 
 template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile : public sc_module {
  public:
-  static const int kDebugLevel = 0;
+  static const int kDebugLevel = 1;
   typedef axi::axi4<axiCfg> axi4_;
 
   typename axi4_::read::template master<> if_rd;
