@@ -20,6 +20,7 @@
 #ifndef NVHLS_CONNECTIONS_BUFFERED_PORTS_H_
 #define NVHLS_CONNECTIONS_BUFFERED_PORTS_H_
 
+#include <iomanip>
 #include <systemc.h>
 #include <nvhls_assert.h>
 #include <nvhls_marshaller.h>

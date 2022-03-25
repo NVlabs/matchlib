@@ -47,6 +47,9 @@ LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_sy
 # 1 = Cycle-accurate view of Connections port and channel code, CONNECTIONS_ACCURATE_SIM. (default)
 # 2 = Faster TLM view of Connections port and channel code, CONNECTIONS_FAST_SIM.
 SIM_MODE ?= 1
+ifeq ($(SIM_MODE),0)
+	USER_FLAGS += -DCONNECTIONS_SYN_SIM
+endif
 ifeq ($(SIM_MODE),1)
 	USER_FLAGS += -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES
 endif
