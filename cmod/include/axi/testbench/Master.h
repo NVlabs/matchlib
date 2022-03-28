@@ -135,10 +135,10 @@ class Master : public sc_module {
 
     // Follow the same priority as nvhls_rand: environment, then preprocessor define, then config
     unsigned int seed = cfg::seed;
-#ifdef RAND_SEED
-    seed = (RAND_SEED);
+#ifdef NVHLS_RAND_SEED
+    seed = (NVHLS_RAND_SEED);
 #endif
-    const char* env_rand_seed = std::getenv("RAND_SEED");
+    const char* env_rand_seed = std::getenv("NVHLS_RAND_SEED");
     if (env_rand_seed != NULL) seed = atoi(env_rand_seed);
     boost::random::mt19937 gen(seed);
     boost::random::uniform_int_distribution<uint64_t> random_addr(cfg::addrBoundLower, cfg::addrBoundUpper);

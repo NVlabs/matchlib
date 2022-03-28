@@ -29,11 +29,11 @@ namespace nvhls {
  * 
  * \par Overview
  *      A function to set the random seed in the testbench. The seed is set based on the following prioritization:
- *        -# The setting of the RAND_SEED environment variable at runtime
- *        -# The setting of the RAND_SEED CFLAG at compile time (or via #define in a source file)
- *        -# A random seed based on the unix timestamp at runtime
+ *        -# The setting of the NVHLS_RAND_SEED environment variable at runtime
+ *        -# The setting of the NVHLS_RAND_SEED CFLAG at compile time (or via #define in a source file)
+ *        -# A random seed of 0 (deterministic)
  *
- *      WARNING: The RAND_SEED will be overriden in cosimulation, causing SCVerify to always simulate with an
+ *      WARNING: The user-defined random seed may be overriden in cosimulation, causing SCVerify to always simulate with an
  *      effective seed of 0.  To work around this, call set_random_seed() inside an SC_THREAD instead of in sc_main.
  *
  * \par A Simple Example
@@ -59,11 +59,11 @@ namespace nvhls {
  */
 
 inline int set_random_seed() {
-  unsigned int seed = time(NULL);
-#ifdef RAND_SEED  
-  seed = (RAND_SEED);
+  unsigned int seed = 0;
+#ifdef NVHLS_RAND_SEED
+  seed = (NVHLS_RAND_SEED);
 #endif
-  const char* env_rand_seed = std::getenv("RAND_SEED");
+  const char* env_rand_seed = std::getenv("NVHLS_RAND_SEED");
   if (env_rand_seed != NULL) seed = atoi(env_rand_seed);
   srand(seed);
   cout << "================================" << endl;

@@ -18,4 +18,4 @@ include ../../unittests_Makefile
 
 # The tetstbench is not very sophisticated, so certain random seeds
 # will cause reads to overtake writes.
-USER_FLAGS += -DRAND_SEED=1000
+USER_FLAGS += -DNVHLS_RAND_SEED=1000

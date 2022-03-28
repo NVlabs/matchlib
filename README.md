@@ -101,7 +101,7 @@ Many of the flags above are design-specific, and so are typically codified into 
 * `SIM_MODE` - Set this variable to 1 (default) to use Connections sim-accurate mode, so that Connections ports and channels simulated in SystemC closely match the cycle-by-cycle behavior of their HLS-generated RTL counterparts. Set this variable to 2 to enable a TLM-based Connections mode that is faster to simulate but does not track the cycle behavior of HLS-generated RTL as closely. Set this variable to 0 to directly simulate the synthesized representation of Connections ports and channels (not recommended, as it may result in spurious failures).
 * `RAND_STALL` - Set this variable to 1 to enable random stalling on Connections ports and channels. Set to 0 (default) to disable random stalling.
 * `DEBUG_LEVEL` - Set to control the amount of debug information printed to the command line during execution. In general, higher debug levels will enable debug information from additional modules.
-* `RAND_SEED` - Set to a number to use as a fixed seed for easier debugging with nvhls_rand.
+* `NVHLS_RAND_SEED` - Set to a number to use as a fixed seed for nvhls_rand (defaults to 0).
 
 To accurately simulate expected RTL performance, use the default settings. For robust verification, simulate with four different modes: both `SIM_MODE=1` and `SIM_MODE=2`, with random stalling both enabled and disabled and various random seeds.
 

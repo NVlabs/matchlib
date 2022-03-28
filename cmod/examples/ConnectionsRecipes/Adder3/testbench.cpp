@@ -25,10 +25,10 @@
 #include <deque>
 using namespace::std;
 
-// Manually set RAND_SEED since we're dependent on
+// Manually set NVHLS_RAND_SEED since we're dependent on
 // Pacer() behavior to get proper cycle count for this
 // test
-#define RAND_SEED 1
+#define NVHLS_RAND_SEED 1
 
 #include <testbench/Pacer.h>
 #include <testbench/nvhls_rand.h>

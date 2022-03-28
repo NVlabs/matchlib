@@ -20,4 +20,4 @@ include $(ROOT)/hls/hls_Makefile
 
 # Without write responses there is no way to prevent a bad seed
 # that will stall writes in the TB so that reads overtake them.
-COMPILER_FLAGS += RAND_SEED=1000
+COMPILER_FLAGS += NVHLS_RAND_SEED=1000
