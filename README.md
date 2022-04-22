@@ -110,6 +110,8 @@ To accurately simulate expected RTL performance, use the default settings. For r
 We welcome feedback and contributions from the open-source hardware community.
 If you have a question or problem, please file an issue on GitHub.
 To contribute bugfixes or new features, submit a pull request.
+For business inquiries, please contact researchinquiries@nvidia.com.
+For press and other inquiries, please contact Hector Marinez at hmarinez@nvidia.com.
 
 # Contributors
 
