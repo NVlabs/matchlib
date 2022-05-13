@@ -62,8 +62,8 @@ class ArbitratedScratchpad {
   static const int kDebugLevel = 2;
   // Derived parameters
   static const int addr_width = nvhls::nbits<CapacityInBytes - 1>::val;
-  static const int log2_nbanks = nvhls::nbits<NumBanks - 1>::val;
-  static const int log2_inputs = nvhls::nbits<NumInputs - 1>::val;
+  static const int log2_nbanks = (NumBanks == 1) ? 1 : nvhls::nbits<NumBanks - 1>::val;
+  static const int log2_inputs = (NumInputs == 1) ? 1 : nvhls::nbits<NumInputs - 1>::val;
 
   //------------Local typedefs---------------------------
   typedef NVUINTW(log2_nbanks) bank_sel_t;                // index of bank
@@ -117,14 +117,16 @@ class ArbitratedScratchpad {
     for (unsigned in_chan = 0; in_chan < NumInputs; in_chan++) {
 
       // Get the target bank
-      bank_sel[in_chan] =
-          nvhls::get_slc<log2_nbanks>(curr_cli_req.addr[in_chan], 0);
+      if (NumBanks == 1)  bank_sel[in_chan] = 0;
+      else                bank_sel[in_chan] = nvhls::get_slc<log2_nbanks>(curr_cli_req.addr[in_chan], 0);
 
       // Compile the bank request
       bank_req[in_chan].do_store = (curr_cli_req.valids[in_chan] == true) &&
                                    (curr_cli_req.type.val == CLITYPE_T::STORE);
-      bank_req[in_chan].addr = nvhls::get_slc<addr_width - log2_nbanks>(
-          curr_cli_req.addr[in_chan], log2_nbanks);
+
+      if (NumBanks == 1)  bank_req[in_chan].addr = curr_cli_req.addr[in_chan];
+      else                bank_req[in_chan].addr = nvhls::get_slc<addr_width - log2_nbanks>(curr_cli_req.addr[in_chan], log2_nbanks);
+
       if (bank_req[in_chan].do_store) {
         bank_req[in_chan].wdata = curr_cli_req.data[in_chan];
       }
