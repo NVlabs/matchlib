@@ -62,12 +62,15 @@ class ArbitratedScratchpad {
   static const int kDebugLevel = 2;
   // Derived parameters
   static const int addr_width = nvhls::nbits<CapacityInBytes - 1>::val;
-  static const int log2_nbanks = nvhls::nbits<NumBanks - 1>::val;
-  static const int log2_inputs = nvhls::nbits<NumInputs - 1>::val;
+  static const int log2_nbanks = (NumBanks == 1) ? 1 : nvhls::nbits<NumBanks - 1>::val;
+  static const int log2_inputs = (NumInputs == 1) ? 1 : nvhls::nbits<NumInputs - 1>::val;
+
+  //Check if NumBanks is a power of 2
+  bool is_nbanks_power_of_2 = (NumBanks & (NumBanks - 1)) == 0;
 
   //------------Local typedefs---------------------------
   typedef NVUINTW(log2_nbanks) bank_sel_t;                // index of bank
-  typedef NVUINTW(addr_width - log2_nbanks) bank_addr_t;  // address within bank
+  typedef NVUINTW(addr_width - log2_nbanks + 1) bank_addr_t;  // address within bank 
   typedef NVUINTW(log2_inputs) input_sel_t;               // index of input
 
   struct bank_req_t : public nvhls_message {
@@ -75,7 +78,7 @@ class ArbitratedScratchpad {
     bank_addr_t addr;
     DataType    wdata;
     input_sel_t input_chan;
-    static const int width = 1 + addr_width-log2_nbanks + Wrapped<DataType>::width + log2_inputs;
+    static const int width = 1 + addr_width-log2_nbanks+1 + Wrapped<DataType>::width + log2_inputs;
 
     template <unsigned int Size>
     void Marshall(Marshaller<Size>& m) {
@@ -117,14 +120,27 @@ class ArbitratedScratchpad {
     for (unsigned in_chan = 0; in_chan < NumInputs; in_chan++) {
 
       // Get the target bank
-      bank_sel[in_chan] =
-          nvhls::get_slc<log2_nbanks>(curr_cli_req.addr[in_chan], 0);
-
+      if (NumInputs == 1) bank_sel[in_chan] = 0;
+      else {
+        if (is_nbanks_power_of_2) {
+          bank_sel[in_chan] = nvhls::get_slc<log2_nbanks>(curr_cli_req.addr[in_chan], 0);
+        } else {
+          bank_sel[in_chan] = curr_cli_req.addr[in_chan] % NumBanks;
+        }
+      }
       // Compile the bank request
       bank_req[in_chan].do_store = (curr_cli_req.valids[in_chan] == true) &&
                                    (curr_cli_req.type.val == CLITYPE_T::STORE);
-      bank_req[in_chan].addr = nvhls::get_slc<addr_width - log2_nbanks>(
-          curr_cli_req.addr[in_chan], log2_nbanks);
+
+      if (NumInputs == 1) bank_req[in_chan].addr = curr_cli_req.addr[in_chan];
+      else {
+        if (is_nbanks_power_of_2) {
+          bank_req[in_chan].addr = nvhls::get_slc<addr_width - log2_nbanks>(curr_cli_req.addr[in_chan], log2_nbanks);
+        } else {
+          bank_req[in_chan].addr = curr_cli_req.addr[in_chan] / NumBanks;
+        }
+      }   
+
       if (bank_req[in_chan].do_store) {
         bank_req[in_chan].wdata = curr_cli_req.data[in_chan];
       }
