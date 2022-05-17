@@ -133,8 +133,9 @@ class ArbitratedScratchpad {
       bank_req[in_chan].do_store = (curr_cli_req.valids[in_chan] == true) &&
                                    (curr_cli_req.type.val == CLITYPE_T::STORE);
 
-      if (NumInputs == 1) bank_req[in_chan].addr = curr_cli_req.addr[in_chan];
-      else {
+      if (NumInputs == 1) {
+        bank_req[in_chan].addr = curr_cli_req.addr[in_chan];
+      } else {
         if (is_nbanks_power_of_2) {
           bank_req[in_chan].addr = nvhls::get_slc<addr_width - log2_nbanks>(curr_cli_req.addr[in_chan], log2_nbanks);
         } else {
