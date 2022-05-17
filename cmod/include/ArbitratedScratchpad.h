@@ -66,7 +66,7 @@ class ArbitratedScratchpad {
   static const int log2_inputs = (NumInputs == 1) ? 1 : nvhls::nbits<NumInputs - 1>::val;
 
   //Check if NumBanks is a power of 2
-  bool is_nbanks_power_of_2 = (NumBanks & (NumBanks - 1)) == 0;
+  static const bool is_nbanks_power_of_2 = (NumBanks & (NumBanks - 1)) == 0;
 
   //------------Local typedefs---------------------------
   typedef NVUINTW(log2_nbanks) bank_sel_t;                // index of bank
