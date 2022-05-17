@@ -14,4 +14,10 @@
 
 source ../../../nvhls_exec.tcl
 
+# The design has combinational loops if coupled mode is used everywhere.
+# As an optimization, coupled mode could still be applied selectively.
+proc nvhls::usercmd_pre_analyze {} {
+  directive set -CHAN_IO_PROTOCOL standard
+}
+
 nvhls::run

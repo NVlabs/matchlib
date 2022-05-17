@@ -65,7 +65,7 @@ class ArbitratedScratchpad {
   static const int log2_nbanks = (NumBanks == 1) ? 1 : nvhls::nbits<NumBanks - 1>::val;
   static const int log2_inputs = (NumInputs == 1) ? 1 : nvhls::nbits<NumInputs - 1>::val;
 
-  //Check if NumBanks is a power of 2
+
   static const bool is_nbanks_power_of_2 = (NumBanks & (NumBanks - 1)) == 0;
 
   //------------Local typedefs---------------------------
@@ -129,6 +129,7 @@ class ArbitratedScratchpad {
           bank_sel[in_chan] = curr_cli_req.addr[in_chan] % NumBanks;
         }
       }
+
       // Compile the bank request
       bank_req[in_chan].do_store = (curr_cli_req.valids[in_chan] == true) &&
                                    (curr_cli_req.type.val == CLITYPE_T::STORE);

@@ -88,3 +88,4 @@ directive set -CLUSTER_FAST_MODE false
 directive set -CLUSTER_TYPE combinational
 directive set -COMPGRADE fast
 directive set -PIPELINE_RAMP_UP true
+directive set -CHAN_IO_PROTOCOL coupled
