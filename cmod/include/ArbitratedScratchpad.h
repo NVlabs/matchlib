@@ -78,7 +78,7 @@ class ArbitratedScratchpad {
     bank_addr_t addr;
     DataType    wdata;
     input_sel_t input_chan;
-    static const int width = 1 + addr_width-log2_nbanks+1 + Wrapped<DataType>::width + log2_inputs;
+    static const int width = 1 + (addr_width - log2_nbanks + 1) + Wrapped<DataType>::width + log2_inputs;
 
     template <unsigned int Size>
     void Marshall(Marshaller<Size>& m) {
