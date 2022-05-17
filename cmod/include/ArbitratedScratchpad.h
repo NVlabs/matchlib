@@ -120,8 +120,9 @@ class ArbitratedScratchpad {
     for (unsigned in_chan = 0; in_chan < NumInputs; in_chan++) {
 
       // Get the target bank
-      if (NumInputs == 1) bank_sel[in_chan] = 0;
-      else {
+      if (NumInputs == 1) {
+        bank_sel[in_chan] = 0;
+      } else {
         if (is_nbanks_power_of_2) {
           bank_sel[in_chan] = nvhls::get_slc<log2_nbanks>(curr_cli_req.addr[in_chan], 0);
         } else {
