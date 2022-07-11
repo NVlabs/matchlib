@@ -92,9 +92,11 @@ class nv_array {
     }                                                                      \
   };
 
-#define MAX_SPECIALIZATIONS 256
+#ifndef NV_ARRAY_MAX_SPECIALIZATIONS
+#define NV_ARRAY_MAX_SPECIALIZATIONS 8
+#endif
 
-  BOOST_PP_REPEAT(MAX_SPECIALIZATIONS, SPECIALIZATION, BOOST_PP_EMPTY)
+  BOOST_PP_REPEAT(NV_ARRAY_MAX_SPECIALIZATIONS, SPECIALIZATION, BOOST_PP_EMPTY)
 
   NNode<Type, VectorLength - 1> array_impl;
   // END WORKAROUND
