@@ -22,12 +22,19 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/iteration/local.hpp>
+#include <boost/static_assert.hpp>
 
 #include <nvhls_marshaller.h>
 #include <nvhls_message.h>
 #include <nvhls_module.h>
 
+// Set the largest supported array size. Larger values increase compile times.
+#ifndef NV_ARRAY_MAX_SPECIALIZATIONS
+#define NV_ARRAY_MAX_SPECIALIZATIONS 64
+#endif
+
 namespace nvhls {
+
 /**
  * \brief An implementation of array that declares \a VectorLength variables for
  * array of size \a VectorLength
@@ -41,6 +48,8 @@ namespace nvhls {
  * - Helpful when HLS tool does not recognize your array correctly and requires
  * unrolling array
  * - nv_array also has specialization for size 0 arrays
+ * - Preprocessor macro NV_ARRAY_MAX_SPECIALIZATIONS sets the maximum array size
+ * supported by nv_array. It is small by default to improve compile times.
  *
  * \par A Simple Example
  * \code
@@ -59,6 +68,8 @@ namespace nvhls {
  */
 template <typename Type, unsigned int VectorLength>
 class nv_array {
+  BOOST_STATIC_ASSERT_MSG(NV_ARRAY_MAX_SPECIALIZATIONS >= VectorLength,
+          "NV_ARRAY_MAX_SPECIALIZATIONS is to small to support the requested array size.");
  public:
   // Alternate array class with no arrays using boost preprocessor to
   // define template secializations.
@@ -91,10 +102,6 @@ class nv_array {
       else return data0;                                                   \
     }                                                                      \
   };
-
-#ifndef NV_ARRAY_MAX_SPECIALIZATIONS
-#define NV_ARRAY_MAX_SPECIALIZATIONS 8
-#endif
 
   BOOST_PP_REPEAT(NV_ARRAY_MAX_SPECIALIZATIONS, SPECIALIZATION, BOOST_PP_EMPTY)
 
