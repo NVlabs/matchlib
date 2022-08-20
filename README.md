@@ -17,7 +17,7 @@ can be found in the [Connections Guide](https://github.com/hlslibs/matchlib_conn
 
 ## Tool versions
 
-MatchLib is regressed against the following tool/dependency verions:
+MatchLib is regressed against the following tool/dependency versions:
 
 * `gcc` - 4.9.3 (with C++11)
 * `systemc` - 2.3.1
