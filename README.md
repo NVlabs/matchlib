@@ -24,12 +24,12 @@ MatchLib is regressed against the following tool/dependency versions:
 * `boost` - 1.68.0
 * `doxygen` - 1.8.11
 * `make` - 3.82
-* `catapult` - 2022.1
+* `catapult` - 2022.1\_1
 * `connections` - 1.2.8 (included with Catapult)
 * `vcs` - 2018.09-SP2-11
 * `verdi` - 2018.09-SP2-11
-* `rapidjson` - v1.1.0
 * `python` - 3.4.2
+* `rapidjson` - v1.1.0 (included as submodule)
 
 ## Environment requirements
 
