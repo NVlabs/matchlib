@@ -22,6 +22,7 @@ options set Cache/DefaultCacheHomeEnabled false
 solution new -state initial
 solution options defaults
 flow package require /SCVerify
+flow package require /VCS
 solution options set /Output/PackageOutput false
 
 solution options set Input/CppStandard c++11
@@ -40,6 +41,9 @@ if { [info exist env(VG_GNU_PACKAGE)] } {
     solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VCS_HOME)/gnu/linux
 }
 solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
+solution options set /Flows/VCS/COMP_FLAGS [concat [solution options get /Flows/VCS/COMP_FLAGS] -licqueue]
+solution options set /Flows/VCS/VCSELAB_OPTS [concat [solution options get /Flows/VCS/VCSELAB_OPTS] -licqueue]
+solution options set /Flows/VCS/VCSSIM_OPTS [concat [solution options get /Flows/VCS/VCSSIM_OPTS] -licqueue]
 solution options set /Flows/VCS/SYSC_VERSION 2.3.1
 # SystemVerilog assertions
 solution options set /Output/InlinedPropertyLang sva
