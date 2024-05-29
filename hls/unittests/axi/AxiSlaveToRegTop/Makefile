@@ -16,5 +16,7 @@
 ROOT            := ../../../..
 SRC_PATH				:= $(ROOT)/cmod/unittests/axi
 
+CLK_PERIOD := 3
+
 include $(ROOT)/hls/hls_Makefile
 

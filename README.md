@@ -19,24 +19,24 @@ can be found in the [Connections Guide](https://github.com/hlslibs/matchlib_conn
 
 MatchLib is regressed against the following tool/dependency versions:
 
-* `gcc` - 4.9.3 (with C++11)
-* `systemc` - 2.3.1
+* `gcc` - 10.3.0
 * `boost` - 1.68.0
 * `doxygen` - 1.8.11
 * `make` - 3.82
-* `catapult` - 2022.1\_1
-* `connections` - 1.2.8 (included with Catapult)
-* `vcs` - 2018.09-SP2-11
-* `verdi` - 2018.09-SP2-11
+* `binutils` - 2.34
+* `catapult` - 2024.1\_1
+* `systemc` - 2.3.3 (included with Catapult)
+* `connections` - 2.1.1 (included with Catapult)
+* `vcs` - 2023.03
+* `verdi` - 2023.03
 * `python` - 3.4.2
-* `rapidjson` - v1.1.0 (included as submodule)
+* `rapidjson` - 06d58b9 (included as submodule)
 
 ## Environment requirements
 
 Makefiles assume the appropriate definition of the following environment variables:
 
 * `BOOST_HOME`
-* `SYSTEMC_HOME`
 * `CATAPULT_HOME`
 * `VCS_HOME`
 * `NOVAS_INST_DIR`

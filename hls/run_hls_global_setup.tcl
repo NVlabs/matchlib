@@ -44,7 +44,7 @@ solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
 solution options set /Flows/VCS/COMP_FLAGS [concat [solution options get /Flows/VCS/COMP_FLAGS] -licqueue]
 solution options set /Flows/VCS/VCSELAB_OPTS [concat [solution options get /Flows/VCS/VCSELAB_OPTS] -licqueue]
 solution options set /Flows/VCS/VCSSIM_OPTS [concat [solution options get /Flows/VCS/VCSSIM_OPTS] -licqueue]
-solution options set /Flows/VCS/SYSC_VERSION 2.3.1
+solution options set /Flows/VCS/SYSC_VERSION 2.3.3
 # SystemVerilog assertions
 solution options set /Output/InlinedPropertyLang sva
 
