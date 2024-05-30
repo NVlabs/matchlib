@@ -17,6 +17,12 @@
 #ifndef _AXI_AXI4_H_
 #define _AXI_AXI4_H_
 
+
+#ifndef USE_OLD_AXI4_H
+#define USE_AUTO_GEN_FIELD_METHODS 1
+#include "auto_gen_fields.h"
+#endif
+
 #include <systemc>
 #include <nvhls_connections.h>
 #include <nvhls_assert.h>
@@ -27,6 +33,7 @@
 
 #include <axi/axi4_encoding.h>
 #include <axi/axi4_configs.h>
+
 
 /**
  * \brief The axi namespace contains classes and definitions related to the AXI standard.
@@ -114,9 +121,26 @@ class axi4 {
     Cache cache;
     AUser auser;
 
+#ifdef USE_AUTO_GEN_FIELD_METHODS 
+  AUTO_GEN_FIELD_METHODS(AddrPayload, ( \
+     id \
+   , addr \
+   , burst \
+   , len \
+   , size \
+   , cache \
+   , auser \
+  ) )
+  //
+
+#endif
+
+
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     static const unsigned int width = ADDR_WIDTH + ID_WIDTH + ALEN_WIDTH +
                                       ASIZE_WIDTH + BURST_WIDTH + CACHE_WIDTH +
                                       AUSER_WIDTH;
+#endif
 
    AddrPayload() {
      if(ID_WIDTH > 0)
@@ -134,6 +158,7 @@ class axi4 {
        auser = 0;
     }
     
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     template <unsigned int Size>
     void Marshall(Marshaller<Size> &m) {
       m &id;
@@ -170,6 +195,7 @@ class axi4 {
         os << hex << "auser:" << rhs.auser << " ";
       return os;
     }
+#endif
 
   };
 
@@ -184,8 +210,22 @@ class axi4 {
     Last last;
     RUser ruser;
 
+#ifdef USE_AUTO_GEN_FIELD_METHODS 
+  AUTO_GEN_FIELD_METHODS(ReadPayload, ( \
+     id \
+   , data \
+   , resp  \
+   , last \
+   , ruser \
+  ) )
+  //
+
+#endif
+
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     static const unsigned int width =
         DATA_WIDTH + RESP_WIDTH + ID_WIDTH + LAST_WIDTH + RUSER_WIDTH;
+#endif
 
    ReadPayload() {
      if(ID_WIDTH > 0)
@@ -198,6 +238,7 @@ class axi4 {
        ruser = 0;
    }
     
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     template <unsigned int Size>
     void Marshall(Marshaller<Size> &m) {
       m &id;
@@ -227,6 +268,7 @@ class axi4 {
         os << hex << "user:" << rhs.ruser << " ";
       return os;
     }
+#endif
   };
 
   /**
@@ -238,7 +280,18 @@ class axi4 {
     Resp resp;
     BUser buser;
 
+#ifdef USE_AUTO_GEN_FIELD_METHODS 
+  AUTO_GEN_FIELD_METHODS(WRespPayload, ( \
+     id \
+   , resp  \
+   , buser \
+  ) )
+  //
+#endif
+
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     static const unsigned int width = RESP_WIDTH + BID_WIDTH + BUSER_WIDTH;
+#endif
 
    WRespPayload() {
      if(ID_WIDTH > 0)
@@ -248,6 +301,7 @@ class axi4 {
        buser = 0;
     }
 
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     template <unsigned int Size>
     void Marshall(Marshaller<Size> &m) {
       m &id;
@@ -271,6 +325,7 @@ class axi4 {
         os << hex << "buser:" << rhs.buser << " ";
       return os;
     }
+#endif
   };
 
   /**
@@ -283,6 +338,16 @@ class axi4 {
     Wstrb wstrb;
     WUser wuser;
 
+#ifdef USE_AUTO_GEN_FIELD_METHODS 
+  AUTO_GEN_FIELD_METHODS(WritePayload, ( \
+     data \
+   , last  \
+   , wstrb \
+   , wuser \
+  ) )
+  //
+#endif
+
     WritePayload() {
      data = 0; // NVUINT, DATA_WIDTH always > 0 
      if(LAST_WIDTH > 0)
@@ -293,6 +358,7 @@ class axi4 {
        wuser = 0;
     }
     
+#ifndef USE_AUTO_GEN_FIELD_METHODS 
     static const unsigned int width =
         DATA_WIDTH + LAST_WIDTH + WSTRB_WIDTH + WUSER_WIDTH;
 
@@ -323,6 +389,7 @@ class axi4 {
         os << hex << "wuser:" << rhs.wuser << " ";
       return os;
     }
+#endif
   };
 
   /**
