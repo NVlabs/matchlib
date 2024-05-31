@@ -16,7 +16,7 @@ source ../../../nvhls_exec.tcl
 
 proc nvhls::usercmd_post_assembly {} {
     upvar TOP_NAME TOP_NAME
-    directive set /$TOP_NAME/slave/run/memarray.bank.array_impl.data0:rsc -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
+    directive set /$TOP_NAME/.../memarray.bank.*:rsc -match glob -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
 }
 
 nvhls::run

@@ -21,7 +21,7 @@ proc nvhls::usercmd_post_assembly {} {
     directive set /$TOP_NAME/op:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
     directive set /$TOP_NAME/data:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
     directive set /$TOP_NAME/idx:rsc -MAP_TO_MODULE ccs_ioport.ccs_in_vld
-    directive set /FifoTop/core/fifo.fifo_body.bank.array_impl.data0:rsc -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
+    directive set /$TOP_NAME/.../fifo.fifo_body.bank.*:rsc -match glob -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
 }
 
 nvhls::run

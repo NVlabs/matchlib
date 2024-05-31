@@ -39,21 +39,16 @@ foreach WORDSIZE $WORDSIZE_LIST {
             }
 
             proc nvhls::usercmd_post_assembly {} {
-                global BANKS PIPE_INIT_INTERVAL
+                global PIPE_INIT_INTERVAL
                 upvar TOP_NAME TOP_NAME
-                for {set k 0} {$k < $BANKS} {incr k} {
-                    directive set /$TOP_NAME/core/banks.bank.array_impl.data$k:rsc/MAP_TO_MODULE ram_nangate-45nm-singleport_beh.RAM
-                }
+                directive set /$TOP_NAME/core/banks.bank.*:rsc -match glob -MAP_TO_MODULE ram_nangate-45nm-singleport_beh.RAM
                 directive set /$TOP_NAME/core/main -PIPELINE_INIT_INTERVAL $PIPE_INIT_INTERVAL
             }
             
             proc nvhls::usercmd_post_architect {} {
-                global BANKS
                 upvar TOP_NAME TOP_NAME
-                for {set k 0} {$k < $BANKS} {incr k} {
-                    ignore_memory_precedences -from /$TOP_NAME/core/core:rlp/main/banks.read:for:read_mem(banks.bank.array_impl.data$k:rsc.@) -to /$TOP_NAME/core/core:rlp/main/banks.write:if:for:if:write_mem(banks.bank.array_impl.data$k:rsc.@)
-                    ignore_memory_precedences -from /$TOP_NAME/core/core:rlp/main/banks.write:if:for:if:write_mem(banks.bank.array_impl.data$k:rsc.@) -to /$TOP_NAME/core/core:rlp/main/banks.read:for:read_mem(banks.bank.array_impl.data$k:rsc.@)
-                }
+                ignore_memory_precedences -from /$TOP_NAME/core/banks.read:for:read_mem(banks.bank.*:rsc.@) -to /$TOP_NAME/core/banks.write:if:for:if:write_mem(banks.bank.*:rsc.@)
+                ignore_memory_precedences -from /$TOP_NAME/core/banks.write:if:for:if:write_mem(banks.bank.*:rsc.@) -to /$TOP_NAME/core/banks.read:for:read_mem(banks.bank.*:rsc.@)
             }
 
             nvhls::run

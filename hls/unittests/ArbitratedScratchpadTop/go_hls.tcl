@@ -43,7 +43,7 @@ foreach DATA_TYPE $DATA_TYPE_LIST {
                     }
 
                     proc nvhls::usercmd_post_assembly {} {
-                        global MAIN_PIPELINE_II NUM_BANKS
+                        global MAIN_PIPELINE_II
                         upvar TOP_NAME TOP_NAME
                         set DESIGN_TOP "/$TOP_NAME/core"
                         directive set ${DESIGN_TOP}/main -PIPELINE_INIT_INTERVAL ${MAIN_PIPELINE_II}
@@ -51,9 +51,7 @@ foreach DATA_TYPE $DATA_TYPE_LIST {
 
                         directive set -REGISTER_THRESHOLD 2048
                         directive set -MEM_MAP_THRESHOLD  2048
-                        for {set k 0} {$k < $NUM_BANKS} {incr k} {
-                            directive set ${DESIGN_TOP}/dut.banks.bank.array_impl.data$k:rsc -MAP_TO_MODULE ram_nangate-45nm-singleport_beh.RAM
-                        }
+                        directive set ${DESIGN_TOP}/dut.banks.bank.*:rsc -match glob -MAP_TO_MODULE ram_nangate-45nm-singleport_beh.RAM
                     }
                     
                     nvhls::run

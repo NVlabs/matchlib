@@ -17,12 +17,9 @@ source ../../nvhls_exec.tcl
 proc nvhls::usercmd_post_assembly {} {
     upvar TOP_NAME TOP_NAME
     set DESIGN_TOP "/$TOP_NAME/core"
-    set NUM_BANKS 4
     set MAIN_PIPELINE_II 1
 
-    for {set k 0} {$k < $NUM_BANKS} {incr k} {
-        directive set ${DESIGN_TOP}/scratchpad_inst.banks.bank.array_impl.data$k:rsc -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
-    }
+    directive set ${DESIGN_TOP}/scratchpad_inst.banks.bank.*:rsc -match glob -MAP_TO_MODULE ram_nangate-45nm-separate_beh.RAM_separateRW
     directive set ${DESIGN_TOP}/main -PIPELINE_INIT_INTERVAL ${MAIN_PIPELINE_II}
     directive set ${DESIGN_TOP}/main -PIPELINE_STALL_MODE flush
 }
