@@ -43,8 +43,6 @@ struct nv_array_pow2
 
 // nv_array_bank_array_no_assert_base is the base class for banked arrays, 
 // and typically is not directly used in user models.
-// The nv_array_bank* classes are temporary: eventually these will be deleted
-// and we will include these classes from a header file in the Catapult installation.
 
 template <typename B, size_t C>
 class nv_array_bank_array_no_assert_base;
@@ -53,7 +51,15 @@ template <typename B>
 class nv_array_bank_array_no_assert_base<B, 1>
 {
   B a;
+
 public:
+
+  nv_array_bank_array_no_assert_base() : a() {}
+
+  nv_array_bank_array_no_assert_base(const char* prefix) 
+   : a(sc_gen_unique_name(prefix))
+  {}
+
   B &operator[](size_t idx) { return a; }
   const B &operator[](size_t idx) const { return a; }
 };
@@ -66,6 +72,14 @@ class nv_array_bank_array_no_assert_base
   nv_array_bank_array_no_assert_base<B, W  > a0;
   nv_array_bank_array_no_assert_base<B, C-W> a1;
 public:
+
+  nv_array_bank_array_no_assert_base() : a0(), a1() {}
+
+  nv_array_bank_array_no_assert_base(const char* prefix)
+   : a0(sc_gen_unique_name(prefix))
+   , a1(sc_gen_unique_name(prefix))
+  {}
+
   B &operator[](size_t idx) { 
 #ifndef __SYNTHESIS__
     assert(idx < C);
@@ -87,10 +101,11 @@ template <typename Type, unsigned int VectorLength>
 class nv_array : public nv_array_bank_array_no_assert_base<Type, VectorLength>
 {
 public:
+  typedef nv_array_bank_array_no_assert_base<Type,VectorLength> base_t;
   nv_array() {}
-  nv_array(const char* prefix) {}
-  nv_array(sc_module_name prefix) {}
-  nv_array(sc_module_name prefix, const unsigned int& id) {}
+  nv_array(const char* prefix) : base_t(prefix) {}
+  nv_array(sc_module_name prefix) : base_t(prefix) {}
+  nv_array(sc_module_name prefix, const unsigned int& id) : base_t(prefix) {}
 };
 
 };
