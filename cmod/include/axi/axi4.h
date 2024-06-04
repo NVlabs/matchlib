@@ -17,11 +17,14 @@
 #ifndef _AXI_AXI4_H_
 #define _AXI_AXI4_H_
 
-
-#ifndef USE_OLD_AXI4_H
-#define USE_AUTO_GEN_FIELD_METHODS 1
-#include "auto_gen_fields.h"
+#ifdef __SYNTHESIS__
+// workaround until connections/connections_utils.h and nvhls_connections_utils.h are cleaned up
+#include <connections/connections_utils.h>
+#define __CONNECTIONS__CONNECTIONS_UTILS_H_
+#define NVHLS_CONNECTIONS_UTILS_H_
 #endif
+
+#include "auto_gen_fields.h"
 
 #include <systemc>
 #include <nvhls_connections.h>
@@ -121,7 +124,6 @@ class axi4 {
     Cache cache;
     AUser auser;
 
-#ifdef USE_AUTO_GEN_FIELD_METHODS 
   AUTO_GEN_FIELD_METHODS(AddrPayload, ( \
      id \
    , addr \
@@ -133,14 +135,6 @@ class axi4 {
   ) )
   //
 
-#endif
-
-
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    static const unsigned int width = ADDR_WIDTH + ID_WIDTH + ALEN_WIDTH +
-                                      ASIZE_WIDTH + BURST_WIDTH + CACHE_WIDTH +
-                                      AUSER_WIDTH;
-#endif
 
    AddrPayload() {
      if(ID_WIDTH > 0)
@@ -158,45 +152,6 @@ class axi4 {
        auser = 0;
     }
     
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    template <unsigned int Size>
-    void Marshall(Marshaller<Size> &m) {
-      m &id;
-      m &addr;
-      m &burst;
-      m &len;
-      m &size;
-      m &cache;
-      m &auser;
-    }
-
-#ifdef CONNECTIONS_SIM_ONLY
-    inline friend void sc_trace(sc_trace_file *tf, const AddrPayload& v, const std::string& NAME ) {
-      sc_trace(tf,v.id,    NAME + ".id");
-      sc_trace(tf,v.addr,  NAME + ".addr");
-      sc_trace(tf,v.len,   NAME + ".len");
-    }
-#endif
-
-    inline friend std::ostream& operator<<(ostream& os, const AddrPayload& rhs)
-    {
-      if (ID_WIDTH > 0)
-        os << dec << "id:" << rhs.id << " ";
-      os << hex << "addr:" << rhs.addr << " ";
-      if (ALEN_WIDTH > 0)
-        os << dec << "len:" << rhs.len << " ";
-      if (ASIZE_WIDTH > 0)
-        os << dec << "size:" << rhs.size << " ";
-      if (BURST_WIDTH > 0)
-        os << dec << "burst:" << rhs.burst << " ";
-      if (CACHE_WIDTH > 0)
-        os << dec << "cache:" << rhs.cache << " ";
-      if (AUSER_WIDTH > 0)
-        os << hex << "auser:" << rhs.auser << " ";
-      return os;
-    }
-#endif
-
   };
 
   /**
@@ -210,7 +165,6 @@ class axi4 {
     Last last;
     RUser ruser;
 
-#ifdef USE_AUTO_GEN_FIELD_METHODS 
   AUTO_GEN_FIELD_METHODS(ReadPayload, ( \
      id \
    , data \
@@ -220,12 +174,6 @@ class axi4 {
   ) )
   //
 
-#endif
-
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    static const unsigned int width =
-        DATA_WIDTH + RESP_WIDTH + ID_WIDTH + LAST_WIDTH + RUSER_WIDTH;
-#endif
 
    ReadPayload() {
      if(ID_WIDTH > 0)
@@ -237,38 +185,6 @@ class axi4 {
      if(RUSER_WIDTH > 0)
        ruser = 0;
    }
-    
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    template <unsigned int Size>
-    void Marshall(Marshaller<Size> &m) {
-      m &id;
-      m &data;
-      m &resp;
-      m &last;
-      m &ruser;
-    }
-
-#ifdef CONNECTIONS_SIM_ONLY
-    inline friend void sc_trace(sc_trace_file *tf, const ReadPayload& v, const std::string& NAME ) {
-      sc_trace(tf,v.id,    NAME + ".id");
-      sc_trace(tf,v.data,  NAME + ".data");
-      sc_trace(tf,v.last,  NAME + ".last");
-    }
-#endif
-
-    inline friend std::ostream& operator<<(ostream& os, const ReadPayload& rhs)
-    {
-      if (ID_WIDTH > 0)
-        os << dec << "id:" << rhs.id << " ";
-      os << hex << "data:" << rhs.data << " ";
-      os << dec << "resp:" << rhs.resp << " ";
-      if (LAST_WIDTH > 0)
-        os << dec << "last:" << rhs.last << " ";
-      if (RUSER_WIDTH > 0)
-        os << hex << "user:" << rhs.ruser << " ";
-      return os;
-    }
-#endif
   };
 
   /**
@@ -280,18 +196,12 @@ class axi4 {
     Resp resp;
     BUser buser;
 
-#ifdef USE_AUTO_GEN_FIELD_METHODS 
   AUTO_GEN_FIELD_METHODS(WRespPayload, ( \
      id \
    , resp  \
    , buser \
   ) )
   //
-#endif
-
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    static const unsigned int width = RESP_WIDTH + BID_WIDTH + BUSER_WIDTH;
-#endif
 
    WRespPayload() {
      if(ID_WIDTH > 0)
@@ -301,31 +211,6 @@ class axi4 {
        buser = 0;
     }
 
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    template <unsigned int Size>
-    void Marshall(Marshaller<Size> &m) {
-      m &id;
-      m &resp;
-      m &buser;
-    }
-
-#ifdef CONNECTIONS_SIM_ONLY
-    inline friend void sc_trace(sc_trace_file *tf, const WRespPayload& v, const std::string& NAME ) {
-      sc_trace(tf,v.id,    NAME + ".id");
-      sc_trace(tf,v.resp,  NAME + ".resp");
-    }
-#endif
-
-    inline friend std::ostream& operator<<(ostream& os, const WRespPayload& rhs)
-    {
-      if (ID_WIDTH > 0)
-        os << dec << "id:" << rhs.id << " ";
-      os << dec << "resp:" << rhs.resp << " ";
-      if (BUSER_WIDTH > 0)
-        os << hex << "buser:" << rhs.buser << " ";
-      return os;
-    }
-#endif
   };
 
   /**
@@ -338,7 +223,6 @@ class axi4 {
     Wstrb wstrb;
     WUser wuser;
 
-#ifdef USE_AUTO_GEN_FIELD_METHODS 
   AUTO_GEN_FIELD_METHODS(WritePayload, ( \
      data \
    , last  \
@@ -346,7 +230,6 @@ class axi4 {
    , wuser \
   ) )
   //
-#endif
 
     WritePayload() {
      data = 0; // NVUINT, DATA_WIDTH always > 0 
@@ -357,39 +240,6 @@ class axi4 {
      if(WUSER_WIDTH > 0)
        wuser = 0;
     }
-    
-#ifndef USE_AUTO_GEN_FIELD_METHODS 
-    static const unsigned int width =
-        DATA_WIDTH + LAST_WIDTH + WSTRB_WIDTH + WUSER_WIDTH;
-
-    template <unsigned int Size>
-    void Marshall(Marshaller<Size> &m) {
-      m &data;
-      m &last;
-      m &wstrb;
-      m &wuser;
-    }
-
-#ifdef CONNECTIONS_SIM_ONLY
-    inline friend void sc_trace(sc_trace_file *tf, const WritePayload& v, const std::string& NAME ) {
-      sc_trace(tf,v.data,  NAME + ".data");
-      sc_trace(tf,v.last,  NAME + ".last");
-      sc_trace(tf,v.wstrb, NAME + ".wstrb");
-    }
-#endif
-
-    inline friend std::ostream& operator<<(ostream& os, const WritePayload& rhs)
-    {
-      os << hex << "data:" << rhs.data << " ";
-      if (LAST_WIDTH > 0)
-        os << dec << "last:" << rhs.last << " ";
-      if (WSTRB_WIDTH > 0)
-        os << hex << "wstrb:" << rhs.wstrb << " ";
-      if (WUSER_WIDTH > 0)
-        os << hex << "wuser:" << rhs.wuser << " ";
-      return os;
-    }
-#endif
   };
 
   /**
@@ -627,3 +477,4 @@ class axi4 {
 }; // axi
 
 #endif
+
