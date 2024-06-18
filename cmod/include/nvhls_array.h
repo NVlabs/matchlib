@@ -40,6 +40,14 @@ struct nv_array_pow2
 };
 
 
+static const char* make_permanent(const char* s) {
+#ifdef __SYNTHESIS__
+  return s;
+#else
+  std::string* str = new std::string(s);  // this is an intentional memory leak..
+  return str->c_str();
+#endif
+}
 
 // nv_array_bank_array_no_assert_base is the base class for banked arrays, 
 // and typically is not directly used in user models.
@@ -57,7 +65,7 @@ public:
   nv_array_bank_array_no_assert_base() : a() {}
 
   nv_array_bank_array_no_assert_base(const char* prefix) 
-   : a(sc_gen_unique_name(prefix))
+   : a(make_permanent(sc_gen_unique_name(prefix)))
   {}
 
   B &operator[](size_t idx) { return a; }
@@ -76,8 +84,8 @@ public:
   nv_array_bank_array_no_assert_base() : a0(), a1() {}
 
   nv_array_bank_array_no_assert_base(const char* prefix)
-   : a0(sc_gen_unique_name(prefix))
-   , a1(sc_gen_unique_name(prefix))
+   : a0(make_permanent(sc_gen_unique_name(prefix)))
+   , a1(make_permanent(sc_gen_unique_name(prefix)))
   {}
 
   B &operator[](size_t idx) { 
@@ -97,6 +105,40 @@ public:
 
 
 
+/**
+ * \brief An implementation of array that declares \a VectorLength variables for
+ * array of size \a VectorLength
+ * \ingroup nv_array
+ *
+ * \tparam Type             Datatype
+ * \tparam VectorLength      Size of array
+ *
+ * \par Overview
+ * - Declares VectorLength variables to realize an array of size VectorLength
+ * - Helpful when HLS tool does not recognize your array correctly and requires
+ * unrolling array
+ * - nv_array also has specialization for size 0 arrays
+ * - Usage of this class is not recommended for new models. Instead,
+ *   1) If the array is modeling a RAM/ROM, use a dedicated class for this purpose such as ac_bank_array.
+ *   2) If the array is not modeling a RAM/ROM, use a dedicated class for this purpose.
+ *    In both cases, the dedicated classes should always assert on invalid indexes.
+ *  
+ *
+ * \par A Simple Example
+ * \code
+ *      #include <nvhls_array.h>
+ *
+ *      ...
+ *      nvhls::nv_array<NVUINT32, ArraySize> array;
+ *      for (unsigned i = 0; i < ArraySize; i++) {
+ *        array[i] = i;
+ *      }
+ *
+ *
+ * \endcode
+ * \par
+ *
+ */
 template <typename Type, unsigned int VectorLength>
 class nv_array : public nv_array_bank_array_no_assert_base<Type, VectorLength>
 {
