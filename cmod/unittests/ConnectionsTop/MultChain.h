@@ -77,8 +77,8 @@ public:
     if (rst.read()) {
       unsigned int width = (T().length()/4);
       // Input port
-      if (in_.val.read() && in_.rdy.read()) {
-        CDCOUT(std::hex << std::setw(width) << in_.msg.read(), kDebugLevel);
+      if (in_.vld.read() && in_.rdy.read()) {
+        CDCOUT(std::hex << std::setw(width) << in_.dat.read(), kDebugLevel);
       }
       else {
         CDCOUT(std::setw(width+1) << " ", kDebugLevel);
@@ -86,8 +86,8 @@ public:
       CDCOUT(" | ", kDebugLevel);
 
       // Output port
-      if (out.val.read() && out.rdy.read()) {
-        CDCOUT(std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
+      if (out.vld.read() && out.rdy.read()) {
+        CDCOUT(std::hex << std::setw(width) << out.dat.read(), kDebugLevel);
       }
       else {
         CDCOUT(std::setw(width+1) << " ", kDebugLevel);

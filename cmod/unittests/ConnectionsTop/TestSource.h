@@ -85,8 +85,8 @@ class TestSourceBlocking : public sc_module {
 #ifndef CONNECTIONS_FAST_SIM // Ports don't exist in fast sim (TLM mode)
     if (rst.read()) {
       unsigned int width = (T().length()/4);
-      if (out.val.read() && out.rdy.read()) {
-        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
+      if (out.vld.read() && out.rdy.read()) {
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.dat.read(), kDebugLevel);
       }
 
       else {
@@ -160,8 +160,8 @@ class TestSourceNonBlocking : public sc_module {
   void line_trace() {
     if (rst.read()) {
       unsigned int width = (T().length()/4);
-      if (out.val.read() && out.rdy.read()) {
-        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
+      if (out.vld.read() && out.rdy.read()) {
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.dat.read(), kDebugLevel);
       }
       else {
         CDCOUT(sc_time_stamp() << " " << std::setw(width+1) << " ", kDebugLevel);
@@ -236,8 +236,8 @@ class TestSourceBuffered : public sc_module {
 #ifndef CONNECTIONS_FAST_SIM
     if (rst.read()) {
       unsigned int width = (T().length()/4);
-      if (out.val.read() && out.rdy.read()) {
-        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.msg.read(), kDebugLevel);
+      if (out.vld.read() && out.rdy.read()) {
+        CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << out.dat.read(), kDebugLevel);
       }
       else {
         CDCOUT(sc_time_stamp() << " " << std::setw(width+1) << " ", kDebugLevel);

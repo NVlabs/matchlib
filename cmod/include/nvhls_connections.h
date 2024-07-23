@@ -30,8 +30,6 @@
 #define __DID_SAVE_ASSERTS
 #endif
 
-// Ensure that Mentor Connections keeps same port name (val, msg, etc...)
-#define CONNECTIONS_NAMING_ORIGINAL
 // Include connections tree nvhls_connections.h
 #include <connections/connections.h>
 

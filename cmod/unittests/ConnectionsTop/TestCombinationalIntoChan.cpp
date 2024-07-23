@@ -119,7 +119,7 @@ class TestHarnessBlocking : public sc_module {
 #ifndef CONNECTIONS_SIM_ONLY    
     if (rst.read()) {
       unsigned int width = (T().length()/4);
-      if (chan.val.read() && chan.rdy.read()) {
+      if (chan.vld.read() && chan.rdy.read()) {
         CDCOUT(sc_time_stamp() << " " << std::hex << std::setw(width) << chan.msg.read(), kDebugLevel);
       }
       else {

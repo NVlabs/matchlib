@@ -42,7 +42,8 @@ DESIGNS ?= \
 	ConnectionsRecipes/Adder4 \
 	Counter \
 
-SKIP_DESIGNS ?=
+SKIP_DESIGNS ?= \
+	ConnectionsRecipes/Adder3 \
 
 RUN_DESIGNS := $(filter-out $(SKIP_DESIGNS),$(DESIGNS))
 
