@@ -181,12 +181,14 @@ class AxiSlaveToReg : public sc_module {
           NVHLS_ASSERT_MSG(valid_wr_addr, "Write address is out of bounds");
           NVUINTW(axi4_::DATA_WIDTH) axiData(static_cast<typename axi4_::Data>(axi_wr_req_data.data));
           NVUINTW(regAddrWidth) regAddr = (axiWrAddr - baseAddr.read()) >> axiAddrBitsPerReg;
-          if (!axi_wr_req_data.wstrb.and_reduce()) { // Non-uniform write strobe - need to do read-modify-write
-            NVUINTW(axi4_::DATA_WIDTH) old_data = reg[regAddr];
+          if (axi4_::WSTRB_WIDTH > 0) {
+            if (!axi_wr_req_data.wstrb.and_reduce()) { // Non-uniform write strobe - need to do read-modify-write
+              NVUINTW(axi4_::DATA_WIDTH) old_data = reg[regAddr];
 #pragma hls_unroll yes
-            for (int i=0; i<axi4_::WSTRB_WIDTH; i++) {
-              if (axi_wr_req_data.wstrb[i] == 0) {
-                axiData = nvhls::set_slc(axiData, nvhls::get_slc<8>(old_data,8*i), 8*i);
+              for (int i=0; i<axi4_::WSTRB_WIDTH; i++) {
+                if (axi_wr_req_data.wstrb[i] == 0) {
+                  axiData = nvhls::set_slc(axiData, nvhls::get_slc<8>(old_data,8*i), 8*i);
+                }
               }
             }
           }
