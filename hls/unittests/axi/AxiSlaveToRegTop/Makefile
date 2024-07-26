@@ -18,5 +18,12 @@ SRC_PATH				:= $(ROOT)/cmod/unittests/axi
 
 CLK_PERIOD := 3
 
+all: reg csreg
+
 include $(ROOT)/hls/hls_Makefile
 
+reg:
+	catapult -shell -product ultra -file go_hls.tcl
+
+csreg:
+	env COMPILER_FLAGS="$(COMPILER_FLAGS) STATUS_REG" catapult -shell -product ultra -file go_hls.tcl

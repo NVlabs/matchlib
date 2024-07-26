@@ -27,7 +27,7 @@ class AxiSlaveToRegTop : public sc_module {
   static const int kDebugLevel = 4;
 
   typedef axi::axi4<axi::cfg::standard> axi_;
-  enum { numReg = 128, baseAddress = 0x100, numAddrBitsToInspect = 16 };
+  enum { numControlReg = 128, numStatusReg = 16, baseAddress = 0x100, numAddrBitsToInspect = 16 };
 
   sc_in<bool> clk;
   sc_in<bool> reset_bar;
@@ -35,10 +35,17 @@ class AxiSlaveToRegTop : public sc_module {
   typename axi_::read::template slave<> axi_read;
   typename axi_::write::template slave<> axi_write;
 
-  AxiSlaveToReg<axi::cfg::standard, numReg, numAddrBitsToInspect> slave;
+#ifdef STATUS_REG
+  AxiSlaveToCSReg<axi::cfg::standard, numControlReg, numStatusReg, numAddrBitsToInspect> slave;
+#else
+  AxiSlaveToReg<axi::cfg::standard, numControlReg, numAddrBitsToInspect> slave;
+#endif
 
   sc_signal<NVUINTW(numAddrBitsToInspect)> baseAddr;
-  sc_out<NVUINTW(axi_::DATA_WIDTH)> regOut[numReg];
+  sc_out<NVUINTW(axi_::DATA_WIDTH)> regOut[numControlReg];
+#ifdef STATUS_REG
+  sc_in<NVUINTW(axi_::DATA_WIDTH)> regIn[numStatusReg];
+#endif
 
   SC_HAS_PROCESS(AxiSlaveToRegTop);
 
@@ -59,9 +66,18 @@ class AxiSlaveToRegTop : public sc_module {
     slave.baseAddr(baseAddr);
     baseAddr.write(baseAddress);
 
-    for (int i = 0; i < numReg; i++) {
+#pragma hls_unroll yes
+    for (int i = 0; i < numControlReg; i++) {
       slave.regOut[i](regOut[i]);
     }
+
+#ifdef STATUS_REG
+#pragma hls_unroll yes
+    for (int i = 0; i < numStatusReg; i++) {
+      slave.regIn[i](regIn[i]);
+    }
+#endif
+
   }
 };
 

@@ -27,7 +27,8 @@ SC_MODULE(testbench) {
 
   typedef AxiSlaveToRegTop::axi_ axi_;
   enum {
-    numReg = AxiSlaveToRegTop::numReg,
+    numControlReg = AxiSlaveToRegTop::numControlReg,
+    numStatusReg = AxiSlaveToRegTop::numStatusReg,
     numAddrBitsToInspect = AxiSlaveToRegTop::numAddrBitsToInspect
   };
 
@@ -53,7 +54,10 @@ SC_MODULE(testbench) {
   typename axi_::read::template chan<> axi_read;
   typename axi_::write::template chan<> axi_write;
 
-  sc_signal<NVUINTW(axi::axi4<axi::cfg::standard>::DATA_WIDTH)> regOut[numReg];
+  sc_signal<NVUINTW(axi::axi4<axi::cfg::standard>::DATA_WIDTH)> regOut[numControlReg];
+#ifdef STATUS_REG
+  sc_signal<NVUINTW(axi::axi4<axi::cfg::standard>::DATA_WIDTH)> regIn[numStatusReg];
+#endif
 
   SC_CTOR(testbench)
       : master("master"),
@@ -77,9 +81,15 @@ SC_MODULE(testbench) {
     slave.axi_read(axi_read);
     slave.axi_write(axi_write);
 
-    for (int i = 0; i < numReg; i++) {
+    for (int i = 0; i < numControlReg; i++) {
       slave.regOut[i](regOut[i]);
     }
+
+#ifdef STATUS_REG
+    for (int i = 0; i < numStatusReg; i++) {
+      slave.regIn[i](regIn[i]);
+    }
+#endif
 
     master.done(done);
     SC_THREAD(run);

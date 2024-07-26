@@ -14,5 +14,19 @@
 # limitations under the License.
 #
 
+include ../../../cmod_Makefile
 
-include ../../unittests_Makefile
+all: sim_reg sim_csreg
+
+sim_reg: $(wildcard *.h) $(wildcard *.cpp) $(wildcard $(CWD)/../../../include/axi/*.h)
+	$(CC) -o $@ $(CFLAGS) $(USER_FLAGS) -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+
+sim_csreg: $(wildcard *.h) $(wildcard *.cpp) $(wildcard $(CWD)/../../../include/axi/*.h)
+	$(CC) -o $@ $(CFLAGS) $(USER_FLAGS) -DSTATUS_REG -I../../../include $(wildcard *.cpp) $(BOOSTLIBS) $(LIBS)
+
+run:
+	./sim_reg
+	./sim_csreg
+
+sim_clean:
+	rm -rf *.o sim_*
