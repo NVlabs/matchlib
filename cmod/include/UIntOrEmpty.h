@@ -56,6 +56,11 @@ Marshaller<Size> &operator&(Marshaller<Size> &m, EmptyField &rhs) {
   return m;  // just do nothing
 }
 
+/* Operator != for EmptyField and int. */
+inline bool operator!=(const EmptyField lhs, const int rhs) {
+  return true; // EmptyField never equals anything
+}
+
 /**
  * \brief A class to determine whether to instantiate an NVUINT or an EmptyField.
  */
