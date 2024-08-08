@@ -19,7 +19,6 @@
 
 #include <nvhls_int.h>
 #include <nvhls_types.h>
-#include <mem_array.h>
 #include <TypeToBits.h>
 
 namespace nvhls {
