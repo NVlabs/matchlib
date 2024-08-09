@@ -42,11 +42,18 @@
  *
  * \par Overview
  * AxiMasterFromFile reads write and read requests from a CSV and issues them as an AXI master.  Read responses are checked agains the expected values provided in the file.  If enable_interrupts is true, the file can also specify a wait-for-interrupt mode in which the interrupt input must go high before further instructions are processed. The format of the CSV is as follows:
- * - Writes: delay_from_previous_request,W,address_in_hex,data_in_hex
- * - Reads: delay_from_previous_request,R,address_in_hex,expected_response_data_in_hex
- * - Interrupts: delay_from_previous_request,Q,arbitrary,arbitrary
+ * - Writes: delay_from_previous_request,W,address_in_hex,data_in_hex,burst_len
+ * - Reads: delay_from_previous_request,R,address_in_hex,expected_response_data_in_hex,burst_len
+ * - Interrupts: delay_from_previous_request,Q,arbitrary,arbitrary,arbitrary
  * 
  *  For reads, it's best to specify the full DATA_WIDTH of expected response data.
+ *
+ *  Use burst_len=0 for a single-beat transaction (no burst). For burst_len>0,
+ *  use one line for each beat in the burst. All beats in a burst must have the same
+ *  burst_len, be listed sequentially with appropriately incrementing addresses,
+ *  and be grouped together (no intervening transactions). The delay field on beats
+ *  in a burst after the first is ignored (all subsequent beats are sent as soon
+ *  as possible).
  *
  */
 
@@ -84,6 +91,7 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
   typename axi4_::AddrPayload wr_addr_pld;
   typename axi4_::WRespPayload wr_resp_pld;
 
+  int burst_inflight = 0;
   sc_out<bool> done;
 
   SC_HAS_PROCESS(MasterFromFile);
@@ -96,44 +104,71 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
     std::vector< std::vector<std::string> > dataList = reader.readCSV();
     for (unsigned int i=0; i < dataList.size(); i++) {
       std::vector<std::string> vec = dataList[i];
-      NVHLS_ASSERT_MSG(vec.size() == 4, "Each request must have four elements");
-      delay_q.push(atoi(vec[0].c_str()));
+      NVHLS_ASSERT_MSG(vec.size() == 5, "Each request must have five elements");
+      if (!burst_inflight) delay_q.push(atoi(vec[0].c_str()));
       if (vec[1] == "R") {
-        req_q.push(0);
-        std::stringstream ss;
-        sc_uint<axi4_::ADDR_WIDTH> addr;
-        ss << hex << vec[2];
-        ss >> addr;
-        addr_pld.addr = static_cast<typename axi4_::Addr>(addr);
-        addr_pld.len = 0;
-        raddr_q.push(addr_pld);
+        if (!burst_inflight) {
+          req_q.push(0);
+          std::stringstream ss;
+          sc_uint<axi4_::ADDR_WIDTH> addr;
+          ss << hex << vec[2];
+          ss >> addr;
+          std::stringstream ss_len;
+          addr_pld.addr = static_cast<typename axi4_::Addr>(addr);
+          sc_uint<axi4_::ALEN_WIDTH> len;
+          ss_len << hex << vec[4];
+          ss_len >> len;
+          if (len) NVHLS_ASSERT_MSG(axiCfg::useBurst, "A burst transaction was requested but the AXI config does not support bursts");
+          NVHLS_ASSERT_MSG(axiCfg::maxBurstSize >= len, "A burst transaction was requested that is longer than the maximum allowed by the AXI config");
+          addr_pld.len = 0;
+          addr_pld.len = static_cast<typename axi4_::BeatNum>(len);
+          raddr_q.push(addr_pld);
+          burst_inflight = int(len);
+        } else {
+          burst_inflight--;
+        }
         std::stringstream ss_data;
         sc_biguint<axi4_::DATA_WIDTH> data;
         ss_data << hex << vec[3];
         ss_data >> data;
         rresp_q.push(TypeToNVUINT(data));
       } else if (vec[1] == "W") {
-        req_q.push(1);
-        std::stringstream ss;
-        sc_uint<axi4_::ADDR_WIDTH> addr;
-        ss << hex << vec[2];
-        ss >> addr;
-        addr_pld.addr = static_cast<typename axi4_::Addr>(addr);
-        addr_pld.len = 0;
-        waddr_q.push(addr_pld);
+        if (!burst_inflight) {
+          req_q.push(1);
+          std::stringstream ss;
+          sc_uint<axi4_::ADDR_WIDTH> addr;
+          ss << hex << vec[2];
+          ss >> addr;
+          std::stringstream ss_len;
+          addr_pld.addr = static_cast<typename axi4_::Addr>(addr);
+          sc_uint<axi4_::ALEN_WIDTH> len;
+          ss_len << hex << vec[4];
+          ss_len >> len;
+          if (len) NVHLS_ASSERT_MSG(axiCfg::useBurst, "A burst transaction was requested but the AXI config does not support bursts");
+          NVHLS_ASSERT_MSG(axiCfg::maxBurstSize >= len, "A burst transaction was requested that is longer than the maximum allowed by the AXI config");
+          addr_pld.len = static_cast<typename axi4_::BeatNum>(len);
+          waddr_q.push(addr_pld);
+          burst_inflight = int(len);
+        } else {
+          burst_inflight--;
+        }
         std::stringstream ss_data;
         sc_biguint<axi4_::DATA_WIDTH> data;
         ss_data << hex << vec[3];
         ss_data >> data;
         wr_data_pld.data = TypeToNVUINT(data);
         wr_data_pld.wstrb = ~0;
-        wr_data_pld.last = 1;
+        if (!burst_inflight) {
+          wr_data_pld.last = 1;
+        } else {
+          wr_data_pld.last = 0;
+        }
         wdata_q.push(wr_data_pld);
       } else if (vec[1] == "Q") {
-        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt command read, but interrupts are not enabled");
+        NVHLS_ASSERT_MSG(enable_interrupts, "Interrupt command read, but interrupts are not enabled");
         req_q.push(2);
       } else {
-        NVHLS_ASSERT_MSG(1,"Requests must be R or W or Q");
+        NVHLS_ASSERT_MSG(1, "Requests must be R or W or Q");
       }
     }
 
@@ -167,27 +202,35 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
         addr_pld = waddr_q.front();
         if_wr.aw.Push(addr_pld);
         waddr_q.pop();
-        wr_data_pld = wdata_q.front();
-        if_wr.w.Push(wr_data_pld);
-        wdata_q.pop();
-        if_wr.b.Pop();
         CDCOUT(sc_time_stamp() << " " << name() << " Sent write request:"
                       << " addr=[" << addr_pld << "]"
-                      << " data=[" << wr_data_pld << "]"
                       << endl, kDebugLevel);
-      } else {
+        do {
+          wr_data_pld = wdata_q.front();
+          if_wr.w.Push(wr_data_pld);
+          wdata_q.pop();
+          CDCOUT(sc_time_stamp() << " " << name() << " Sent write data:"
+                        << " data=[" << wr_data_pld << "]"
+                        << endl, kDebugLevel);
+        } while (!wr_data_pld.last);
+        if_wr.b.Pop();
+      } else if (req_q.front() == 0) {
         addr_pld = raddr_q.front();
         if_rd.ar.Push(addr_pld);
         raddr_q.pop();
         CDCOUT(sc_time_stamp() << " " << name() << " Sent read request: "
-                      << addr_pld
+                      << " addr=[" << addr_pld << "]"
                       << endl, kDebugLevel);
-        data_pld = if_rd.r.Pop();
-        CDCOUT(sc_time_stamp() << " " << name() << " Received read response: ["
-                      << data_pld << "]"
-                      << endl, kDebugLevel);
-        NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read response did not match expected value");
-        rresp_q.pop();
+        do {
+          data_pld = if_rd.r.Pop();
+          CDCOUT(sc_time_stamp() << " " << name() << " Received read response: ["
+                        << data_pld << "]"
+                        << endl, kDebugLevel);
+          NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read response did not match expected value");
+          rresp_q.pop();
+        } while (!data_pld.last);
+      } else {
+        NVHLS_ASSERT_MSG(0,"Unexpected value in req_q");
       }
       req_q.pop();
     }
