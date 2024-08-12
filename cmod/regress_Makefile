@@ -33,14 +33,14 @@ DESIGNS ?= 	unittests/ArbiterModule \
 						unittests/axi/AxiExampleTB \
 						unittests/axi/AxiExampleTBFromFile \
 						unittests/axi/AxiRemoveWriteResp \
-						unittests/axi/AxiSlaveToReadyValidTop \
-						unittests/axi/AxiSlaveToRegTop \
+						unittests/axi/AxiSubordinateToReadyValidTop \
+						unittests/axi/AxiSubordinateToRegTop \
 						unittests/axi/AxiSplitter \
 						unittests/axi/AxiArbSplitTop \
 						unittests/axi/AxiAddRemoveWRespTop \
-						unittests/axi/AxiLiteSlaveToMemTop \
-						unittests/axi/AxiMasterGateTop \
-						unittests/axi/AxiSlaveToMemTop \
+						unittests/axi/AxiLiteSubordinateToMemTop \
+						unittests/axi/AxiManagerGateTop \
+						unittests/axi/AxiSubordinateToMemTop \
 						MemModel \
 						examples/ConnectionsRecipes/Adder \
 						examples/ConnectionsRecipes/Adder2 \

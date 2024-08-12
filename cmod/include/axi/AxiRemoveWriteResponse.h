@@ -28,11 +28,11 @@
  * \brief A simple shim that converts between two AXI configs by removing write responses.
  * \ingroup AXI
  *
- * \tparam CfgMaster                A valid AXI config describing the master port, with write responses.
- * \tparam CfgSlave                 A valid AXI config describing the slave port, with no write responses.
+ * \tparam CfgManager                A valid AXI config describing the manager port, with write responses.
+ * \tparam CfgSubordinate                 A valid AXI config describing the subordinate port, with no write responses.
  *
  * \par Overview
- * This block converts between an AXI master that uses write responses and an AXI slave that does not use write responses.  Most signals are simply passed through from master to slave.  When a write request is received from the master, it is passed through to the slave, and a write response is also sent back to the master.
+ * This block converts between an AXI manager that uses write responses and an AXI subordinate that does not use write responses.  Most signals are simply passed through from manager to subordinate.  When a write request is received from the manager, it is passed through to the subordinate, and a write response is also sent back to the manager.
  * - Apart from support for write responses, the two AXI configs must otherwise be the same.
  *
  * \par Usage Guidelines
@@ -50,13 +50,13 @@
  * \par
  *
  */
-template <typename CfgMaster, typename CfgSlave, int maxInFlight>
+template <typename CfgManager, typename CfgSubordinate, int maxInFlight>
 class AxiRemoveWriteResponse : public sc_module {
   static const int kDebugLevel = 6;
   SC_HAS_PROCESS(AxiRemoveWriteResponse);
   // Local typedefs and derived constants
-  typedef axi::axi4<CfgMaster> axiM;
-  typedef axi::axi4<CfgSlave> axiS;
+  typedef axi::axi4<CfgManager> axiM;
+  typedef axi::axi4<CfgSubordinate> axiS;
 
   enum { maxInFlight_width = nvhls::log2_ceil<maxInFlight>::val };
 
@@ -65,10 +65,10 @@ class AxiRemoveWriteResponse : public sc_module {
   sc_in_clk clk;
   sc_in<bool> rst;
 
-  typename axiM::read::template slave<> axiM_read;
-  typename axiM::write::template slave<> axiM_write;
-  typename axiS::read::template master<> axiS_read;
-  typename axiS::write::template master<> axiS_write;
+  typename axiM::read::template subordinate<> axiM_read;
+  typename axiM::write::template subordinate<> axiM_write;
+  typename axiS::read::template manager<> axiS_read;
+  typename axiS::write::template manager<> axiS_write;
 
  private:
   // Local state and submodules

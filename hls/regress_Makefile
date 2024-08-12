@@ -18,11 +18,11 @@
 DESIGNS ?= \
 	unittests/axi/AxiAddRemoveWRespTop \
 	unittests/axi/AxiArbSplitTop \
-	unittests/axi/AxiLiteSlaveToMemTop \
-	unittests/axi/AxiMasterGateTop \
-	unittests/axi/AxiSlaveToMemTop \
-	unittests/axi/AxiSlaveToReadyValidTop \
-	unittests/axi/AxiSlaveToRegTop \
+	unittests/axi/AxiLiteSubordinateToMemTop \
+	unittests/axi/AxiManagerGateTop \
+	unittests/axi/AxiSubordinateToMemTop \
+	unittests/axi/AxiSubordinateToReadyValidTop \
+	unittests/axi/AxiSubordinateToRegTop \
 	unittests/WHVCRouterTop \
 	unittests/ArbiterModule \
 	unittests/ArbiterTop \

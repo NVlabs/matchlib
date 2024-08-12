@@ -18,42 +18,48 @@
 #include <ac_reset_signal_is.h>
 
 #include <axi/axi4.h>
-#include <mc_scverify.h>
-#include <axi/testbench/Manager.h>
-#include <axi/testbench/Subordinate.h>
+#include <nvhls_connections.h>
 #include <testbench/nvhls_rand.h>
+#include "AxiManagerGateTop.h"
+#include <axi/AxiManagerGate/testbench/Host.h>
+#include <axi/testbench/Subordinate.h>
+#include <mc_scverify.h>
 
-// A simple AXI testbench example.  A Manager and Subordinate are wired together
-// directly with no DUT in between.
+typedef axi::axi4<axi::cfg::standard> axi4_;
 
 SC_MODULE(testbench) {
-
   Subordinate<axi::cfg::standard> subordinate;
-  Manager<axi::cfg::standard, managerCfg> manager;
+  CCS_DESIGN(AxiManagerGateTop) manager;
+  Host<axi::cfg::standard> host;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;
 
-  sc_signal<bool> done;
+  sc_signal<bool> done_write, done_read;
 
-  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read;
-  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write;
+  axi4_::read::template chan<> axi_read;
+  axi4_::write::template chan<> axi_write;
+
+  Connections::Combinational<WrRequest<axi::cfg::standard> > wrRequestChan;
+  Connections::Combinational<WrResp<axi::cfg::standard> > wrRespChan;
+  Connections::Combinational<RdRequest<axi::cfg::standard> > rdRequestChan;
+  Connections::Combinational<RdResp<axi::cfg::standard> > rdRespChan;
 
   SC_CTOR(testbench)
       : subordinate("subordinate"),
         manager("manager"),
+        host("host"),
         clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         reset_bar("reset_bar"),
         axi_read("axi_read"),
         axi_write("axi_write") {
-
-    Connections::set_sim_clk(&clk);
-
     subordinate.clk(clk);
     manager.clk(clk);
+    host.clk(clk);
 
     subordinate.reset_bar(reset_bar);
     manager.reset_bar(reset_bar);
+    host.reset_bar(reset_bar);
 
     manager.if_rd(axi_read);
     subordinate.if_rd(axi_read);
@@ -61,21 +67,35 @@ SC_MODULE(testbench) {
     manager.if_wr(axi_write);
     subordinate.if_wr(axi_write);
 
-    manager.done(done);
+    manager.wrRequestIn(wrRequestChan);
+    host.wrRequestOut(wrRequestChan);
+
+    manager.wrRespOut(wrRespChan);
+    host.wrRespIn(wrRespChan);
+
+    manager.rdRequestIn(rdRequestChan);
+    host.rdRequestOut(rdRequestChan);
+
+    manager.rdRespOut(rdRespChan);
+    host.rdRespIn(rdRespChan);
+
+    host.done_write(done_write);
+    host.done_read(done_read);
 
     SC_THREAD(run);
   }
 
   void run() {
+    // reset
     reset_bar = 1;
-    wait(2, SC_NS);
+    wait(20, SC_NS);
     reset_bar = 0;
     wait(2, SC_NS);
     reset_bar = 1;
 
     while (1) {
       wait(1, SC_NS);
-      if (done) {
+      if (done_write && done_read) {
         sc_stop();
       }
     }

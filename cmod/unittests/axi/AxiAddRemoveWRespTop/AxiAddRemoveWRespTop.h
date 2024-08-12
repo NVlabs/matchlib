@@ -33,8 +33,8 @@ class AxiAddRemoveWRespTop : public sc_module {
   typedef axi::axi4<axi::cfg::standard> axi_Wresp;
   typedef axi::axi4<axi::cfg::no_wresp> axi_noWresp;
 
-  typename axi_Wresp::read::template slave<> axi_read_m;
-  typename axi_Wresp::write::template slave<> axi_write_m;
+  typename axi_Wresp::read::template subordinate<> axi_read_m;
+  typename axi_Wresp::write::template subordinate<> axi_write_m;
 
   AxiRemoveWriteResponse<axi::cfg::standard, axi::cfg::no_wresp, 16> axi_remove_wresp;
 
@@ -43,8 +43,8 @@ class AxiAddRemoveWRespTop : public sc_module {
 
   AxiAddWriteResponse<axi::cfg::no_wresp, axi::cfg::standard> axi_add_wresp;
 
-  typename axi_Wresp::read::template master<> axi_read_s;
-  typename axi_Wresp::write::template master<> axi_write_s;
+  typename axi_Wresp::read::template manager<> axi_read_s;
+  typename axi_Wresp::write::template manager<> axi_write_s;
 
   SC_HAS_PROCESS(AxiAddRemoveWRespTop);
 

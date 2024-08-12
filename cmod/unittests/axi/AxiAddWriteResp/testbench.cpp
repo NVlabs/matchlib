@@ -19,8 +19,8 @@
 
 #include <axi/axi4.h>
 #include <mc_scverify.h>
-#include <axi/testbench/Master.h>
-#include <axi/testbench/Slave.h>
+#include <axi/testbench/Manager.h>
+#include <axi/testbench/Subordinate.h>
 #include <axi/AxiAddWriteResponse.h>
 #include <testbench/nvhls_rand.h>
 
@@ -41,8 +41,8 @@ SC_MODULE(testbench) {
     };
   };
 
-  Slave<cfgWithWresp> slave;
-  Master<cfgNoWresp, Mcfg> master;
+  Subordinate<cfgWithWresp> subordinate;
+  Manager<cfgNoWresp, Mcfg> manager;
   AxiAddWriteResponse<cfgNoWresp, cfgWithWresp> addWResp;
 
   sc_clock clk;
@@ -55,8 +55,8 @@ SC_MODULE(testbench) {
   typename axi::axi4<cfgWithWresp>::write::template chan<> axi_write_s;
 
   SC_CTOR(testbench)
-      : slave("slave"),
-        master("master"),
+      : subordinate("subordinate"),
+        manager("manager"),
         addWResp("addWResp"),
         clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         reset_bar("reset_bar"),
@@ -67,25 +67,25 @@ SC_MODULE(testbench) {
 
     Connections::set_sim_clk(&clk);
 
-    slave.clk(clk);
-    master.clk(clk);
+    subordinate.clk(clk);
+    manager.clk(clk);
     addWResp.clk(clk);
 
-    slave.reset_bar(reset_bar);
-    master.reset_bar(reset_bar);
+    subordinate.reset_bar(reset_bar);
+    manager.reset_bar(reset_bar);
     addWResp.rst(reset_bar);
 
-    master.if_rd(axi_read_m);
+    manager.if_rd(axi_read_m);
     addWResp.axiM_read(axi_read_m);
     addWResp.axiS_read(axi_read_s);
-    slave.if_rd(axi_read_s);
+    subordinate.if_rd(axi_read_s);
 
-    master.if_wr(axi_write_m);
+    manager.if_wr(axi_write_m);
     addWResp.axiM_write(axi_write_m);
     addWResp.axiS_write(axi_write_s);
-    slave.if_wr(axi_write_s);
+    subordinate.if_wr(axi_write_s);
 
-    master.done(done);
+    manager.done(done);
     SC_THREAD(run);
   }
 

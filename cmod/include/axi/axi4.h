@@ -247,7 +247,7 @@ class axi4 {
   class read {
    public:
     /**
-     * \brief The AXI read channel, used for connecting an AXI master and AXI slave.
+     * \brief The AXI read channel, used for connecting an AXI manager and AXI subordinate.
      */
     template <Connections::connections_port_t PortType = AUTO_PORT>
     class chan {
@@ -255,8 +255,8 @@ class axi4 {
      typedef Connections::Combinational<AddrPayload, PortType> ARChan;
      typedef Connections::Combinational<ReadPayload, PortType> RChan;
 
-      ARChan ar;  // master to slave
-      RChan r;    // slave to master
+      ARChan ar;  // manager to subordinate
+      RChan r;    // subordinate to manager
 
       chan(const char *name)
           : ar(nvhls_concat(name, "_ar")), r(nvhls_concat(name, "_r")){};
@@ -265,10 +265,10 @@ class axi4 {
     }; // read::chan
 
     /**
-     * \brief The AXI read master port.  This port has an AR request channel as output and an R response channel as input.
+     * \brief The AXI read manager port.  This port has an AR request channel as output and an R response channel as input.
      */
     template <Connections::connections_port_t PortType = AUTO_PORT>
-    class master {
+    class manager {
      public:
       typedef Connections::Out<AddrPayload, PortType> ARPort;
       typedef Connections::In<ReadPayload, PortType> RPort;
@@ -276,7 +276,7 @@ class axi4 {
       ARPort ar;
       RPort r;
 
-      master(const char *name)
+      manager(const char *name)
           : ar(nvhls_concat(name, "_ar")), r(nvhls_concat(name, "_r")) {}
 
       void reset() {
@@ -295,13 +295,13 @@ class axi4 {
         ar(c.ar);
         r(c.r);
       }
-    }; // read::master
+    }; // read::manager
 
     /**
-     * \brief The AXI read slave port.  This port has an AR request channel as input and an R response channel as output.
+     * \brief The AXI read subordinate port.  This port has an AR request channel as input and an R response channel as output.
      */
     template <Connections::connections_port_t PortType = AUTO_PORT>
-    class slave {
+    class subordinate {
      public:
       typedef Connections::In<AddrPayload, PortType> ARPort;
       typedef Connections::Out<ReadPayload, PortType> RPort;
@@ -309,7 +309,7 @@ class axi4 {
       ARPort ar;
       RPort r;
 
-      slave(const char *name)
+      subordinate(const char *name)
           : ar(nvhls_concat(name, "_ar")), r(nvhls_concat(name, "_r")) {}
 
       void reset() {
@@ -330,7 +330,7 @@ class axi4 {
         ar(c.ar);
         r(c.r);
       }
-    }; // read::slave
+    }; // read::subordinate
   }; // read
 
   /**
@@ -342,7 +342,7 @@ class axi4 {
   class write {
    public:
     /**
-     * \brief The AXI write channel, used for connecting an AXI master and AXI slave.
+     * \brief The AXI write channel, used for connecting an AXI manager and AXI subordinate.
      */
     template <Connections::connections_port_t PortType = AUTO_PORT>
     class chan {
@@ -351,9 +351,9 @@ class axi4 {
      typedef Connections::Combinational<WritePayload, PortType> WChan;
      typedef Connections::Combinational<WRespPayload, PortType> BChan;
 
-      AWChan aw;  // master to slave
-      WChan w;    // master to slave
-      BChan b;    // slave to master
+      AWChan aw;  // manager to subordinate
+      WChan w;    // manager to subordinate
+      BChan b;    // subordinate to manager
 
       chan(const char *name)
           : aw(nvhls_concat(name, "_aw")),
@@ -364,10 +364,10 @@ class axi4 {
     };  // write::chan
 
     /**
-     * \brief The AXI write master port.  This port has AW and W request channels as outputs and a B response channel as input.
+     * \brief The AXI write manager port.  This port has AW and W request channels as outputs and a B response channel as input.
      */
     template <Connections::connections_port_t PortType = AUTO_PORT>
-    class master {
+    class manager {
      public:
       typedef Connections::Out<AddrPayload, PortType> AWPort;
       typedef Connections::Out<WritePayload, PortType> WPort;
@@ -377,7 +377,7 @@ class axi4 {
       WPort w;
       BPort b;
 
-      master(const char *name)
+      manager(const char *name)
           : aw(nvhls_concat(name, "_aw")),
             w(nvhls_concat(name, "_w")),
             b(nvhls_concat(name, "_b")) {}
@@ -401,13 +401,13 @@ class axi4 {
         w(c.w);
         b(c.b);
       }
-    };  // write::master
+    };  // write::manager
 
     /**
-     * \brief The AXI write slave port.  This port has AW and W request channels as inputs and a B response channel as output.
+     * \brief The AXI write subordinate port.  This port has AW and W request channels as inputs and a B response channel as output.
      */
     template <Connections::connections_port_t PortType = AUTO_PORT>
-    class slave {
+    class subordinate {
      public:
       typedef Connections::In<AddrPayload, PortType> AWPort;
       typedef Connections::In<WritePayload, PortType> WPort;
@@ -420,7 +420,7 @@ class axi4 {
       bool got_waddr;
       AddrPayload stored_waddr;
 
-      slave(const char *name)
+      subordinate(const char *name)
           : aw(nvhls_concat(name, "_aw")),
             w(nvhls_concat(name, "_w")),
             b(nvhls_concat(name, "_b")),
@@ -467,7 +467,7 @@ class axi4 {
         w(c.w);
         b(c.b);
       }
-    }; // write::slave
+    }; // write::subordinate
   }; // write
 }; // axi4
 }; // axi

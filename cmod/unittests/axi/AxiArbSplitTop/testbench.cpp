@@ -19,16 +19,16 @@
 
 #include <axi/axi4.h>
 #include <mc_scverify.h>
-#include <axi/testbench/Master.h>
-#include <axi/testbench/Slave.h>
+#include <axi/testbench/Manager.h>
+#include <axi/testbench/Subordinate.h>
 #include "AxiArbSplitTop.h"
 #include <testbench/nvhls_rand.h>
 
 SC_MODULE(testbench) {
  public:
-  enum { numMasters = 2, numSlaves = 2 };
+  enum { numManagers = 2, numSubordinates = 2 };
 
-  struct master0Cfg {
+  struct manager0Cfg {
     enum {
       numWrites = 100,
       numReads = 100,
@@ -39,7 +39,7 @@ SC_MODULE(testbench) {
       useFile = false,
     };
   };
-  struct master1Cfg {
+  struct manager1Cfg {
     enum {
       numWrites = 100,
       numReads = 100,
@@ -53,30 +53,30 @@ SC_MODULE(testbench) {
 
   typedef AxiArbSplitTop::axi_ axi_;
 
-  Master<axi::cfg::standard, master0Cfg> master0;
-  Master<axi::cfg::standard, master1Cfg> master1;
-  nvhls::nv_array<Slave<axi::cfg::standard>, numSlaves> slave;
+  Manager<axi::cfg::standard, manager0Cfg> manager0;
+  Manager<axi::cfg::standard, manager1Cfg> manager1;
+  nvhls::nv_array<Subordinate<axi::cfg::standard>, numSubordinates> subordinate;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;
-  nvhls::nv_array<sc_signal<bool>, numSlaves> done;
+  nvhls::nv_array<sc_signal<bool>, numSubordinates> done;
 
-  nvhls::nv_array<typename axi_::read::template chan<>, numSlaves>
+  nvhls::nv_array<typename axi_::read::template chan<>, numSubordinates>
       axi_read_m_tb;
-  nvhls::nv_array<typename axi_::write::template chan<>, numSlaves>
+  nvhls::nv_array<typename axi_::write::template chan<>, numSubordinates>
       axi_write_m_tb;
 
   CCS_DESIGN(AxiArbSplitTop) axi_arbsplit;
 
-  nvhls::nv_array<typename axi_::read::template chan<>, numSlaves>
+  nvhls::nv_array<typename axi_::read::template chan<>, numSubordinates>
       axi_read_s_tb;
-  nvhls::nv_array<typename axi_::write::template chan<>, numSlaves>
+  nvhls::nv_array<typename axi_::write::template chan<>, numSubordinates>
       axi_write_s_tb;
 
   SC_CTOR(testbench)
-      : master0("master0"),
-        master1("master1"),
-        slave("slave"),
+      : manager0("manager0"),
+        manager1("manager1"),
+        subordinate("subordinate"),
         clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         reset_bar("reset_bar"),
         axi_read_m_tb("axi_read_m_tb"),
@@ -87,22 +87,22 @@ SC_MODULE(testbench) {
   {
     Connections::set_sim_clk(&clk);
 
-    master0.clk(clk);
-    master1.clk(clk);
+    manager0.clk(clk);
+    manager1.clk(clk);
     axi_arbsplit.clk(clk);
 
-    master0.reset_bar(reset_bar);
-    master1.reset_bar(reset_bar);
+    manager0.reset_bar(reset_bar);
+    manager1.reset_bar(reset_bar);
     axi_arbsplit.reset_bar(reset_bar);
 
-    master0.if_rd(axi_read_m_tb[0]);
-    master0.if_wr(axi_write_m_tb[0]);
-    master0.done(done[0]);
-    master1.if_rd(axi_read_m_tb[1]);
-    master1.if_wr(axi_write_m_tb[1]);
-    master1.done(done[1]);
+    manager0.if_rd(axi_read_m_tb[0]);
+    manager0.if_wr(axi_write_m_tb[0]);
+    manager0.done(done[0]);
+    manager1.if_rd(axi_read_m_tb[1]);
+    manager1.if_wr(axi_write_m_tb[1]);
+    manager1.done(done[1]);
 
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_arbsplit.axi_rd_m_ar[i](axi_read_m_tb[i].ar);
       axi_arbsplit.axi_rd_m_r[i](axi_read_m_tb[i].r);
       axi_arbsplit.axi_wr_m_aw[i](axi_write_m_tb[i].aw);
@@ -110,11 +110,11 @@ SC_MODULE(testbench) {
       axi_arbsplit.axi_wr_m_b[i](axi_write_m_tb[i].b);
     }
 
-    for (int i = 0; i < numSlaves; i++) {
-      slave[i].clk(clk);
-      slave[i].reset_bar(reset_bar);
-      slave[i].if_rd(axi_read_s_tb[i]);
-      slave[i].if_wr(axi_write_s_tb[i]);
+    for (int i = 0; i < numSubordinates; i++) {
+      subordinate[i].clk(clk);
+      subordinate[i].reset_bar(reset_bar);
+      subordinate[i].if_rd(axi_read_s_tb[i]);
+      subordinate[i].if_wr(axi_write_s_tb[i]);
       axi_arbsplit.axi_rd_s_ar[i](axi_read_s_tb[i].ar);
       axi_arbsplit.axi_rd_s_r[i](axi_read_s_tb[i].r);
       axi_arbsplit.axi_wr_s_aw[i](axi_write_s_tb[i].aw);
@@ -135,11 +135,11 @@ SC_MODULE(testbench) {
     while (1) {
       wait(1, SC_NS);
       int doneCount = 0;
-      for (int i = 0; i < numSlaves; i++) {
+      for (int i = 0; i < numSubordinates; i++) {
         if (done[i])
           doneCount++;
       }
-      if (doneCount == numSlaves) {
+      if (doneCount == numSubordinates) {
         sc_stop();
       }
     }

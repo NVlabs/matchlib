@@ -27,19 +27,19 @@
 #include "TypeToBits.h"
 
 /**
- * \brief An n-way splitter that connects a single AXI master port to a multiple AXI slave ports.
+ * \brief An n-way splitter that connects a single AXI manager port to a multiple AXI subordinate ports.
  * \ingroup AXI
  *
  * \tparam axiCfg                   A valid AXI config.
- * \tparam numSlaves                The number of slaves to send traffic to.
- * \tparam numAddrBitsToInspect     The number of address bits to inspect when determining which slave to direct traffic to.  If this is less than the full address width, the routing determination will be made based on the number of address LSBs specified.  (Default: axiCfg::addrWidth)
- * \tparam default_output           If true, requests with addresses that do not fall in any of the specified address ranges will be directed to the highest-indexed slave port.  (Default: false)
- * \tparam translate_addr           If true, requests are re-addressed relative to the base address of the receiving slave when they are passed through the splitter.  (Default: false)
+ * \tparam numSubordinates                The number of subordinates to send traffic to.
+ * \tparam numAddrBitsToInspect     The number of address bits to inspect when determining which subordinate to direct traffic to.  If this is less than the full address width, the routing determination will be made based on the number of address LSBs specified.  (Default: axiCfg::addrWidth)
+ * \tparam default_output           If true, requests with addresses that do not fall in any of the specified address ranges will be directed to the highest-indexed subordinate port.  (Default: false)
+ * \tparam translate_addr           If true, requests are re-addressed relative to the base address of the receiving subordinate when they are passed through the splitter.  (Default: false)
  *
  * \par Overview
- * AxiSplitter connects one or more AXI slaves to a single AXI master.  Requests from the master are routed by address to the appropriate slave.
- * - The address ranges for each slave must be contiguous (except for the highest-indexed slave if default_output is true).  Address bounds for each slave are set by writing to a (numSlaves x 2) array of sc_in.
- * - Only a single outstanding request to all slaves is allowed; AxiSplitter blocks further requests until the response has been returned.
+ * AxiSplitter connects one or more AXI subordinates to a single AXI manager.  Requests from the manager are routed by address to the appropriate subordinate.
+ * - The address ranges for each subordinate must be contiguous (except for the highest-indexed subordinate if default_output is true).  Address bounds for each subordinate are set by writing to a (numSubordinates x 2) array of sc_in.
+ * - Only a single outstanding request to all subordinates is allowed; AxiSplitter blocks further requests until the response has been returned.
  * - As implemented, the splitter directs all writes from a burst to the destination indicated by the base address of the burst.  Guards against crossing address boundaries are not implemented.
  * - The AXI configs of all ports must be the same.
  *
@@ -58,7 +58,7 @@
  * \par
  *
  */
-template <typename axiCfg, int numSlaves, int numAddrBitsToInspect = axiCfg::addrWidth, bool default_output = false, bool translate_addr = false>
+template <typename axiCfg, int numSubordinates, int numAddrBitsToInspect = axiCfg::addrWidth, bool default_output = false, bool translate_addr = false>
 class AxiSplitter : public sc_module {
  public:
   static const int kDebugLevel = 5;
@@ -67,26 +67,26 @@ class AxiSplitter : public sc_module {
 
   typedef typename axi::axi4<axiCfg> axi4_;
 
-  typedef typename axi4_::read::template master<>::ARPort axi_rd_master_ar;
-  typedef typename axi4_::read::template master<>::RPort axi_rd_master_r;
-  typedef typename axi4_::write::template master<>::AWPort axi_wr_master_aw;
-  typedef typename axi4_::write::template master<>::WPort axi_wr_master_w;
-  typedef typename axi4_::write::template master<>::BPort axi_wr_master_b;
+  typedef typename axi4_::read::template manager<>::ARPort axi_rd_manager_ar;
+  typedef typename axi4_::read::template manager<>::RPort axi_rd_manager_r;
+  typedef typename axi4_::write::template manager<>::AWPort axi_wr_manager_aw;
+  typedef typename axi4_::write::template manager<>::WPort axi_wr_manager_w;
+  typedef typename axi4_::write::template manager<>::BPort axi_wr_manager_b;
 
-  static const unsigned int log_numSlaves = nvhls::log2_ceil<numSlaves>::val + 1;
+  static const unsigned int log_numSubordinates = nvhls::log2_ceil<numSubordinates>::val + 1;
 
-  // [ben] Unfortunately HLS cannot handle an nv_array of the master/slave wrapper classes.
+  // [ben] Unfortunately HLS cannot handle an nv_array of the manager/subordinate wrapper classes.
   // It will work fine in C but die mysteriously in Catapult 10.1b when methods of the
   // bundled connections are accessed.
-  nvhls::nv_array<axi_rd_master_ar, numSlaves> axi_rd_s_ar;
-  nvhls::nv_array<axi_rd_master_r, numSlaves> axi_rd_s_r;
-  nvhls::nv_array<axi_wr_master_aw, numSlaves> axi_wr_s_aw;
-  nvhls::nv_array<axi_wr_master_w, numSlaves> axi_wr_s_w;
-  nvhls::nv_array<axi_wr_master_b, numSlaves> axi_wr_s_b;
-  typename axi4_::read::template slave<> axi_rd_m;
-  typename axi4_::write::template slave<> axi_wr_m;
+  nvhls::nv_array<axi_rd_manager_ar, numSubordinates> axi_rd_s_ar;
+  nvhls::nv_array<axi_rd_manager_r, numSubordinates> axi_rd_s_r;
+  nvhls::nv_array<axi_wr_manager_aw, numSubordinates> axi_wr_s_aw;
+  nvhls::nv_array<axi_wr_manager_w, numSubordinates> axi_wr_s_w;
+  nvhls::nv_array<axi_wr_manager_b, numSubordinates> axi_wr_s_b;
+  typename axi4_::read::template subordinate<> axi_rd_m;
+  typename axi4_::write::template subordinate<> axi_wr_m;
 
-  sc_in<NVUINTW(numAddrBitsToInspect)> addrBound[numSlaves][2];
+  sc_in<NVUINTW(numAddrBitsToInspect)> addrBound[numSubordinates][2];
 
   SC_HAS_PROCESS(AxiSplitter);
 
@@ -117,7 +117,7 @@ class AxiSplitter : public sc_module {
 
   void run_r() {
 #pragma hls_unroll yes
-    for (int i=0; i<numSlaves; i++) {
+    for (int i=0; i<numSubordinates; i++) {
       axi_rd_s_ar[i].Reset();
       axi_rd_s_r[i].Reset();
     }
@@ -128,7 +128,7 @@ class AxiSplitter : public sc_module {
     typename axi4_::ReadPayload R_reg;
 
     bool read_inFlight = 0;
-    NVUINTW(log_numSlaves) pushedTo = numSlaves;
+    NVUINTW(log_numSubordinates) pushedTo = numSubordinates;
     
       #pragma hls_pipeline_init_interval 1
       #pragma pipeline_stall_mode flush
@@ -140,18 +140,18 @@ class AxiSplitter : public sc_module {
           if (axi_rd_m.ar.PopNB(AR_reg)) {
             NVUINTW(numAddrBitsToInspect)
                 addr(static_cast<sc_uint<numAddrBitsToInspect> >(AR_reg.addr)); // Cast larger to smaller
-            pushedTo = numSlaves;
+            pushedTo = numSubordinates;
             // TODO - refactor this so it can be unrolled
-            for (int i=0; i<numSlaves; i++) {
-              if (addr >= addrBound[i][0].read() && addr <= addrBound[i][1].read() && pushedTo == numSlaves) {
+            for (int i=0; i<numSubordinates; i++) {
+              if (addr >= addrBound[i][0].read() && addr <= addrBound[i][1].read() && pushedTo == numSubordinates) {
                 pushedTo = i;
               }
             }
-            if (default_output && pushedTo == numSlaves) {
-              pushedTo = numSlaves-1;
+            if (default_output && pushedTo == numSubordinates) {
+              pushedTo = numSubordinates-1;
             }
             // If the address did not fall in any valid range, that's bad
-            NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Read address did not fall into any output address range, and default output is not set");
+            NVHLS_ASSERT_MSG(pushedTo != numSubordinates, "Read address did not fall into any output address range, and default output is not set");
 
             if (translate_addr)
               AR_reg.addr -= addrBound[pushedTo][0].read();
@@ -172,7 +172,7 @@ class AxiSplitter : public sc_module {
 
   void run_w() {
 #pragma hls_unroll yes
-    for (int i=0; i<numSlaves; i++) {
+    for (int i=0; i<numSubordinates; i++) {
       axi_wr_s_aw[i].Reset();
       axi_wr_s_w[i].Reset();
       axi_wr_s_b[i].Reset();
@@ -185,7 +185,7 @@ class AxiSplitter : public sc_module {
     typename axi4_::WritePayload W_reg;
     typename axi4_::WRespPayload B_reg;
     
-    NVUINTW(log_numSlaves) pushedTo = numSlaves;
+    NVUINTW(log_numSubordinates) pushedTo = numSubordinates;
     enum {
       IDLE = 0,
       WRITE_INFLIGHT = 1,
@@ -203,17 +203,17 @@ class AxiSplitter : public sc_module {
           if (axi_wr_m.aw.PopNB(AW_reg)) {
             NVUINTW(numAddrBitsToInspect)
                 addr(static_cast<sc_uint<numAddrBitsToInspect> >(AW_reg.addr)); // Cast larger to smaller
-            pushedTo = numSlaves;
+            pushedTo = numSubordinates;
             // TODO - refactor this so it can be unrolled
-            for (int i=0; i<numSlaves; i++) {
-              if (addr >= addrBound[i][0].read() && addr <= addrBound[i][1].read() && pushedTo == numSlaves) {
+            for (int i=0; i<numSubordinates; i++) {
+              if (addr >= addrBound[i][0].read() && addr <= addrBound[i][1].read() && pushedTo == numSubordinates) {
                 pushedTo = i;
               }
             }
-            if (default_output && pushedTo == numSlaves) {
-              pushedTo = numSlaves-1;
+            if (default_output && pushedTo == numSubordinates) {
+              pushedTo = numSubordinates-1;
             }
-            NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write address did not fall into any output address range, and default output is not set");
+            NVHLS_ASSERT_MSG(pushedTo != numSubordinates, "Write address did not fall into any output address range, and default output is not set");
             if (translate_addr)
               AW_reg.addr -= addrBound[pushedTo][0].read();
 
@@ -222,7 +222,7 @@ class AxiSplitter : public sc_module {
           }
           break;
         case WRITE_INFLIGHT:
-          NVHLS_ASSERT_MSG(pushedTo != numSlaves, "Write address did not fall into any output address range, and default output is not set");
+          NVHLS_ASSERT_MSG(pushedTo != numSubordinates, "Write address did not fall into any output address range, and default output is not set");
           if (axi_wr_m.w.PopNB(W_reg)) {
             axi_wr_s_w[pushedTo].Push(W_reg);
             if (W_reg.last == 1) {

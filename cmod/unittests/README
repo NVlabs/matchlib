@@ -73,27 +73,27 @@ into a synthesizable target.
 
 axi/AxiArbiter - Tests a four-way AxiArbiter.
 
-axi/AxiExampleTB - This test simply connects the AXI master and slave testbench
+axi/AxiExampleTB - This test simply connects the AXI manager and subordinate testbench
 constructs, with no DUT in between.
 
 axi/AxiExampleTBFromFile - A simple example of generating AXI requests from a
 csv file.
 
-axi/AxiLiteSlaveToMemTop - Implements a synthesizable AxiLiteSlaveToMem instance with 2048kB
+axi/AxiLiteSubordinateToMemTop - Implements a synthesizable AxiLiteSubordinateToMem instance with 2048kB
 capacity.
 
-axi/AxiMasterGateTop - Implements a synthesizable AxiMasterGate instance and
+axi/AxiManagerGateTop - Implements a synthesizable AxiManagerGate instance and
 test infrastructure.
 
 axi/AxiRemoveWriteResp - Tests AxiRemoveWriteResponse.
 
-axi/AxiSlaveToMemTop - Implements an AxiSlaveToMem instance with 2048kB
+axi/AxiSubordinateToMemTop - Implements an AxiSubordinateToMem instance with 2048kB
 capacity.
 
-axi/AxiSlaveToReadyValidTop - Implements a synthesizable AxiSlaveToReadyValid
+axi/AxiSubordinateToReadyValidTop - Implements a synthesizable AxiSubordinateToReadyValid
 instance.
 
-axi/AxiSlaveToRegTop - Implements a synthesizable AxiSlaveToReg instance with
+axi/AxiSubordinateToRegTop - Implements a synthesizable AxiSubordinateToReg instance with
 128 8-byte registers and a base address of 0x100.
 
 axi/AxiSplitter - Tests a two-way AxiSplitter.

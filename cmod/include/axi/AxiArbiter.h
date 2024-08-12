@@ -27,15 +27,15 @@
 #include "TypeToBits.h"
 
 /**
- * \brief An n-way arbiter that connects multiple AXI master ports to a single AXI slave port.
+ * \brief An n-way arbiter that connects multiple AXI manager ports to a single AXI subordinate port.
  * \ingroup AXI
  *
  * \tparam axiCfg                   A valid AXI config.
- * \tparam numMasters               The number of masters to arbitrate between.
+ * \tparam numManagers               The number of managers to arbitrate between.
  * \tparam maxOutstandingRequests   The number of oustanding read or write requests that can be tracked with internal state.
  *
  * \par Overview
- * AxiArbiter connects one or more AXI masters to a single AXI slave.  In the case of contention, a round-robin Arbiter selects the next request to pass through.
+ * AxiArbiter connects one or more AXI managers to a single AXI subordinate.  In the case of contention, a round-robin Arbiter selects the next request to pass through.
  * - The arbiter assumes that responses are returned in the order that requests are sent.  Downstream request reordering is currently not supported. 
  * - The AXI configs of all ports must be the same.
  *
@@ -54,7 +54,7 @@
  * \par
  *
  */
-template <typename axiCfg, int numMasters, int maxOutstandingRequests>
+template <typename axiCfg, int numManagers, int maxOutstandingRequests>
 class AxiArbiter : public sc_module {
  public:
   static const int kDebugLevel = 5;
@@ -62,31 +62,31 @@ class AxiArbiter : public sc_module {
   sc_in<bool> reset_bar;
 
   typedef typename axi::axi4<axiCfg> axi_;
-  static const int numMasters_width = nvhls::log2_ceil<numMasters>::val;
+  static const int numManagers_width = nvhls::log2_ceil<numManagers>::val;
 
-  typedef typename axi_::read::template slave<>::ARPort axi_rd_slave_ar;
-  typedef typename axi_::read::template slave<>::RPort axi_rd_slave_r;
-  typedef typename axi_::write::template slave<>::AWPort axi_wr_slave_aw;
-  typedef typename axi_::write::template slave<>::WPort axi_wr_slave_w;
-  typedef typename axi_::write::template slave<>::BPort axi_wr_slave_b;
+  typedef typename axi_::read::template subordinate<>::ARPort axi_rd_subordinate_ar;
+  typedef typename axi_::read::template subordinate<>::RPort axi_rd_subordinate_r;
+  typedef typename axi_::write::template subordinate<>::AWPort axi_wr_subordinate_aw;
+  typedef typename axi_::write::template subordinate<>::WPort axi_wr_subordinate_w;
+  typedef typename axi_::write::template subordinate<>::BPort axi_wr_subordinate_b;
 
-  // [ben] Unfortunately HLS cannot handle an nv_array of the master/slave wrapper classes.
+  // [ben] Unfortunately HLS cannot handle an nv_array of the manager/subordinate wrapper classes.
   // It will work fine in C but die mysteriously in Catapult 10.1b when methods of the
   // bundled connections are accessed.
-  nvhls::nv_array<axi_rd_slave_ar, numMasters> axi_rd_m_ar;
-  nvhls::nv_array<axi_rd_slave_r, numMasters> axi_rd_m_r;
-  nvhls::nv_array<axi_wr_slave_aw, numMasters> axi_wr_m_aw;
-  nvhls::nv_array<axi_wr_slave_w, numMasters> axi_wr_m_w;
-  nvhls::nv_array<axi_wr_slave_b, numMasters> axi_wr_m_b;
-  typename axi_::read::template master<> axi_rd_s;
-  typename axi_::write::template master<> axi_wr_s;
+  nvhls::nv_array<axi_rd_subordinate_ar, numManagers> axi_rd_m_ar;
+  nvhls::nv_array<axi_rd_subordinate_r, numManagers> axi_rd_m_r;
+  nvhls::nv_array<axi_wr_subordinate_aw, numManagers> axi_wr_m_aw;
+  nvhls::nv_array<axi_wr_subordinate_w, numManagers> axi_wr_m_w;
+  nvhls::nv_array<axi_wr_subordinate_b, numManagers> axi_wr_m_b;
+  typename axi_::read::template manager<> axi_rd_s;
+  typename axi_::write::template manager<> axi_wr_s;
 
-  typedef NVUINTW(numMasters_width) inFlight_t;
+  typedef NVUINTW(numManagers_width) inFlight_t;
   FIFO<inFlight_t, maxOutstandingRequests> readQ;
   Connections::Combinational<inFlight_t> read_in_flight;
   FIFO<inFlight_t, maxOutstandingRequests> writeQ;
   Connections::Combinational<inFlight_t> write_in_flight;
-  Connections::Combinational<inFlight_t> active_write_master;
+  Connections::Combinational<inFlight_t> active_write_manager;
   Connections::Combinational<NVUINT1> w_last; // true iff w item last bit is set
 
   SC_HAS_PROCESS(AxiArbiter);
@@ -126,23 +126,23 @@ class AxiArbiter : public sc_module {
 
   void run_ar() {
     #pragma hls_unroll yes
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_rd_m_ar[i].Reset();
     }
     axi_rd_s.ar.Reset();
     read_in_flight.ResetWrite();
 
-    nvhls::nv_array<typename axi_::AddrPayload, numMasters> AR_reg;
-    NVUINTW(numMasters) valid_mask = 0;
-    NVUINTW(numMasters) select_mask = 0;
-    Arbiter<numMasters> arb;
+    nvhls::nv_array<typename axi_::AddrPayload, numManagers> AR_reg;
+    NVUINTW(numManagers) valid_mask = 0;
+    NVUINTW(numManagers) select_mask = 0;
+    Arbiter<numManagers> arb;
 
     #pragma hls_pipeline_init_interval 1
     #pragma pipeline_stall_mode flush
     while (1) {
       wait();
 
-      for (int i = 0; i < numMasters; i++) {
+      for (int i = 0; i < numManagers; i++) {
         if (nvhls::get_slc<1>(valid_mask, i) == 0) {
           if (axi_rd_m_ar[i].PopNB(AR_reg[i])) {
             valid_mask = valid_mask | (1 << i);
@@ -152,7 +152,7 @@ class AxiArbiter : public sc_module {
 
       select_mask = arb.pick(valid_mask);
 
-      for (int i = 0; i < numMasters; i++) {
+      for (int i = 0; i < numManagers; i++) {
         if (nvhls::get_slc<1>(select_mask, i) == 1) {
           axi_rd_s.ar.Push(AR_reg[i]);
           select_mask = 0;
@@ -169,7 +169,7 @@ class AxiArbiter : public sc_module {
 
   void run_r() {
     #pragma hls_unroll yes
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_rd_m_r[i].Reset();
     }
     axi_rd_s.r.Reset();
@@ -214,26 +214,26 @@ class AxiArbiter : public sc_module {
 
   void run_aw() {
     #pragma hls_unroll yes
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_wr_m_aw[i].Reset();
     }
     axi_wr_s.aw.Reset();
     write_in_flight.ResetWrite();
-    active_write_master.ResetWrite();
+    active_write_manager.ResetWrite();
     w_last.ResetRead();
 
-    inFlight_t active_master;
+    inFlight_t active_manager;
 
-    nvhls::nv_array<typename axi_::AddrPayload, numMasters> AW_reg;
-    NVUINTW(numMasters) valid_mask = 0;
-    NVUINTW(numMasters) select_mask = 0;
-    Arbiter<numMasters> arb;
+    nvhls::nv_array<typename axi_::AddrPayload, numManagers> AW_reg;
+    NVUINTW(numManagers) valid_mask = 0;
+    NVUINTW(numManagers) select_mask = 0;
+    Arbiter<numManagers> arb;
 
     while (1) {
       wait();
 
       #pragma hls_unroll yes
-      for (int i = 0; i < numMasters; i++) {
+      for (int i = 0; i < numManagers; i++) {
         if (nvhls::get_slc<1>(valid_mask, i) == 0) {
           if (axi_wr_m_aw[i].PopNB(AW_reg[i])) {
             valid_mask = valid_mask | (1 << i);
@@ -245,15 +245,15 @@ class AxiArbiter : public sc_module {
 
       if (select_mask != 0) {
         #pragma hls_unroll yes
-        for (int i = 0; i < numMasters; i++) {
+        for (int i = 0; i < numManagers; i++) {
           if (nvhls::get_slc<1>(select_mask, i) == 1) {
-            active_master = i;
+            active_manager = i;
           }
         }
 
-        axi_wr_s.aw.Push(AW_reg[active_master]);
-        active_write_master.Push(active_master);
-        write_in_flight.Push(active_master);
+        axi_wr_s.aw.Push(AW_reg[active_manager]);
+        active_write_manager.Push(active_manager);
+        write_in_flight.Push(active_manager);
 
         #pragma hls_pipeline_init_interval 1
         #pragma pipeline_stall_mode flush
@@ -261,30 +261,30 @@ class AxiArbiter : public sc_module {
         }
 
         select_mask = 0;
-        valid_mask = ~(~valid_mask | (1 << active_master));
+        valid_mask = ~(~valid_mask | (1 << active_manager));
       }
     }
   }
 
   void run_w() {
     typename axi_::WritePayload W_reg;
-    active_write_master.ResetRead();
+    active_write_manager.ResetRead();
     w_last.ResetWrite();
     axi_wr_s.w.Reset();
     #pragma hls_unroll yes
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_wr_m_w[i].Reset();
     }
 
     wait();
 
     while (1) {
-      inFlight_t active_master = active_write_master.Pop();
+      inFlight_t active_manager = active_write_manager.Pop();
 
       #pragma hls_pipeline_init_interval 1
       #pragma pipeline_stall_mode flush
       do {
-        W_reg = axi_wr_m_w[active_master].Pop();
+        W_reg = axi_wr_m_w[active_manager].Pop();
         axi_wr_s.w.Push(W_reg);
         w_last.Push(W_reg.last.to_uint64());
       } while (W_reg.last != 1);
@@ -293,7 +293,7 @@ class AxiArbiter : public sc_module {
 
   void run_b() {
     #pragma hls_unroll yes
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_wr_m_b[i].Reset();
     }
     axi_wr_s.b.Reset();

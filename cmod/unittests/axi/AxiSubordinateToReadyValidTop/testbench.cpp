@@ -20,28 +20,45 @@
 #include <axi/axi4.h>
 #include <mc_scverify.h>
 #include <axi/testbench/Manager.h>
-#include <axi/testbench/Subordinate.h>
+#include "AxiSubordinateToReadyValidTop.h"
+#include <axi/AxiSubordinateToReadyValid/testbench/RVSink.h>
 #include <testbench/nvhls_rand.h>
-
-// A simple AXI testbench example.  A Manager and Subordinate are wired together
-// directly with no DUT in between.
 
 SC_MODULE(testbench) {
 
-  Subordinate<axi::cfg::standard> subordinate;
+  typedef AxiSubordinateToReadyValidTop::axi_ axi_;
+  typedef AxiSubordinateToReadyValidTop::rdyvldCfg rdyvldCfg;
+  struct managerCfg {
+    enum {
+      numWrites = 100,
+      numReads = 100,
+      readDelay = 200,  // Subordinate arbitrates reads and writes, so there's no
+                        // guarantee that reads won't race ahead
+      addrBoundLower = 0x0,
+      addrBoundUpper = (1 << 20) - 1,
+      seed = 0,
+      useFile = false,
+    };
+  };
+
   Manager<axi::cfg::standard, managerCfg> manager;
+  CCS_DESIGN(AxiSubordinateToReadyValidTop) subordinate;
+  RVSink<rdyvldCfg> sink;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;
-
   sc_signal<bool> done;
 
   typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read;
   typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write;
 
+  Connections::Combinational<typename RVSink<rdyvldCfg>::Read> rv_read;
+  Connections::Combinational<typename RVSink<rdyvldCfg>::Write> rv_write;
+
   SC_CTOR(testbench)
-      : subordinate("subordinate"),
-        manager("manager"),
+      : manager("manager"),
+        subordinate("subordinate"),
+        sink("sink"),
         clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         reset_bar("reset_bar"),
         axi_read("axi_read"),
@@ -51,18 +68,25 @@ SC_MODULE(testbench) {
 
     subordinate.clk(clk);
     manager.clk(clk);
+    sink.clk(clk);
 
     subordinate.reset_bar(reset_bar);
     manager.reset_bar(reset_bar);
+    sink.reset_bar(reset_bar);
 
     manager.if_rd(axi_read);
-    subordinate.if_rd(axi_read);
-
     manager.if_wr(axi_write);
-    subordinate.if_wr(axi_write);
+
+    subordinate.axi_read(axi_read);
+    subordinate.axi_write(axi_write);
+
+    subordinate.rv_read(rv_read);
+    subordinate.rv_write(rv_write);
+
+    sink.rv_read(rv_read);
+    sink.rv_write(rv_write);
 
     manager.done(done);
-
     SC_THREAD(run);
   }
 

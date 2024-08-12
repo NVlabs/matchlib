@@ -19,19 +19,19 @@
 
 #include <axi/axi4.h>
 #include <mc_scverify.h>
-#include <axi/testbench/Master.h>
-#include <axi/testbench/Slave.h>
+#include <axi/testbench/Manager.h>
+#include <axi/testbench/Subordinate.h>
 #include <axi/AxiArbiter.h>
 #include <testbench/nvhls_rand.h>
 
 SC_MODULE(testbench) {
 
   enum {
-    numMasters = 4,
+    numManagers = 4,
     maxInFlight = 8,
   };
 
-  struct master0Cfg {
+  struct manager0Cfg {
     enum {
       numWrites = 100,
       numReads = 100,
@@ -42,7 +42,7 @@ SC_MODULE(testbench) {
       useFile = false,
     };
   };
-  struct master1Cfg {
+  struct manager1Cfg {
     enum {
       numWrites = 100,
       numReads = 100,
@@ -53,7 +53,7 @@ SC_MODULE(testbench) {
       useFile = false,
     };
   };
-  struct master2Cfg {
+  struct manager2Cfg {
     enum {
       numWrites = 100,
       numReads = 100,
@@ -64,7 +64,7 @@ SC_MODULE(testbench) {
       useFile = false,
     };
   };
-  struct master3Cfg {
+  struct manager3Cfg {
     enum {
       numWrites = 100,
       numReads = 100,
@@ -76,31 +76,31 @@ SC_MODULE(testbench) {
     };
   };
 
-  Slave<axi::cfg::standard> slave;
-  Master<axi::cfg::standard, master0Cfg> master0;
-  Master<axi::cfg::standard, master1Cfg> master1;
-  Master<axi::cfg::standard, master2Cfg> master2;
-  Master<axi::cfg::standard, master3Cfg> master3;
+  Subordinate<axi::cfg::standard> subordinate;
+  Manager<axi::cfg::standard, manager0Cfg> manager0;
+  Manager<axi::cfg::standard, manager1Cfg> manager1;
+  Manager<axi::cfg::standard, manager2Cfg> manager2;
+  Manager<axi::cfg::standard, manager3Cfg> manager3;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;
-  nvhls::nv_array<sc_signal<bool>, numMasters> done;
+  nvhls::nv_array<sc_signal<bool>, numManagers> done;
 
-  AxiArbiter<axi::cfg::standard, numMasters, maxInFlight> axi_arbiter;
+  AxiArbiter<axi::cfg::standard, numManagers, maxInFlight> axi_arbiter;
 
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::template chan<>, numMasters>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::read::template chan<>, numManagers>
       axi_read_m;
-  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::template chan<>, numMasters>
+  nvhls::nv_array<typename axi::axi4<axi::cfg::standard>::write::template chan<>, numManagers>
       axi_write_m;
   typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read_s;
   typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write_s;
 
   SC_CTOR(testbench)
-      : slave("slave"),
-        master0("master0"),
-        master1("master1"),
-        master2("master2"),
-        master3("master3"),
+      : subordinate("subordinate"),
+        manager0("manager0"),
+        manager1("manager1"),
+        manager2("manager2"),
+        manager3("manager3"),
         clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         reset_bar("reset_bar"),
         axi_arbiter("axi_arbiter"),
@@ -111,33 +111,33 @@ SC_MODULE(testbench) {
 
     Connections::set_sim_clk(&clk);
 
-    slave.clk(clk);
+    subordinate.clk(clk);
     axi_arbiter.clk(clk);
 
-    slave.reset_bar(reset_bar);
+    subordinate.reset_bar(reset_bar);
     axi_arbiter.reset_bar(reset_bar);
 
-    master0.clk(clk);
-    master0.reset_bar(reset_bar);
-    master0.if_rd(axi_read_m[0]);
-    master0.if_wr(axi_write_m[0]);
-    master0.done(done[0]);
-    master1.clk(clk);
-    master1.reset_bar(reset_bar);
-    master1.if_rd(axi_read_m[1]);
-    master1.if_wr(axi_write_m[1]);
-    master1.done(done[1]);
-    master2.clk(clk);
-    master2.reset_bar(reset_bar);
-    master2.if_rd(axi_read_m[2]);
-    master2.if_wr(axi_write_m[2]);
-    master2.done(done[2]);
-    master3.clk(clk);
-    master3.reset_bar(reset_bar);
-    master3.if_rd(axi_read_m[3]);
-    master3.if_wr(axi_write_m[3]);
-    master3.done(done[3]);
-    for (int i = 0; i < numMasters; i++) {
+    manager0.clk(clk);
+    manager0.reset_bar(reset_bar);
+    manager0.if_rd(axi_read_m[0]);
+    manager0.if_wr(axi_write_m[0]);
+    manager0.done(done[0]);
+    manager1.clk(clk);
+    manager1.reset_bar(reset_bar);
+    manager1.if_rd(axi_read_m[1]);
+    manager1.if_wr(axi_write_m[1]);
+    manager1.done(done[1]);
+    manager2.clk(clk);
+    manager2.reset_bar(reset_bar);
+    manager2.if_rd(axi_read_m[2]);
+    manager2.if_wr(axi_write_m[2]);
+    manager2.done(done[2]);
+    manager3.clk(clk);
+    manager3.reset_bar(reset_bar);
+    manager3.if_rd(axi_read_m[3]);
+    manager3.if_wr(axi_write_m[3]);
+    manager3.done(done[3]);
+    for (int i = 0; i < numManagers; i++) {
       axi_arbiter.axi_rd_m_ar[i](axi_read_m[i].ar);
       axi_arbiter.axi_rd_m_r[i](axi_read_m[i].r);
       axi_arbiter.axi_wr_m_aw[i](axi_write_m[i].aw);
@@ -148,8 +148,8 @@ SC_MODULE(testbench) {
     axi_arbiter.axi_rd_s(axi_read_s);
     axi_arbiter.axi_wr_s(axi_write_s);
 
-    slave.if_rd(axi_read_s);
-    slave.if_wr(axi_write_s);
+    subordinate.if_rd(axi_read_s);
+    subordinate.if_wr(axi_write_s);
 
     SC_THREAD(run);
   }
@@ -164,11 +164,11 @@ SC_MODULE(testbench) {
     while (1) {
       wait(1, SC_NS);
       int doneCount = 0;
-      for (int i = 0; i < numMasters; i++) {
+      for (int i = 0; i < numManagers; i++) {
         if (done[i])
           doneCount++;
       }
-      if (doneCount == numMasters) {
+      if (doneCount == numManagers) {
         sc_stop();
       }
     }

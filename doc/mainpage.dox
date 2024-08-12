@@ -74,7 +74,7 @@
         \brief DeMux single input channel to one of multiple output channels
 		\ingroup MatchModule
 	\defgroup AXI	
-        \brief Master/Slave Interfaces & bridges for AXI interconnect
+        \brief Manager/Subordinate Interfaces & bridges for AXI interconnect
 		\ingroup MatchModule
 
 \defgroup MatchUtil     Misc utilities and auxiliary constructs

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -17,38 +17,43 @@
 #include <systemc.h>
 #include <ac_reset_signal_is.h>
 
-#include <axi/axi4.h>
-#include <mc_scverify.h>
 #include <axi/testbench/Manager.h>
-#include <axi/testbench/Subordinate.h>
+#include <mc_scverify.h>
 #include <testbench/nvhls_rand.h>
-
-// A simple AXI testbench example.  A Manager and Subordinate are wired together
-// directly with no DUT in between.
+#include "AxiLiteSubordinateToMemTop.h"
 
 SC_MODULE(testbench) {
+  typedef typename axi::axi4<axi::cfg::lite_nowstrb> axi_;
 
-  Subordinate<axi::cfg::standard> subordinate;
-  Manager<axi::cfg::standard, managerCfg> manager;
+  struct liteMemManagerCfg {
+    enum {
+      numWrites = 100,
+      numReads = 100,
+      readDelay = 0,
+      addrBoundLower = 0,
+      addrBoundUpper = 2 * 1024 - 1,
+      seed = 0,
+    };
+  };
+
+  CCS_DESIGN(AxiLiteSubordinateToMemTop) subordinate;
+  Manager<axi::cfg::lite_nowstrb, liteMemManagerCfg> manager;
 
   sc_clock clk;
   sc_signal<bool> reset_bar;
-
   sc_signal<bool> done;
 
-  typename axi::axi4<axi::cfg::standard>::read::template chan<> axi_read;
-  typename axi::axi4<axi::cfg::standard>::write::template chan<> axi_write;
+  axi_::read::template chan<> axi_read;
+  axi_::write::template chan<> axi_write;
 
   SC_CTOR(testbench)
       : subordinate("subordinate"),
         manager("manager"),
+
         clk("clk", 1.0, SC_NS, 0.5, 0, SC_NS, true),
         reset_bar("reset_bar"),
         axi_read("axi_read"),
         axi_write("axi_write") {
-
-    Connections::set_sim_clk(&clk);
-
     subordinate.clk(clk);
     manager.clk(clk);
 
@@ -56,13 +61,12 @@ SC_MODULE(testbench) {
     manager.reset_bar(reset_bar);
 
     manager.if_rd(axi_read);
-    subordinate.if_rd(axi_read);
+    subordinate.axi_read(axi_read);
 
     manager.if_wr(axi_write);
-    subordinate.if_wr(axi_write);
+    subordinate.axi_write(axi_write);
 
     manager.done(done);
-
     SC_THREAD(run);
   }
 

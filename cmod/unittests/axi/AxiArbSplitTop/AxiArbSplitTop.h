@@ -25,7 +25,7 @@
 
 class AxiArbSplitTop : public sc_module {
  public:
-  enum { numSlaves = 2, numMasters = 2, numAddrBitsToInspect = 20 };
+  enum { numSubordinates = 2, numManagers = 2, numAddrBitsToInspect = 20 };
 
   static const int kDebugLevel = 4;
   sc_in<bool> clk;
@@ -33,38 +33,38 @@ class AxiArbSplitTop : public sc_module {
 
   typedef axi::axi4<axi::cfg::standard> axi_;
 
-  typedef typename axi_::read::template slave<>::ARPort axi_rd_slave_ar;
-  typedef typename axi_::read::template slave<>::RPort axi_rd_slave_r;
-  typedef typename axi_::write::template slave<>::AWPort axi_wr_slave_aw;
-  typedef typename axi_::write::template slave<>::WPort axi_wr_slave_w;
-  typedef typename axi_::write::template slave<>::BPort axi_wr_slave_b;
+  typedef typename axi_::read::template subordinate<>::ARPort axi_rd_subordinate_ar;
+  typedef typename axi_::read::template subordinate<>::RPort axi_rd_subordinate_r;
+  typedef typename axi_::write::template subordinate<>::AWPort axi_wr_subordinate_aw;
+  typedef typename axi_::write::template subordinate<>::WPort axi_wr_subordinate_w;
+  typedef typename axi_::write::template subordinate<>::BPort axi_wr_subordinate_b;
   
-  typedef typename axi_::read::template master<>::ARPort axi_rd_master_ar;
-  typedef typename axi_::read::template master<>::RPort axi_rd_master_r;
-  typedef typename axi_::write::template master<>::AWPort axi_wr_master_aw;
-  typedef typename axi_::write::template master<>::WPort axi_wr_master_w;
-  typedef typename axi_::write::template master<>::BPort axi_wr_master_b;
+  typedef typename axi_::read::template manager<>::ARPort axi_rd_manager_ar;
+  typedef typename axi_::read::template manager<>::RPort axi_rd_manager_r;
+  typedef typename axi_::write::template manager<>::AWPort axi_wr_manager_aw;
+  typedef typename axi_::write::template manager<>::WPort axi_wr_manager_w;
+  typedef typename axi_::write::template manager<>::BPort axi_wr_manager_b;
 
-  axi_rd_slave_ar axi_rd_m_ar[numMasters];
-  axi_rd_slave_r axi_rd_m_r[numMasters];
-  axi_wr_slave_aw axi_wr_m_aw[numMasters];
-  axi_wr_slave_w axi_wr_m_w[numMasters];
-  axi_wr_slave_b axi_wr_m_b[numMasters];
+  axi_rd_subordinate_ar axi_rd_m_ar[numManagers];
+  axi_rd_subordinate_r axi_rd_m_r[numManagers];
+  axi_wr_subordinate_aw axi_wr_m_aw[numManagers];
+  axi_wr_subordinate_w axi_wr_m_w[numManagers];
+  axi_wr_subordinate_b axi_wr_m_b[numManagers];
 
-  AxiArbiter<axi::cfg::standard, numMasters, 16> axi_arbiter;
+  AxiArbiter<axi::cfg::standard, numSubordinates, 16> axi_arbiter;
 
   typename axi_::read::template chan<> axi_read_int;
   typename axi_::write::template chan<> axi_write_int;
 
-  AxiSplitter<axi::cfg::standard, numSlaves, numAddrBitsToInspect> axi_splitter;
+  AxiSplitter<axi::cfg::standard, numSubordinates, numAddrBitsToInspect> axi_splitter;
 
-  axi_rd_master_ar axi_rd_s_ar[numSlaves];
-  axi_rd_master_r axi_rd_s_r[numSlaves];
-  axi_wr_master_aw axi_wr_s_aw[numSlaves];
-  axi_wr_master_w axi_wr_s_w[numSlaves];
-  axi_wr_master_b axi_wr_s_b[numSlaves];
+  axi_rd_manager_ar axi_rd_s_ar[numSubordinates];
+  axi_rd_manager_r axi_rd_s_r[numSubordinates];
+  axi_wr_manager_aw axi_wr_s_aw[numSubordinates];
+  axi_wr_manager_w axi_wr_s_w[numSubordinates];
+  axi_wr_manager_b axi_wr_s_b[numSubordinates];
 
-  sc_signal<NVUINTW(numAddrBitsToInspect)> addrBound[numSlaves][2];
+  sc_signal<NVUINTW(numAddrBitsToInspect)> addrBound[numSubordinates][2];
 
   SC_HAS_PROCESS(AxiArbSplitTop);
 
@@ -85,9 +85,9 @@ class AxiArbSplitTop : public sc_module {
     axi_splitter.reset_bar(reset_bar);
 
     NVUINTW(numAddrBitsToInspect)
-    addrBound_val[numSlaves][2] = {{0x00, 0x7FFFF}, {0x80000, 0xFFFFF}};
+    addrBound_val[numSubordinates][2] = {{0x00, 0x7FFFF}, {0x80000, 0xFFFFF}};
 
-    for (int i = 0; i < numMasters; i++) {
+    for (int i = 0; i < numManagers; i++) {
       axi_arbiter.axi_rd_m_ar[i](axi_rd_m_ar[i]);
       axi_arbiter.axi_rd_m_r[i](axi_rd_m_r[i]);
       axi_arbiter.axi_wr_m_aw[i](axi_wr_m_aw[i]);
@@ -100,7 +100,7 @@ class AxiArbSplitTop : public sc_module {
     axi_splitter.axi_rd_m(axi_read_int);
     axi_splitter.axi_wr_m(axi_write_int);
 
-    for (int i = 0; i < numSlaves; i++) {
+    for (int i = 0; i < numSubordinates; i++) {
       axi_splitter.axi_rd_s_ar[i](axi_rd_s_ar[i]);
       axi_splitter.axi_rd_s_r[i](axi_rd_s_r[i]);
       axi_splitter.axi_wr_s_aw[i](axi_wr_s_aw[i]);
