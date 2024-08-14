@@ -1,6 +1,6 @@
 MatchLib
 ========
-[![Build Status](https://travis-ci.org/NVlabs/matchlib.svg?branch=master)](https://travis-ci.org/NVlabs/matchlib)
+[![GitHub Pages](https://github.com/NVlabs/matchlib/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/NVlabs/matchlib/actions/workflows/gh-pages.yml)
 
 MatchLib is a SystemC/C++ library of commonly-used hardware functions and components that can
 be synthesized by most commercially-available HLS tools into RTL.
