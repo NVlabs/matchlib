@@ -31,6 +31,16 @@
    #define CTC_ENDSKIP_ASSERT ((void)"CTC ENDSKIP");
 #endif
 
+// Some common phrases
+#define __NVHLS_ASSERT(X) CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
+#define __NVHLS_ASSERT_SC(X) CTC_SKIP_ASSERT sc_assert(X); CTC_ENDSKIP_ASSERT
+#define __NVHLS_ASSERT_NULL CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+#define __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)                     \
+  if (!(X)) {                                                     \
+    DCOUT("Assertion failed. " << MSG);            \
+    SC_REPORT_ERROR("NVHLS_ASSERT", "Assertion failed.");  \
+  }
+
 /**
  * \def NVHLS_ASSERT(x)
  * \ingroup Assertions
@@ -50,14 +60,18 @@
  * \par
  */
 
-#ifdef HLS_CATAPULT
-#include <ac_assert.h>
-#define NVHLS_ASSERT(X) CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
+#ifdef NVHLS_CONTINUE_ON_ASSERT
+  #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC_REPORT_ERROR(X,"")
 #else
-  #ifndef __SYNTHESIS__
-    #define NVHLS_ASSERT(X) CTC_SKIP_ASSERT sc_assert(X); CTC_ENDSKIP_ASSERT
+  #ifdef HLS_CATAPULT
+    #include <ac_assert.h>
+    #define NVHLS_ASSERT(X) __NVHLS_ASSERT(X)
   #else
-    #define NVHLS_ASSERT(X) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+    #ifndef __SYNTHESIS__
+      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC(X)
+    #else
+      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_NULL
+    #endif
   #endif
 #endif
 
@@ -82,9 +96,13 @@
  */
 
 #ifndef __SYNTHESIS__
-#define CMOD_ASSERT(x) CTC_SKIP_ASSERT assert(x); CTC_ENDSKIP_ASSERT
+  #ifdef NVHLS_CONTINUE_ON_ASSERT
+    #define CMOD_ASSERT(X) __NVHLS_ASSERT_SC_REPORT_ERROR(X,"")
+  #else
+    #define CMOD_ASSERT(X) __NVHLS_ASSERT(X)
+  #endif
 #else
-#define CMOD_ASSERT(x) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+  #define CMOD_ASSERT(X) __NVHLS_ASSERT_NULL
 #endif
 
 /**
@@ -106,17 +124,18 @@
  * \par
  */
 
-
-#ifdef HLS_CATAPULT
-#include <ac_assert.h>
-#define NVHLS_ASSERT_MSG(X,MSG) \
-     CTC_SKIP_ASSERT assert(X && MSG); CTC_ENDSKIP_ASSERT
+#ifdef NVHLS_CONTINUE_ON_ASSERT
+  #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)
 #else
-  #ifndef __SYNTHESIS__
-    #define NVHLS_ASSERT_MSG(X,MSG)  \
-     CTC_SKIP_ASSERT sc_assert(X && MSG); CTC_ENDSKIP_ASSERT
+  #ifdef HLS_CATAPULT
+    #include <ac_assert.h>
+    #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT(X && MSG)
   #else
-    #define NVHLS_ASSERT_MSG(X,MSG) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+    #ifndef __SYNTHESIS__
+      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC(X && MSG)
+    #else
+      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
+    #endif
   #endif
 #endif
 
@@ -141,13 +160,17 @@
  */
 
 #ifndef __SYNTHESIS__
-#define CMOD_ASSERT_MSG(X,MSG)			    \
-  if (!(X)) {					    \
-    DCOUT("Assertion Failed. " << MSG << endl);	    \
-  }						    \
-  CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
+  #ifdef NVHLS_CONTINUE_ON_ASSERT
+    #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)
+  #else
+    #define CMOD_ASSERT_MSG(X,MSG)                          \
+      if (!(X)) {                                           \
+        DCOUT("Error: Assertion failed. " << MSG << endl);  \
+      }                                                     \
+      __NVHLS_ASSERT(X)
+  #endif
 #else
-#define CMOD_ASSERT_MSG(X,MSG) CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
+  #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
 #endif
 
 
