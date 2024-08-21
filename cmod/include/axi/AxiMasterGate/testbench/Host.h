@@ -189,7 +189,7 @@ SC_MODULE(Host) {
                 << "\t data = " << hex << rdResp.data
                 << "\t expected = " << hex << rd_data_expected
                 << std::endl, kDebugLevel);
-      NVHLS_ASSERT_MSG(rdResp.data == rd_data_expected, "Read response data did not match expected value");
+      CMOD_ASSERT_MSG(rdResp.data == rd_data_expected, "Read response data did not match expected value");
 
       if (rdResp.last == 1) ctr++;
       if (ctr == read_count) done_read = 1;

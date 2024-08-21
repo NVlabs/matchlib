@@ -104,7 +104,7 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
     std::vector< std::vector<std::string> > dataList = reader.readCSV();
     for (unsigned int i=0; i < dataList.size(); i++) {
       std::vector<std::string> vec = dataList[i];
-      NVHLS_ASSERT_MSG(vec.size() == 5, "Each request must have five elements");
+      CMOD_ASSERT_MSG(vec.size() == 5, "Each request must have five elements");
       if (!burst_inflight) delay_q.push(atoi(vec[0].c_str()));
       if (vec[1] == "R") {
         if (!burst_inflight) {
@@ -118,8 +118,8 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
           sc_uint<axi4_::ALEN_WIDTH> len;
           ss_len << hex << vec[4];
           ss_len >> len;
-          if (len) NVHLS_ASSERT_MSG(axiCfg::useBurst, "A burst transaction was requested but the AXI config does not support bursts");
-          NVHLS_ASSERT_MSG(axiCfg::maxBurstSize >= len, "A burst transaction was requested that is longer than the maximum allowed by the AXI config");
+          if (len) CMOD_ASSERT_MSG(axiCfg::useBurst, "A burst transaction was requested but the AXI config does not support bursts");
+          CMOD_ASSERT_MSG(axiCfg::maxBurstSize >= len, "A burst transaction was requested that is longer than the maximum allowed by the AXI config");
           addr_pld.len = 0;
           addr_pld.len = static_cast<typename axi4_::BeatNum>(len);
           raddr_q.push(addr_pld);
@@ -144,8 +144,8 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
           sc_uint<axi4_::ALEN_WIDTH> len;
           ss_len << hex << vec[4];
           ss_len >> len;
-          if (len) NVHLS_ASSERT_MSG(axiCfg::useBurst, "A burst transaction was requested but the AXI config does not support bursts");
-          NVHLS_ASSERT_MSG(axiCfg::maxBurstSize >= len, "A burst transaction was requested that is longer than the maximum allowed by the AXI config");
+          if (len) CMOD_ASSERT_MSG(axiCfg::useBurst, "A burst transaction was requested but the AXI config does not support bursts");
+          CMOD_ASSERT_MSG(axiCfg::maxBurstSize >= len, "A burst transaction was requested that is longer than the maximum allowed by the AXI config");
           addr_pld.len = static_cast<typename axi4_::BeatNum>(len);
           waddr_q.push(addr_pld);
           burst_inflight = int(len);
@@ -165,10 +165,10 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
         }
         wdata_q.push(wr_data_pld);
       } else if (vec[1] == "Q") {
-        NVHLS_ASSERT_MSG(enable_interrupts, "Interrupt command read, but interrupts are not enabled");
+        CMOD_ASSERT_MSG(enable_interrupts, "Interrupt command read, but interrupts are not enabled");
         req_q.push(2);
       } else {
-        NVHLS_ASSERT_MSG(1, "Requests must be R or W or Q");
+        CMOD_ASSERT_MSG(1, "Requests must be R or W or Q");
       }
     }
 
@@ -192,7 +192,7 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
       if (delay > 0) wait(delay);
       delay_q.pop();
       if (req_q.front() == 2) {
-        NVHLS_ASSERT_MSG(enable_interrupts,"Interrupt command found, but interrupts are not enabled");
+        CMOD_ASSERT_MSG(enable_interrupts,"Interrupt command found, but interrupts are not enabled");
         CDCOUT(sc_time_stamp() << " " << name() << " Beginning wait for interrupt"
                       << endl, kDebugLevel);
         while (interrupt.read() == 0) wait();
@@ -226,11 +226,11 @@ template <typename axiCfg, bool enable_interrupts = false> class MasterFromFile 
           CDCOUT(sc_time_stamp() << " " << name() << " Received read response: ["
                         << data_pld << "]"
                         << endl, kDebugLevel);
-          NVHLS_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read response did not match expected value");
+          CMOD_ASSERT_MSG(data_pld.data == rresp_q.front(),"Read response did not match expected value");
           rresp_q.pop();
         } while (!data_pld.last);
       } else {
-        NVHLS_ASSERT_MSG(0,"Unexpected value in req_q");
+        CMOD_ASSERT_MSG(0,"Unexpected value in req_q");
       }
       req_q.pop();
     }
