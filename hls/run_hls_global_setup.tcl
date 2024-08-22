@@ -27,6 +27,8 @@ solution options set /Output/PackageOutput false
 
 solution options set Input/CppStandard c++11
 
+options set General/BranchOnChange {Never branch}
+
 ## Use fsdb file for power flow - make sure your environment var $NOVAS_INST_DIR has been set before you launch Catapult.
 solution options set /Flows/LowPower/SWITCHING_ACTIVITY_TYPE fsdb
 ## SCVerify settings
