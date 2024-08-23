@@ -55,7 +55,7 @@ namespace eval nvhls {
         go extract
         
         if { $RUN_SCVERIFY eq "1" } {
-          flow run /SCVerify/launch_make ./scverify/Verify_concat_sim_rtl_v_vcs.mk {} SIMTOOL=vcs sim
+          flow run /SCVerify/launch_make ./scverify/Verify_concat_sim_rtl_sv_vcs.mk {} SIMTOOL=vcs sim
         }
 
         project save

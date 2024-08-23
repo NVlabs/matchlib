@@ -14,7 +14,9 @@
 #
 
 ROOT            := ../../../..
-SRC_PATH				:= $(ROOT)/cmod/unittests/axi
+SRC_PATH        := $(ROOT)/cmod/unittests/axi
+
+COMPILER_FLAGS += FORCE_AUTO_PORT=Connections::MARSHALL_PORT
 
 include $(ROOT)/hls/hls_Makefile
 

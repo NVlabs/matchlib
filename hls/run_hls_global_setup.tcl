@@ -95,3 +95,5 @@ directive set -CLUSTER_TYPE combinational
 directive set -COMPGRADE fast
 directive set -PIPELINE_RAMP_UP true
 directive set -CHAN_IO_PROTOCOL coupled
+directive set -PRESERVE_STRUCTS true
+directive set -STRUCT_LAYOUT c_style

@@ -51,7 +51,7 @@ class AxiArbSplitTop : public sc_module {
   axi_wr_slave_w axi_wr_m_w[numMasters];
   axi_wr_slave_b axi_wr_m_b[numMasters];
 
-  AxiArbiter<axi::cfg::standard, numSlaves, 16> axi_arbiter;
+  AxiArbiter<axi::cfg::standard, numMasters, 16> axi_arbiter;
 
   typename axi_::read::template chan<> axi_read_int;
   typename axi_::write::template chan<> axi_write_int;

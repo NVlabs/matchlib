@@ -36,6 +36,9 @@ HLS_CATAPULT ?= 1
 ifeq ($(HLS_CATAPULT),1)
   CFLAGS += -DHLS_CATAPULT
 endif
+ifneq ($(findstring FORCE_AUTO_PORT,$(CFLAGS)),FORCE_AUTO_PORT)
+	CFLAGS += -DFORCE_AUTO_PORT=Connections::DIRECT_PORT
+endif
 
 LIBS ?=
 LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_system
