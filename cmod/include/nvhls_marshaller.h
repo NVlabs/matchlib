@@ -17,26 +17,8 @@
 #ifndef NVHLS_MARSHALLER_H_
 #define NVHLS_MARSHALLER_H_
 
-#include <nvhls_connections_utils.h>
-
-// Save macros before including official connections, only if we haven't yet overridden them.
-#ifndef __CONNECTIONS__CONNECTIONS_UTILS_H_
-#pragma push_macro("CONNECTIONS_ASSERT_MSG")
-#pragma push_macro("CONNECTIONS_SIM_ONLY_ASSERT_MSG")
-#undef CONNECTIONS_ASSERT_MSG
-#undef CONNECTIONS_SIM_ONLY_ASSERT_MSG
-
-#define __DID_SAVE_ASSERTS
-#endif
-
 // Include connections tree nvhls_connections.h
 #include <connections/marshaller.h>
-
-#ifdef __DID_SAVE_ASSERTS
-#pragma pop_macro("CONNECTIONS_ASSERT_MSG")
-#pragma pop_macro("CONNECTIONS_SIM_ONLY_ASSERT_MSG")
-#undef __DID_SAVE_ASSERTS
-#endif
 
 #include <nvhls_assert.h>
 

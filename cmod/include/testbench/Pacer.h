@@ -17,7 +17,7 @@
 #ifndef PACER_H_
 #define PACER_H_
 
-#include <nvhls_connections_utils.h>
+#include <connections/connections_utils.h>
 
 #include <connections/Pacer.h>
 

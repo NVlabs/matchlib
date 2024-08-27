@@ -17,16 +17,12 @@
 #ifndef _AXI_AXI4_H_
 #define _AXI_AXI4_H_
 
-#ifdef __SYNTHESIS__
-// workaround until connections/connections_utils.h and nvhls_connections_utils.h are cleaned up
+#include <systemc>
+#include <connections/connections.h>
 #include <connections/connections_utils.h>
-#define __CONNECTIONS__CONNECTIONS_UTILS_H_
-#define NVHLS_CONNECTIONS_UTILS_H_
-#endif
 
 #include "auto_gen_fields.h"
 
-#include <systemc>
 #include <nvhls_connections.h>
 #include <nvhls_assert.h>
 #include <nvhls_message.h>
