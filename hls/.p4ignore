@@ -9,3 +9,4 @@
 *.output.json
 *.csv
 catapult_cache
+*.vcd

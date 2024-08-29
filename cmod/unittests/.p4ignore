@@ -1,3 +1,4 @@
 sim_*
 *log
 *.output.json
+*.vcd

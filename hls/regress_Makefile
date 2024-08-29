@@ -34,6 +34,7 @@ DESIGNS ?= \
 	unittests/LzdTop \
 	unittests/ReorderBufTop \
 	unittests/ScratchpadTop \
+	unittests/ScratchpadClassTop \
 	unittests/VectorUnit \
 	MemModel \
 	ConnectionsRecipes/Adder \

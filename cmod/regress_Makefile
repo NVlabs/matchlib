@@ -26,6 +26,7 @@ DESIGNS ?= 	unittests/ArbiterModule \
 						unittests/LzdTop \
 						unittests/ReorderBufTop \
 						unittests/ScratchpadTop \
+						unittests/ScratchpadClassTop \
 						unittests/VectorUnit \
 						unittests/WHVCRouterTop \
 						unittests/axi/AxiAddWriteResp \
