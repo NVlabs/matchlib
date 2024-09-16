@@ -44,8 +44,9 @@ static const char* make_permanent(const char* s) {
 #ifdef __SYNTHESIS__
   return s;
 #else
-  std::string* str = new std::string(s);  // this is an intentional memory leak..
-  return str->c_str();
+  static std::vector<std::string> vec_str;
+  vec_str.push_back(std::string(s));
+  return vec_str.back().c_str();
 #endif
 }
 
