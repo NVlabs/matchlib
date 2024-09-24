@@ -32,6 +32,7 @@ DESIGNS ?= \
 	unittests/CrossbarTop \
 	unittests/FifoTop \
 	unittests/LzdTop \
+	unittests/MemArrayOpt \
 	unittests/ReorderBufTop \
 	unittests/ScratchpadTop \
 	unittests/ScratchpadClassTop \
