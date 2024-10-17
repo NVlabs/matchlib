@@ -118,15 +118,21 @@ class mem_array_sep {
     }
   }
 
-  T read(LocalIndex idx, BankIndex bank_sel=0) {
+  T read(LocalIndex idx, BankIndex bank_sel=0, WriteMask read_mask=~static_cast<WriteMask>(0)) {
     Data_t read_data = TypeToBits<NVUINTW(WordWidth)>(0);
     #pragma hls_unroll yes
     for (int i = 0; i < NumByteEnables; i++) {
       LocalSliceIndex local_slice_index = idx * NumByteEnables + i;
       NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank index out of bounds");
       NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local index out of bounds");
+#ifdef __SYNTHESIS__
       read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
-    } 
+#else
+      if (read_mask[i] == 1) { // Prevent Xs from propagating to the output in C simulation
+        read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
+      }
+#endif
+    }
     CMOD_ASSERT_MSG(read_data.xor_reduce()!=sc_logic('X'), "Read data is X");
     return BitsToType<T>(read_data);
   }
@@ -235,17 +241,21 @@ class mem_array_opt {
     }
   }
 
-  T read(LocalIndex idx, BankIndex bank_sel=0) {
+  T read(LocalIndex idx, BankIndex bank_sel=0, WriteMask read_mask=~static_cast<WriteMask>(0)) {
     Data_t read_data = TypeToBits<NVUINTW(WordWidth)>(0);
     #pragma hls_unroll yes
     for (int i = 0; i < NumByteEnables; i++) {
       LocalSliceIndex local_slice_index = idx * NumByteEnables + i;
       NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank index out of bounds");
       NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local index out of bounds");
+#ifdef __SYNTHESIS__
       read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
+#else
+      if (read_mask[i] == 1) { // Prevent Xs from propagating to the output in C simulation
+        read_data.range((i+1)*SliceWidth-1, i*SliceWidth) = bank[bank_sel][local_slice_index];
+      }
+#endif
     }
-    //NVHLS_ASSERT_NO_X(read_data);
-    //NVHLS_ASSERT_NO_X_MSG(read_data, "Read_data_is_X");
     CMOD_ASSERT_MSG(read_data.xor_reduce()!=sc_logic('X'), "Read data is X");
     return BitsToType<T>(read_data);
   }
@@ -265,8 +275,6 @@ class mem_array_opt {
           NVHLS_ASSERT_MSG(bank_sel<NumBanks, "bank index out of bounds");
           NVHLS_ASSERT_MSG(idx<NumEntriesPerBank, "local index out of bounds");
           bank[bank_sel][local_slice_index] = tmp[i];
-          //NVHLS_ASSERT_NO_X(tmp[i]);
-          //NVHLS_ASSERT_NO_X_MSG(tmp[i], "Write_data_is_X" );
           CMOD_ASSERT_MSG(tmp[i].xor_reduce()!=sc_logic('X'), "Write data is X");
         }
       }
