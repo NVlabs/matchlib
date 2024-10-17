@@ -70,8 +70,8 @@
    #define CDCOUT(x,y) DISABLED_PRINT_STMT()
 #else
    #define DCOUT(x) cout << x
-   #define CDCOUT(x,y) \
+   #define CDCOUT(x,y) { \
       CTC_SKIP_CDCOUT \
          if (DEBUG_LEVEL >= y) cout << x; \
-      CTC_ENDSKIP_CDCOUT
+      CTC_ENDSKIP_CDCOUT }
 #endif
