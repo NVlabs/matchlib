@@ -19,6 +19,7 @@
 
 #include <cstddef>
 #include <ac_assert.h>
+#include <list>
 #include "systemc.h"
 
 namespace nvhls {
@@ -40,13 +41,13 @@ struct nv_array_pow2
 };
 
 
-static const char* make_permanent(const char* s) {
+static const char* make_permanent(const char* nm) {
 #ifdef __SYNTHESIS__
-  return s;
+  return nm;
 #else
-  static std::vector<std::string> vec_str;
-  vec_str.push_back(std::string(s));
-  return vec_str.back().c_str();
+  static std::list<std::string> nm_str;
+  nm_str.push_back(std::string(nm));
+  return nm_str.back().c_str();
 #endif
 }
 
