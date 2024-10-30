@@ -29,7 +29,7 @@ MatchLib is regressed against the following tool/dependency versions:
 * `connections` - 2.1.1 (included with Catapult)
 * `vcs` - 2023.03
 * `verdi` - 2023.03
-* `python` - 3.4.2
+* `python` - 3.6.1
 * `rapidjson` - 06d58b9 (included as submodule)
 
 ## Environment requirements
