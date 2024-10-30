@@ -149,7 +149,7 @@ class StateSignal<Message, DIRECT_PORT> {
   
  StateSignal() : dat(sc_gen_unique_name("dat")) {}
 
- StateSignal(sc_module_name name) : dat(CONNECTIONS_CONCAT(name, "_msg")) { }
+ StateSignal(sc_module_name name) : dat(CONNECTIONS_CONCAT(name, "_dat")) { }
 
   void reset_state() {
     Message dc;
