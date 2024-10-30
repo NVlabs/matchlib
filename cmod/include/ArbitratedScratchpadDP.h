@@ -299,7 +299,7 @@ class ArbitratedScratchpadDP {
     read_arbxbar.run(bankread_req, bankread_sel, bankread_req_valid, bankread_req_winner,
                      bankread_req_winner_valid, read_done, read_source);
 
-    #pragma unroll yes
+    #pragma hls_unroll yes
     for (unsigned int i=0; i < kNumReadPorts; i++) {
       read_ack[i] = read_done[i] && read_req_valid[i];
       read_ready[i] = read_done[i] || (!read_req_valid[i]);
@@ -314,11 +314,11 @@ class ArbitratedScratchpadDP {
     write_arbxbar.run(bankwrite_req, bankwrite_sel, bankwrite_req_valid, bankwrite_req_winner,
                      bankwrite_req_winner_valid, write_ready, write_source);
 
-    #pragma unroll yes
+    #pragma hls_unroll yes
     for (unsigned int i=0; i < kNumWritePorts; i++)
       write_ack[i] = write_ready[i] && write_req_valid[i];
     if (IsSPRAM) {
-    #pragma unroll yes
+    #pragma hls_unroll yes
     for (unsigned bank = 0; bank < kNumBanks; bank++) {
       if (bankread_req_winner_valid[bank] && bankwrite_req_winner_valid[bank]) {
         bankread_req_winner_valid[bank] = false;
