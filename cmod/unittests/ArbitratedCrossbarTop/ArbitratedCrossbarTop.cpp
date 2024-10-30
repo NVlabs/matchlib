@@ -32,7 +32,7 @@ void ArbitratedCrossbarTop(DataInArray data_in, OutputIdxArray dest_in,
   bool ready_local[NUM_INPUTS];
 
 
-  #pragma unroll yes
+  #pragma hls_unroll yes
   for (int i = 0; i < NUM_INPUTS; i++) {
     data_in_local[i] = data_in[i];
     dest_in_local[i] = dest_in[i];
@@ -42,7 +42,7 @@ void ArbitratedCrossbarTop(DataInArray data_in, OutputIdxArray dest_in,
   if (LEN_OUTPUT_BUFFER > 0) {
     dut.pop_all_lanes(valid_out_local);
   }
-  #pragma unroll yes
+  #pragma hls_unroll yes
   for (int i = 0; i < NUM_OUTPUTS; i++) {
     data_out[i] = data_out_local[i];
     valid_out[i] = valid_out_local[i];
@@ -51,7 +51,7 @@ void ArbitratedCrossbarTop(DataInArray data_in, OutputIdxArray dest_in,
       data_out[i] = 0;
     }
   }
-  #pragma unroll yes
+  #pragma hls_unroll yes
   for (int i = 0; i < NUM_INPUTS; i++) {
     ready[i] = ready_local[i];
   }
