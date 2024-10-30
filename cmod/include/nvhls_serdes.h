@@ -274,7 +274,7 @@ class serializer<Packet<PacketDataWidth, DestWidthPerHop, MaxHops, 0>,
         flit_reg.flit_id.set(
             FlitId2bit::HEAD);  // Destination is sent in first flit
         out_flit.Push(flit_reg);
-#pragma unroll yes
+#pragma hls_unroll yes
         for (int i = 0; i < num_flits; i++) {
           // Single packet flit is not possible. We have atleast 1 route flit
           // and 1 data flit. Flit_id cannot be 3
