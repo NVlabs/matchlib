@@ -68,30 +68,30 @@ class InNetwork : public sc_module {
 #endif
     
     SC_METHOD(AssignMsg);
-    sensitive << enq.msg << rst;
+    sensitive << enq._DATNAME_ << rst;
 
     SC_METHOD(AssignVal);
-    sensitive << enq.val;
+    sensitive << enq._VLDNAME_;
 
     SC_METHOD(AssignRdy);
-    sensitive << deq.rdy;
+    sensitive << deq._RDYNAME_;
   }
 
   void AssignMsg() {
     if (!rst.read()) {
-      deq.msg.write(0);
-    } else if (enq.val.read()) {
-      sc_lv<Wrapped<Packet_t>::width> pbits = enq.msg.read();
+      deq._DATNAME_.write(0);
+    } else if (enq._VLDNAME_.read()) {
+      sc_lv<Wrapped<Packet_t>::width> pbits = enq._DATNAME_.read();
       Marshaller<Wrapped<Packet_t>::width> pmarshaller(pbits);
       Packet_t packet;
       packet.Marshall(pmarshaller);
       MsgBits mbits(packet.data);
-      deq.msg.write(mbits);
+      deq._DATNAME_.write(mbits);
     }
   }
 
-  void AssignVal() { deq.val.write(enq.val.read()); }
-  void AssignRdy() { enq.rdy.write(deq.rdy.read()); }
+  void AssignVal() { deq._VLDNAME_.write(enq._VLDNAME_.read()); }
+  void AssignRdy() { enq._RDYNAME_.write(deq._RDYNAME_.read()); }
 
 #ifndef __SYNTHESIS__
  public:
@@ -99,8 +99,8 @@ class InNetwork : public sc_module {
     if (rst.read()) {
       unsigned int pwidth = (Packet_t::width / 4);
       // Enqueue port
-      if (enq.val.read() && enq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(pwidth) << enq.msg.read(), kDebugLevel);
+      if (enq._VLDNAME_.read() && enq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(pwidth) << enq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
@@ -108,8 +108,8 @@ class InNetwork : public sc_module {
 
       // Dequeue port
       unsigned int mwidth = (Message().length() / 4);
-      if (deq.val.read() && deq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(mwidth) << deq.msg.read(), kDebugLevel);
+      if (deq._VLDNAME_.read() && deq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(mwidth) << deq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
@@ -169,13 +169,13 @@ class OutNetwork : public sc_module {
 #endif
     
     SC_METHOD(AssignMsg);
-    sensitive << enq.msg << id_state << route_state << rst;
+    sensitive << enq._DATNAME_ << id_state << route_state << rst;
 
     SC_METHOD(AssignVal);
-    sensitive << enq.val;
+    sensitive << enq._VLDNAME_;
 
     SC_METHOD(AssignRdy);
-    sensitive << deq.rdy;
+    sensitive << deq._RDYNAME_;
 
     SC_METHOD(TieToHigh);
     sensitive << clk.pos();
@@ -187,24 +187,24 @@ class OutNetwork : public sc_module {
 
   void AssignMsg() {
     if (!rst.read()) {
-      deq.msg.write(0);
-    } else if (enq.val.read()) {
+      deq._DATNAME_.write(0);
+    } else if (enq._VLDNAME_.read()) {
       Packet_t packet;
       vector_to_type(id_state.read(), false, &packet.packet_id);
       vector_to_type(route_state.read(), false, &packet.dest);
-      vector_to_type(enq.msg.read(), false, &packet.data);
+      vector_to_type(enq._DATNAME_.read(), false, &packet.data);
       Marshaller<Wrapped<Packet_t>::width> pmarshaller;
       packet.Marshall(pmarshaller);
-      deq.msg.write(pmarshaller.GetResult());
+      deq._DATNAME_.write(pmarshaller.GetResult());
     }
   }
 
-  void AssignVal() { deq.val.write(enq.val.read()); }
-  void AssignRdy() { enq.rdy.write(deq.rdy.read()); }
+  void AssignVal() { deq._VLDNAME_.write(enq._VLDNAME_.read()); }
+  void AssignRdy() { enq._RDYNAME_.write(deq._RDYNAME_.read()); }
 
   void TieToHigh() {
-    route.rdy.write(1);
-    id.rdy.write(1);
+    route._RDYNAME_.write(1);
+    id._RDYNAME_.write(1);
   }
 
   void SetState() {
@@ -212,12 +212,12 @@ class OutNetwork : public sc_module {
     route_state.write(0);
     wait();
     while (1) {
-      if (route.val.read()) {
-        route_state.write(route.msg.read());
+      if (route._VLDNAME_.read()) {
+        route_state.write(route._DATNAME_.read());
       }
 
-      if (id.val.read()) {
-        id_state.write(id.msg.read());
+      if (id._VLDNAME_.read()) {
+        id_state.write(id._DATNAME_.read());
       }
       wait();
     }
@@ -229,8 +229,8 @@ class OutNetwork : public sc_module {
     if (rst.read()) {
       unsigned int mwidth = (Message().length() / 4);
       // Enqueue port
-      if (enq.val.read() && enq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(mwidth) << enq.msg.read(), kDebugLevel);
+      if (enq._VLDNAME_.read() && enq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(mwidth) << enq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
@@ -238,8 +238,8 @@ class OutNetwork : public sc_module {
 
       // Dequeue port
       unsigned int pwidth = (Packet_t::width / 4);
-      if (deq.val.read() && deq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(pwidth) << deq.msg.read(), kDebugLevel);
+      if (deq._VLDNAME_.read() && deq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(pwidth) << deq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
@@ -323,27 +323,27 @@ class InNetworkCredit : public sc_module {
     credit_out.deq(credit);
 
     SC_METHOD(AssignMsg);
-    sensitive << enq.msg << rst;
+    sensitive << enq._DATNAME_ << rst;
 
     SC_METHOD(AssignVal);
-    sensitive << enq.val;
+    sensitive << enq._VLDNAME_;
 
     SC_METHOD(AssignRdy);
-    sensitive << deq.rdy;
+    sensitive << deq._RDYNAME_;
 
     SC_METHOD(TieToHigh);
     sensitive << clk.pos();
 
     SC_METHOD(AssignNextCredits);
-    sensitive << deq.val << deq.rdy << credit_enq.val << credit_enq.rdy
+    sensitive << deq._VLDNAME_ << deq._RDYNAME_ << credit_enq._VLDNAME_ << credit_enq._RDYNAME_
               << credits;
 
     SC_METHOD(AssignCreditMsg);
-    sensitive << deq.val << deq.rdy << credit_enq.val << credit_enq.rdy
+    sensitive << deq._VLDNAME_ << deq._RDYNAME_ << credit_enq._VLDNAME_ << credit_enq._RDYNAME_
               << credits;
 
     SC_METHOD(AssignCreditVal);
-    sensitive << deq.val << deq.rdy << credits;
+    sensitive << deq._VLDNAME_ << deq._RDYNAME_ << credits;
 
     SC_THREAD(UpdateCredit);
     sensitive << clk.pos();
@@ -352,25 +352,25 @@ class InNetworkCredit : public sc_module {
 
   void AssignMsg() {
     if (!rst.read()) {
-      deq.msg.write(0);
-    } else if (enq.val.read()) {
-      sc_lv<Wrapped<Packet_t>::width> pbits = enq.msg.read();
+      deq._DATNAME_.write(0);
+    } else if (enq._VLDNAME_.read()) {
+      sc_lv<Wrapped<Packet_t>::width> pbits = enq._DATNAME_.read();
       Marshaller<Wrapped<Packet_t>::width> pmarshaller(pbits);
       Packet_t packet;
       packet.Marshall(pmarshaller);
       MsgBits mbits(packet.data);
-      deq.msg.write(mbits);
+      deq._DATNAME_.write(mbits);
     }
   }
 
-  void AssignVal() { deq.val.write(enq.val.read()); }
-  void AssignRdy() { enq.rdy.write(deq.rdy.read()); }
+  void AssignVal() { deq._VLDNAME_.write(enq._VLDNAME_.read()); }
+  void AssignRdy() { enq._RDYNAME_.write(deq._RDYNAME_.read()); }
 
-  void TieToHigh() { init_credits.rdy.write(1); }
+  void TieToHigh() { init_credits._RDYNAME_.write(1); }
 
   void AssignNextCredits() {
-    bool do_deq = deq.val.read() && deq.rdy.read();
-    bool do_credit = credit_enq.val.read() && credit_enq.rdy.read();
+    bool do_deq = deq._VLDNAME_.read() && deq._RDYNAME_.read();
+    bool do_credit = credit_enq._VLDNAME_.read() && credit_enq._RDYNAME_.read();
     if (do_credit && !do_deq && (credits.read() != 0)) {
       credits_next.write(0);
     } else if (do_credit && do_deq) {
@@ -383,25 +383,25 @@ class InNetworkCredit : public sc_module {
   }
 
   void AssignCreditMsg() {
-    bool do_deq = deq.val.read() && deq.rdy.read();
-    bool do_credit = credit_enq.val.read() && credit_enq.rdy.read();
+    bool do_deq = deq._VLDNAME_.read() && deq._RDYNAME_.read();
+    bool do_credit = credit_enq._VLDNAME_.read() && credit_enq._RDYNAME_.read();
     if (do_deq && do_credit && (credits.read() == 0)) {
-      credit_enq.msg.write(1);
+      credit_enq._DATNAME_.write(1);
     } else if (do_deq && do_credit && (credits.read() != 0)) {
-      credit_enq.msg.write(credits.read().to_uint() + 1);
+      credit_enq._DATNAME_.write(credits.read().to_uint() + 1);
     } else if (!do_deq && do_credit && (credits.read() != 0)) {
-      credit_enq.msg.write(credits.read());
+      credit_enq._DATNAME_.write(credits.read());
     } else {
-      credit_enq.msg.write(0);
+      credit_enq._DATNAME_.write(0);
     }
   }
 
   void AssignCreditVal() {
-    bool do_deq = deq.val.read() && deq.rdy.read();
+    bool do_deq = deq._VLDNAME_.read() && deq._RDYNAME_.read();
     if (do_deq || (credits.read() != 0)) {
-      credit_enq.val.write(1);
+      credit_enq._VLDNAME_.write(1);
     } else {
-      credit_enq.val.write(0);
+      credit_enq._VLDNAME_.write(0);
     }
   }
 
@@ -409,8 +409,8 @@ class InNetworkCredit : public sc_module {
     credits.write(0);
     wait();
     while (1) {
-      if (init_credits.val.read()) {
-        credits.write(init_credits.msg.read());
+      if (init_credits._VLDNAME_.read()) {
+        credits.write(init_credits._DATNAME_.read());
       } else {
         credits.write(credits_next.read());
       }
@@ -424,8 +424,8 @@ class InNetworkCredit : public sc_module {
     if (rst.read()) {
       unsigned int pwidth = (Packet_t::width / 4);
       // Enqueue port
-      if (enq.val.read() && enq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(pwidth) << enq.msg.read(), kDebugLevel);
+      if (enq._VLDNAME_.read() && enq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(pwidth) << enq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
@@ -433,8 +433,8 @@ class InNetworkCredit : public sc_module {
 
       // Dequeue port
       unsigned int mwidth = (Message().length() / 4);
-      if (deq.val.read() && deq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(mwidth) << deq.msg.read(), kDebugLevel);
+      if (deq._VLDNAME_.read() && deq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(mwidth) << deq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
@@ -445,8 +445,8 @@ class InNetworkCredit : public sc_module {
 
       // Credit
       unsigned int cwidth = (CreditPacket_t::width / 4);
-      if (credit.val.read() && credit.rdy.read()) {
-        CDCOUT(std::hex << std::setw(cwidth) << credit.msg.read(), kDebugLevel);
+      if (credit._VLDNAME_.read() && credit._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(cwidth) << credit._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(cwidth + 1) << " ", kDebugLevel);
       }
@@ -528,23 +528,23 @@ class OutNetworkCredit : public sc_module {
     credit_in.deq(credit_deq);
 
     SC_METHOD(AssignMsg);
-    sensitive << enq.msg << id_state << route_state << rst;
+    sensitive << enq._DATNAME_ << id_state << route_state << rst;
 
     SC_METHOD(AssignVal);
-    sensitive << enq.val << credits << credit_deq.val << credit_deq.rdy;
+    sensitive << enq._VLDNAME_ << credits << credit_deq._VLDNAME_ << credit_deq._RDYNAME_;
 
     SC_METHOD(AssignRdy);
-    sensitive << deq.rdy;
+    sensitive << deq._RDYNAME_;
 
     SC_METHOD(TieToHigh);
     sensitive << clk.pos();
 
     SC_METHOD(AssignNextCredits);
-    sensitive << deq.val << deq.rdy << credit_deq.val << credit_deq.rdy
+    sensitive << deq._VLDNAME_ << deq._RDYNAME_ << credit_deq._VLDNAME_ << credit_deq._RDYNAME_
               << credits;
 
     SC_METHOD(AssignCreditRdy);
-    sensitive << deq.val << deq.rdy << credits;
+    sensitive << deq._VLDNAME_ << deq._RDYNAME_ << credits;
 
     SC_THREAD(UpdateCredit);
     sensitive << clk.pos();
@@ -557,53 +557,53 @@ class OutNetworkCredit : public sc_module {
 
   void AssignMsg() {
     if (!rst.read()) {
-      deq.msg.write(0);
-    } else if (enq.val.read()) {
+      deq._DATNAME_.write(0);
+    } else if (enq._VLDNAME_.read()) {
       Packet_t packet;
       vector_to_type(id_state.read(), false, &packet.packet_id);
       vector_to_type(route_state.read(), false, &packet.dest);
-      vector_to_type(enq.msg.read(), false, &packet.data);
+      vector_to_type(enq._DATNAME_.read(), false, &packet.data);
       Marshaller<Wrapped<Packet_t>::width> pmarshaller;
       packet.Marshall(pmarshaller);
-      deq.msg.write(pmarshaller.GetResult());
+      deq._DATNAME_.write(pmarshaller.GetResult());
     }
   }
 
   void AssignVal() {
-    bool do_credit = credit_deq.val.read() && credit_deq.rdy.read();
-    if (enq.val.read() && (credits.read() != 0)) {
-      deq.val.write(1);
-    } else if (enq.val.read() && (credits.read() == 0) && do_credit) {
-      deq.val.write(1);
+    bool do_credit = credit_deq._VLDNAME_.read() && credit_deq._RDYNAME_.read();
+    if (enq._VLDNAME_.read() && (credits.read() != 0)) {
+      deq._VLDNAME_.write(1);
+    } else if (enq._VLDNAME_.read() && (credits.read() == 0) && do_credit) {
+      deq._VLDNAME_.write(1);
     } else {
-      deq.val.write(0);
+      deq._VLDNAME_.write(0);
     }
   }
 
-  void AssignRdy() { enq.rdy.write(deq.rdy.read()); }
+  void AssignRdy() { enq._RDYNAME_.write(deq._RDYNAME_.read()); }
 
   void TieToHigh() {
-    route.rdy.write(1);
-    id.rdy.write(1);
+    route._RDYNAME_.write(1);
+    id._RDYNAME_.write(1);
   }
 
   void AssignNextCredits() {
-    bool do_deq = deq.val.read() && deq.rdy.read();
-    bool do_credit = credit_deq.val.read() && credit_deq.rdy.read();
+    bool do_deq = deq._VLDNAME_.read() && deq._RDYNAME_.read();
+    bool do_credit = credit_deq._VLDNAME_.read() && credit_deq._RDYNAME_.read();
     if (!do_credit && do_deq) {
       credits_next.write(credits.read().to_uint() - 1);
     } else if (do_credit && !do_deq) {
       credits_next.write(credits.read().to_uint() +
-                         credit.msg.read().to_uint());
+                         credit._DATNAME_.read().to_uint());
     } else if (do_credit && do_deq) {
       credits_next.write(credits.read().to_uint() +
-                         credit.msg.read().to_uint() - 1);
+                         credit._DATNAME_.read().to_uint() - 1);
     } else {
       credits_next.write(credits.read());
     }
   }
 
-  void AssignCreditRdy() { credit_deq.rdy.write(1); }
+  void AssignCreditRdy() { credit_deq._RDYNAME_.write(1); }
 
   void UpdateCredit() {
     credits.write(0);
@@ -619,12 +619,12 @@ class OutNetworkCredit : public sc_module {
     route_state.write(0);
     wait();
     while (1) {
-      if (route.val.read()) {
-        route_state.write(route.msg.read());
+      if (route._VLDNAME_.read()) {
+        route_state.write(route._DATNAME_.read());
       }
 
-      if (id.val.read()) {
-        id_state.write(id.msg.read());
+      if (id._VLDNAME_.read()) {
+        id_state.write(id._DATNAME_.read());
       }
       wait();
     }
@@ -636,8 +636,8 @@ class OutNetworkCredit : public sc_module {
     if (rst.read()) {
       unsigned int mwidth = (Message().length() / 4);
       // Enqueue port
-      if (enq.val.read() && enq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(mwidth) << enq.msg.read(), kDebugLevel);
+      if (enq._VLDNAME_.read() && enq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(mwidth) << enq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(mwidth + 1) << " ", kDebugLevel);
       }
@@ -645,8 +645,8 @@ class OutNetworkCredit : public sc_module {
 
       // Dequeue port
       unsigned int pwidth = (Packet_t::width / 4);
-      if (deq.val.read() && deq.rdy.read()) {
-        CDCOUT(std::hex << std::setw(pwidth) << deq.msg.read(), kDebugLevel);
+      if (deq._VLDNAME_.read() && deq._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(pwidth) << deq._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(pwidth + 1) << " ", kDebugLevel);
       }
@@ -657,8 +657,8 @@ class OutNetworkCredit : public sc_module {
 
       // Credit
       unsigned int cwidth = (CreditPacket_t::width / 4);
-      if (credit.val.read() && credit.rdy.read()) {
-        CDCOUT(std::hex << std::setw(cwidth) << credit.msg.read(), kDebugLevel);
+      if (credit._VLDNAME_.read() && credit._RDYNAME_.read()) {
+        CDCOUT(std::hex << std::setw(cwidth) << credit._DATNAME_.read(), kDebugLevel);
       } else {
         CDCOUT(std::setw(cwidth + 1) << " ", kDebugLevel);
       }
