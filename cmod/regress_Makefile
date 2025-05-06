@@ -50,8 +50,7 @@ DESIGNS ?= 	unittests/ArbiterModule \
 						examples/ConnectionsRecipes/Adder4 \
 						examples/Counter \
 
-SKIP_DESIGNS ?= \
-						examples/ConnectionsRecipes/Adder3 \
+SKIP_DESIGNS ?= 
 
 RUN_DESIGNS := $(filter-out $(SKIP_DESIGNS),$(DESIGNS))
 
