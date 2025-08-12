@@ -180,6 +180,22 @@ class ArbitratedScratchpad {
 
   void reset() { request_xbar.reset(); }
 
+  #pragma map_to_operator [CCORE]
+  #pragma ccore_type combinational
+  void pseudo_cam(const bank_req_t bank_req_winner[NumBanks], const bank_rsp_t bank_rsp[NumBanks],
+                  unsigned bank, unsigned &res, bool &en) {
+    res = 0;
+    en = false;
+    for (unsigned i = 0; i < NumBanks; i++)
+    {
+      if ( (bank_req_winner[i].input_chan == bank) && bank_rsp[i].valid) 
+      {
+        res = i;
+        en = true;
+      }
+    }
+  }
+
   #ifdef HLS_ALGORITHMICC
   void load_store(req_t &curr_cli_req, rsp_t &load_rsp,
                   bool input_ready[NumInputs]) {
@@ -249,10 +265,15 @@ class ArbitratedScratchpad {
     for (unsigned bank = 0; bank < NumBanks; bank++) {
       valid_in[bank] = bank_rsp[bank].valid;
       data_in[bank]  = bank_rsp[bank].rdata;
-      if (bank_rsp[bank].valid) {
-        source[bank_req_winner[bank].input_chan]    = bank;
-        valid_src[bank_req_winner[bank].input_chan] = true;
-      }
+    }
+
+    #pragma hls_unroll yes
+    for (unsigned inp = 0; inp < NumInputs; inp++) {
+      unsigned res;
+      bool en;
+      pseudo_cam(bank_req_winner, bank_rsp, inp, res, en);
+      source[inp] = res;
+      valid_src[inp] = en;
     }
 
     crossbar<DataType, NumBanks, NumInputs>(data_in, valid_in, source,

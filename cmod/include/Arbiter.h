@@ -83,6 +83,8 @@ class Arbiter {
         // input : valid mask
         // output : select mask
         // side effect : updates internal state of next select
+#pragma map_to_operator [CCORE]
+#pragma ccore_type combinational
         Mask pick(const Mask& valid) {
             if (valid == 0) {
               return 0;

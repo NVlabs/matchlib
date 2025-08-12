@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2016-2019, NVIDIA CORPORATION.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,19 @@
 #include <hls_globals.h>
 #include <nvhls_marshaller.h>
 #include <nvhls_message.h>
+
+#pragma map_to_operator [CCORE]
+#pragma ccore_type combinational
+template<int NumInputs, int NumOutputs>
+void transpose(NVUINTW(NumOutputs) (&requests_transpose)[NumInputs], NVUINTW(NumInputs) (&requests)[NumOutputs]) {
+#pragma hls_unroll yes
+    for (unsigned out = 0; out < NumOutputs; out++) {
+#pragma hls_unroll yes
+      for (unsigned in = 0; in < NumInputs; in++) {
+        requests[out][in] = requests_transpose[in][out];
+      }
+    }
+}
 
 // Need to add in virtual output queueing at the input. Can replace the input
 // FIFOs with a Queue class which internally has multiple parallel FIFOs and
@@ -175,9 +188,18 @@ class ArbitratedCrossbar {
   DataType pop(OutputIdx index) { return output_queues.pop(index); }
 
   // Run the crossbar (not the queues)
+#pragma map_to_operator [CCORE]
+#pragma ccore_type combinational
   void xbar(DataDest input_data[NumInputs], bool input_valid[NumInputs],
             bool input_consumed[NumInputs], DataType data_out[NumOutputs],
             bool valid_out[NumOutputs], bool output_ready[NumOutputs], InputIdx source[NumOutputs]) {
+
+    // there is valid_out, so items that are not assigned are don't care
+    DataType data_out_tmp[NumOutputs];
+    InputIdx source_tmp[NumOutputs];
+//    bool input_consumed_tmp[NumOutputs];
+    NVUINTW(NumInputs) input_consumed_tmp = 0;
+    bool valid_out_tmp[NumOutputs];
 
     // For each input lane, read the data at the head of the queue, and store it
     // in a temporary array
@@ -200,13 +222,7 @@ class ArbitratedCrossbar {
     }
 
 // Form transpose request matrix
-#pragma hls_unroll yes
-    for (unsigned out = 0; out < NumOutputs; out++) {
-#pragma hls_unroll yes
-      for (unsigned in = 0; in < NumInputs; in++) {
-        requests[out][in] = requests_transpose[in][out];
-      }
-    }
+    transpose<NumInputs,NumOutputs>(requests_transpose, requests);
 
 // Keep track of which input queues need to be popped
 // This signal is the OR of all grant bits sent by output lanes to this
@@ -217,41 +233,46 @@ class ArbitratedCrossbar {
 // among pops
 #pragma hls_unroll yes
     for (unsigned in = 0; in < NumInputs; in++) {
-      input_consumed[in] = false;
+      input_consumed_tmp[in] = false;
     }
 
 // Loop over output lanes: run arbiter, then resolve contention
 #pragma hls_unroll yes
     for (unsigned out = 0; out < NumOutputs; out++) {
-      valid_out[out] = false;
+      valid_out_tmp[out] = false;
+      source_tmp[out] = 0;
 
-      NVUINTW(NumInputs) one_hot_grant = 0;
-      InputIdx source_local;
-
-      // Stall the arbiters and the crossbar if the output is full
-      // This is also needed to get any pipelining (otherwise the tool will
-      // infer that you want to write in a single cycle)
-      // For some reason separating these two if statements gives better results
       if (output_ready[out]) {
+        NVUINTW(NumInputs) one_hot_grant = 0;
+        InputIdx source_local;
+
+        // Stall the arbiters and the crossbar if the output is full
+        // This is also needed to get any pipelining (otherwise the tool will
+        // infer that you want to write in a single cycle)
+        // For some reason separating these two if statements gives better results
 
         // Run through the Arbiter pick() function, convert to binary
         one_hot_grant = arbiters[out].pick(requests[out]);
         one_hot_to_bin<NumInputs, log2_inputs>(one_hot_grant, source_local);
+        // Grant logic on input queues (OR gate)
+        input_consumed_tmp |= one_hot_grant;
+        // XBAR (using the data that was staged in the temporary array input_data)
+        if(!(one_hot_grant == 0)) {
+          data_out_tmp[out] = input_data[source_local].data;
+          valid_out_tmp[out] = true;
+          source_tmp[out] = source_local;
+        }
       }
-
-// Grant logic on input queues (OR gate)
-#pragma hls_unroll
-      for (unsigned in = 0; in < NumInputs; in++) {
-        // pop_inputs[in] = pop_inputs[in] | (one_hot_grant[in] == 1);
-        input_consumed[in] = input_consumed[in] | (one_hot_grant[in] == 1);
-      }
-
-      // XBAR (using the data that was staged in the temporary array input_data)
-      if ((!(one_hot_grant == 0)) && (output_ready[out])) {
-        data_out[out] = input_data[source_local].data;
-        valid_out[out] = true;
-        source[out] = source_local;
-      }
+    }
+#pragma hls_unroll yes
+    for(unsigned int k=0; k < NumOutputs; k++) {
+      data_out[k] = data_out_tmp[k];
+      source[k] = source_tmp[k];
+      valid_out[k] = valid_out_tmp[k];
+    }
+#pragma hls_unroll yes
+    for(unsigned int k=0; k < NumInputs; k++) {
+      input_consumed[k] = input_consumed_tmp[k];
     }
   }  // end xbar() function
 
