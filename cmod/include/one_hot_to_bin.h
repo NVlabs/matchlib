@@ -43,6 +43,8 @@
  *
  */
 
+#pragma map_to_operator [CCORE]
+#pragma ccore_type combinational
 template <unsigned OneHotLen, unsigned BinLen>
 void one_hot_to_bin(const NVUINTW(OneHotLen) & one_hot_in,
                     NVUINTW(BinLen) & bin_out) {

@@ -132,18 +132,24 @@ class FIFO {
     return fifo_body.read(head_local, bidx);
   }
 
+  #pragma map_to_operator [CCORE]
+  #pragma ccore_type combinational
+  bool is_equal_core(FifoIdx a1, FifoIdx a2) {
+    return a1 == a2;
+  }
+
   // Checks if FIFO is empty
   bool isEmpty(BankIdx bidx = 0) {
     FifoIdx head_local = head[bidx];
     FifoIdx tail_local = tail[bidx];
-    return (tail_local == head_local) && (!last_action_was_push[bidx]);
+    return is_equal_core(tail_local, head_local) && (!last_action_was_push[bidx]);
   }
 
   // Checks if FIFO is full
   bool isFull(BankIdx bidx = 0) {
     FifoIdx head_local = head[bidx];
     FifoIdx tail_local = tail[bidx];
-    return (tail_local == head_local) && (last_action_was_push[bidx]);
+    return is_equal_core(tail_local, head_local) && (last_action_was_push[bidx]);
   }
 
   // Returns number of entries filled in FIFO
