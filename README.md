@@ -24,7 +24,7 @@ MatchLib is regressed against the following tool/dependency versions:
 * `doxygen` - 1.8.11
 * `make` - 3.82
 * `binutils` - 2.34
-* `catapult` - 2024.1\_1
+* `catapult` - 2025.3
 * `systemc` - 2.3.3 (included with Catapult)
 * `connections` - 2.1.1 (included with Catapult)
 * `vcs` - 2023.03

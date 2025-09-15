@@ -48,7 +48,7 @@ solution options set /Flows/VCS/VCSELAB_OPTS [concat [solution options get /Flow
 solution options set /Flows/VCS/VCSSIM_OPTS [concat [solution options get /Flows/VCS/VCSSIM_OPTS] -licqueue]
 solution options set /Flows/VCS/SYSC_VERSION 2.3.3
 # SystemVerilog assertions
-solution options set /Output/InlinedPropertyLang sva
+solution options set /Output/InlinedPropertyLang sva_sv
 
 # Verilog/VHDL
 solution options set Output OutputVerilog true

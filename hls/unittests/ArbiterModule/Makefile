@@ -16,7 +16,4 @@
 ROOT            := ../../..
 COMPILER_FLAGS  :=
 
-# Only SIM_MODE 0 supported for this test.
-override SIM_MODE=0
-
 include $(ROOT)/hls/hls_Makefile

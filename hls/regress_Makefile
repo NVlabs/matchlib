@@ -44,9 +44,7 @@ DESIGNS ?= \
 	ConnectionsRecipes/Adder4 \
 	Counter \
 
-SKIP_DESIGNS ?= \
-	ConnectionsRecipes/Adder3 \
-
+SKIP_DESIGNS ?= 
 RUN_DESIGNS := $(filter-out $(SKIP_DESIGNS),$(DESIGNS))
 
 PARALLEL_LIMIT ?= 8
