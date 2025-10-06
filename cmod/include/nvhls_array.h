@@ -18,7 +18,7 @@
 
 
 #include <cstddef>
-#include <ac_assert.h>
+#include <nvhls_assert.h>
 #include <list>
 #include "systemc.h"
 
@@ -91,16 +91,12 @@ public:
   {}
 
   B &operator[](size_t idx) {
-#ifndef __SYNTHESIS__
-    assert(idx < C);
-#endif
+    CMOD_ASSERT(idx < C);
     size_t aidx = idx & (W-1); return idx&W ? a1[aidx] : a0[aidx];
   }
 
   const B &operator[](size_t idx) const {
-#ifndef __SYNTHESIS__
-    assert(idx < C);
-#endif
+    CMOD_ASSERT(idx < C);
     size_t aidx = idx & (W-1); return idx&W ? a1[aidx] : a0[aidx];
   }
 };

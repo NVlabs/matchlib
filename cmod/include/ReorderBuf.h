@@ -134,7 +134,8 @@ public:
         EntryNum entryNum = id2entry.read(static_cast<typename Id2Entry::LocalIndex>(id), 0);
         storage.write(entryNum, 0, data);
         vbits.fifo_body.write(static_cast<typename VBits::FifoIdx>(entryNum), 0, true);
-        NVHLS_ASSERT_MSG(idrep[static_cast<int>(id)] == 1, "idrep[id]!=1");
+        // [FIXME] Enabling this assertion causes scheduling failures in Catapult v2025.3
+        //NVHLS_ASSERT_MSG(idrep[static_cast<int>(id)] == 1, "idrep[id]!=1");
         idrep[static_cast<int>(id)]=0;
     }
 

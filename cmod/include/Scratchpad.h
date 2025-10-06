@@ -364,7 +364,7 @@ class Scratchpad : public sc_module {
  *    }
  *
  *  void set(unsigned idx, addr_t _addr, word_type _data=0) {
- *     sc_assert(idx < num_inputs);
+ *     NVHLS_ASSERT(idx < num_inputs);
  *     this->valids[idx] = 1;
  *     this->addr[idx] = _addr;
  *     this->data[idx] = _data;
@@ -424,7 +424,7 @@ struct ScratchpadTraits {
     }
 
     void set(unsigned idx, addr_t _addr, word_type _data=0) {
-      sc_assert(idx < num_inputs);
+      NVHLS_ASSERT(idx < num_inputs);
       this->valids[idx] = 1;
       this->addr[idx] = _addr;
       this->data[idx] = _data;
