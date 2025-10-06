@@ -19,6 +19,9 @@
 
 #include <systemc.h>
 #include <hls_globals.h>
+#ifdef HLS_CATAPULT
+#include <ac_assert.h>
+#endif
 
 // the following is to avoid "statement has no effect"
 // during compilation when CTC coverage is disabled.
@@ -33,6 +36,8 @@
 
 // Some common phrases
 #define __NVHLS_ASSERT(X) CTC_SKIP_ASSERT assert(X); CTC_ENDSKIP_ASSERT
+#define __NVHLS_ASSERT_SYN(X) CTC_SKIP_ASSERT AC_ASSERTION(X); CTC_ENDSKIP_ASSERT
+#define __NVHLS_ASSERT_SOFT(X) CTC_SKIP_ASSERT softassert(X); CTC_ENDSKIP_ASSERT
 #define __NVHLS_ASSERT_SC(X) CTC_SKIP_ASSERT sc_assert(X); CTC_ENDSKIP_ASSERT
 #define __NVHLS_ASSERT_NULL CTC_SKIP_ASSERT ((void)0); CTC_ENDSKIP_ASSERT
 #define __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)                     \
@@ -44,7 +49,7 @@
 /**
  * \def NVHLS_ASSERT(x)
  * \ingroup Assertions
- * Synthesizable assertion to check \a x. It will be synthesized by Catapult HLS tool to either psl or ovl assertions in RTL depending on HLS tool settings. If HLS_CATAPULT flag is not set, then assertions are enabled only in SystemC/C++ simulation and not synthesized to RTL.
+ * Synthesizable assertion to check \a x. It will be synthesized by Catapult HLS tool to either sva or ovl assertions in RTL depending on HLS tool settings. If HLS_CATAPULT flag is not set, then assertions are enabled only in SystemC/C++ simulation and not synthesized to RTL.
  * \par A Simple Example
  * \code
  *      #include <nvhls_assert.h>
@@ -60,18 +65,21 @@
  * \par
  */
 
-#ifdef NVHLS_CONTINUE_ON_ASSERT
-  #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC_REPORT_ERROR(X,"")
-#else
-  #ifdef HLS_CATAPULT
-    #include <ac_assert.h>
-    #define NVHLS_ASSERT(X) __NVHLS_ASSERT(X)
+#ifdef HLS_CATAPULT
+  #ifdef NVHLS_CONTINUE_ON_ASSERT
+    #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SOFT(X)
   #else
-    #ifndef __SYNTHESIS__
-      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC(X)
+    #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SYN(X)
+  #endif
+#else
+  #ifndef __SYNTHESIS__
+    #ifdef NVHLS_CONTINUE_ON_ASSERT
+      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC_REPORT_ERROR(X,"")
     #else
-      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_NULL
+      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC(X)
     #endif
+  #else
+    #define NVHLS_ASSERT(X) __NVHLS_ASSERT_NULL
   #endif
 #endif
 
@@ -95,15 +103,28 @@
  * \par
  */
 
-#ifndef __SYNTHESIS__
-  #ifdef NVHLS_CONTINUE_ON_ASSERT
-    #define CMOD_ASSERT(X) __NVHLS_ASSERT_SC_REPORT_ERROR(X,"")
+#ifdef HLS_CATAPULT
+  #ifndef __SYNTHESIS__
+    #ifdef NVHLS_CONTINUE_ON_ASSERT
+      #define CMOD_ASSERT(X) __NVHLS_ASSERT_SOFT(X)
+    #else
+      #define CMOD_ASSERT(X) __NVHLS_ASSERT(X)
+    #endif
   #else
-    #define CMOD_ASSERT(X) __NVHLS_ASSERT(X)
+    #define CMOD_ASSERT(X) __NVHLS_ASSERT_NULL
   #endif
 #else
-  #define CMOD_ASSERT(X) __NVHLS_ASSERT_NULL
+  #ifndef __SYNTHESIS__
+    #ifdef NVHLS_CONTINUE_ON_ASSERT
+      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC_REPORT_ERROR(X,"")
+    #else
+      #define NVHLS_ASSERT(X) __NVHLS_ASSERT_SC(X)
+    #endif
+  #else
+    #define NVHLS_ASSERT(X) __NVHLS_ASSERT_NULL
+  #endif
 #endif
+
 
 /**
  * \def NVHLS_ASSERT_MSG(x, msg)
@@ -124,18 +145,21 @@
  * \par
  */
 
-#ifdef NVHLS_CONTINUE_ON_ASSERT
-  #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)
-#else
-  #ifdef HLS_CATAPULT
-    #include <ac_assert.h>
-    #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT(X && MSG)
+#ifdef HLS_CATAPULT
+  #ifdef NVHLS_CONTINUE_ON_ASSERT
+    #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SOFT(X && MSG)
   #else
-    #ifndef __SYNTHESIS__
-      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC(X && MSG)
+    #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SYN(X && MSG)
+  #endif
+#else
+  #ifndef __SYNTHESIS__
+    #ifdef NVHLS_CONTINUE_ON_ASSERT
+      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)
     #else
-      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
+      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC(X && MSG)
     #endif
+  #else
+    #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
   #endif
 #endif
 
@@ -159,18 +183,26 @@
  * \par
  */
 
-#ifndef __SYNTHESIS__
-  #ifdef NVHLS_CONTINUE_ON_ASSERT
-    #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)
+#ifdef HLS_CATAPULT
+  #ifndef __SYNTHESIS__
+    #ifdef NVHLS_CONTINUE_ON_ASSERT
+      #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SOFT(X && MSG)
+    #else
+      #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT(X && MSG)
+    #endif
   #else
-    #define CMOD_ASSERT_MSG(X,MSG)                          \
-      if (!(X)) {                                           \
-        DCOUT("Error: Assertion failed. " << MSG << endl);  \
-      }                                                     \
-      __NVHLS_ASSERT(X)
+    #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
   #endif
 #else
-  #define CMOD_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
+  #ifndef __SYNTHESIS__
+    #ifdef NVHLS_CONTINUE_ON_ASSERT
+      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC_REPORT_ERROR(X,MSG)
+    #else
+      #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_SC(X && MSG)
+    #endif
+  #else
+    #define NVHLS_ASSERT_MSG(X,MSG) __NVHLS_ASSERT_NULL
+  #endif
 #endif
 
 
