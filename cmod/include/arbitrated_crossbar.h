@@ -37,6 +37,13 @@ void transpose(NVUINTW(NumOutputs) (&requests_transpose)[NumInputs], NVUINTW(Num
     }
 }
 
+#pragma map_to_operator [CCORE]
+#pragma ccore_type combinational
+template<int NumInputs>
+NVUINTW(NumInputs) arbiter_pick(NVUINTW(NumInputs) request, Arbiter<NumInputs>& arbiter) {
+ return arbiter.pick(request);
+}
+
 // Need to add in virtual output queueing at the input. Can replace the input
 // FIFOs with a Queue class which internally has multiple parallel FIFOs and
 // keeps track of where to put each new input
@@ -252,7 +259,8 @@ class ArbitratedCrossbar {
         // For some reason separating these two if statements gives better results
 
         // Run through the Arbiter pick() function, convert to binary
-        one_hot_grant = arbiters[out].pick(requests[out]);
+        one_hot_grant = arbiter_pick<NumInputs>(requests[out], arbiters[out]);
+        // one_hot_grant = arbiters[out].pick(requests[out]);
         one_hot_to_bin<NumInputs, log2_inputs>(one_hot_grant, source_local);
         // Grant logic on input queues (OR gate)
         input_consumed_tmp |= one_hot_grant;
