@@ -40,8 +40,10 @@ void transpose(NVUINTW(NumOutputs) (&requests_transpose)[NumInputs], NVUINTW(Num
 #pragma map_to_operator [CCORE]
 #pragma ccore_type combinational
 template<int NumInputs>
-NVUINTW(NumInputs) arbiter_pick(NVUINTW(NumInputs) request, Arbiter<NumInputs>& arbiter) {
- return arbiter.pick(request);
+NVUINTW(NumInputs) arbiter_pick(NVUINTW(NumInputs) request, Arbiter<NumInputs> arbiter_in, Arbiter<NumInputs>& arbiter_out) {
+  NVUINTW(NumInputs) one_hot_grant = arbiter_in.pick(request);
+  arbiter_out = arbiter_in;
+  return one_hot_grant;
 }
 
 // Need to add in virtual output queueing at the input. Can replace the input
@@ -195,8 +197,8 @@ class ArbitratedCrossbar {
   DataType pop(OutputIdx index) { return output_queues.pop(index); }
 
   // Run the crossbar (not the queues)
-#pragma map_to_operator [CCORE]
-#pragma ccore_type combinational
+//#pragma map_to_operator [CCORE]
+//#pragma ccore_type combinational
   void xbar(DataDest input_data[NumInputs], bool input_valid[NumInputs],
             bool input_consumed[NumInputs], DataType data_out[NumOutputs],
             bool valid_out[NumOutputs], bool output_ready[NumOutputs], InputIdx source[NumOutputs]) {
@@ -259,7 +261,7 @@ class ArbitratedCrossbar {
         // For some reason separating these two if statements gives better results
 
         // Run through the Arbiter pick() function, convert to binary
-        one_hot_grant = arbiter_pick<NumInputs>(requests[out], arbiters[out]);
+        one_hot_grant = arbiter_pick<NumInputs>(requests[out], arbiters[out], arbiters[out]);
         // one_hot_grant = arbiters[out].pick(requests[out]);
         one_hot_to_bin<NumInputs, log2_inputs>(one_hot_grant, source_local);
         // Grant logic on input queues (OR gate)
