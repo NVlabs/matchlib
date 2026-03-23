@@ -92,3 +92,16 @@ clean:
 	/bin/rm -rf ./*.log
 	/bin/rm -rf ./design_checker_*.tcl
 	/bin/rm -rf ./*.csv
+	/bin/rm -rf ./rda_generated*
+	/bin/rm -rf ./AN.DB
+	/bin/rm -rf ./csrc
+	/bin/rm -rf ./.vscode
+	/bin/rm -rf ./.rda*
+	/bin/rm -rf ./simv*
+	/bin/rm -rf ./*.fsdb
+	/bin/rm -rf ./*.dat
+	/bin/rm -f ./testbench_rda.cpp
+	/bin/rm -f ./channel.txt
+	/bin/rm -f ./rda_ports.txt
+
+include $(TOT)/hls/rda_Makefile

@@ -25,11 +25,12 @@ MatchLib is regressed against the following tool/dependency versions:
 * `make` - 3.82
 * `binutils` - 2.34
 * `catapult` - 2025.3
+* `rdabuilder` - V-2026.09.02
 * `systemc` - 2.3.3 (included with Catapult)
 * `connections` - 2.1.1 (included with Catapult)
 * `vcs` - 2023.03
 * `verdi` - 2023.03
-* `python` - 3.6.1
+* `python` - 3.8.13
 
 ## Environment requirements
 

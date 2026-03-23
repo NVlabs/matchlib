@@ -1,0 +1,73 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+EMPTY:=
+COMMA:= ,
+SPACE:= $(EMPTY) $(EMPTY)
+# replace space with comma to match with rda formats
+export RDA_INC_DIRS = $(subst $(SPACE),$(COMMA),$(strip $(abspath $(SEARCH_PATH) $(SRC_PATH) $(SRC_PATH)/$(TOP_NAME))))
+# RDA SYSTEMC shims must precede local includes to provide synthesis-compatible
+# type mappings and assertion macros. Local includes follow so that local matchlib
+# headers (e.g. Arbiter.h) override the RDA-bundled copies.
+export RDA_SYSC_PRE_INC_DIRS = $(RDA_HOME)/include/rda/SYSTEMC$(COMMA)$(RDA_HOME)/include/rda/SYSTEMC/SYNTHESIS$(COMMA)$(RDA_INC_DIRS)
+export RDA_BUILD_DEFINES = $(subst $(SPACE),$(COMMA),$(strip $(COMPILER_FLAGS))),_SYNTHESIS_=1
+export RDA_DESIGN_LANGUAGE = $(if $(filter 1,$(SYSTEMC_DESIGN)),SystemC,C++)
+export RDA_TB_LANGUAGE = $(if $(filter 1,$(SYSTEMC_DESIGN)),SystemC,hybrid)
+export RDA_DESIGN_FILE = $(SRC_PATH)/$(TOP_NAME)/$(if $(filter 1,$(SYSTEMC_DESIGN)),$(TOP_NAME).h,$(TOP_NAME).cpp)
+export RDA_TESTBENCH_FILE = $(if $(filter 0,$(SYSTEMC_DESIGN)),./testbench_rda.cpp,$(SRC_PATH)/$(TOP_NAME)/testbench.cpp)
+export CLK_PERIOD_PS = $(shell echo "$$(awk 'BEGIN{print $(CLK_PERIOD) * 1000.0}')")
+
+FLAGFILES := $(TOT)/hls/rda_scripts/rdabuilder_hls.cfg
+ifeq ($(SYSTEMC_DESIGN),0)
+FLAGFILES += $(TOT)/hls/rda_scripts/rdabuilder_cpp.cfg
+else
+FLAGFILES += $(TOT)/hls/rda_scripts/rdabuilder_systemc.cfg
+endif
+ifeq ($(RUN_SCVERIFY),1)
+	FLAGFILES += $(TOT)/hls/rda_scripts/rdabuilder_vcs.cfg
+endif
+# Override with per-design settings last
+ifneq ("$(wildcard ./rdabuilder.cfg)","")
+FLAGFILES += ./rdabuilder.cfg
+endif
+
+# C++ design support: testbench conversion prerequisite
+ifeq ($(SYSTEMC_DESIGN),0)
+RDA_TB_CONVERT := testbench_rda.cpp
+else
+RDA_TB_CONVERT :=
+endif
+
+.PHONY: rda rda-vars
+
+rda-vars:
+	@echo "RDA_INC_DIRS = $(RDA_INC_DIRS)"
+	@echo "RDA_BUILD_DEFINES = $(RDA_BUILD_DEFINES)"
+	@echo "RDA_DESIGN_LANGUAGE = $(RDA_DESIGN_LANGUAGE)"
+	@echo "RDA_TB_LANGUAGE = $(RDA_TB_LANGUAGE)"
+	@echo "RDA_DESIGN_FILE = $(RDA_DESIGN_FILE)"
+	@echo "RDA_TESTBENCH_FILE = $(RDA_TESTBENCH_FILE)"
+	@echo "RDA_HOME = $(RDA_HOME)"
+
+testbench_rda.cpp: $(SRC_PATH)/$(TOP_NAME)/testbench.cpp $(TOT)/hls/rda_Makefile
+	$(RDA_HOME)/bin/ccs_testbench_converter_main.py \
+		--input=$< \
+		--design=$(TOP_NAME).cpp \
+		--output=$@
+	sed -i '/^#include "$(TOP_NAME)\.cpp"$$/d' $@
+	sed -i -e '/CMODEL PASS/d' -e '/TESTBENCH PASS/d' $@
+
+rda: $(RDA_TB_CONVERT)
+	$(RDA_HOME)/bin/rdabuilder $(foreach file,$(FLAGFILES),--flagfile $(file))

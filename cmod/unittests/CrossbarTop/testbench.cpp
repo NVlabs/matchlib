@@ -121,6 +121,5 @@ CCS_MAIN(int argc, char *argv[]) {
 
   }
 
-  DCOUT("CMODEL PASS" << endl);
   CCS_RETURN(0);
 }

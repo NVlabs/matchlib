@@ -159,7 +159,7 @@ int sc_main(int argc, char **argv)
     std::cout << "Simulation FAILED" << std::endl;
     return -1;
   }
-  std::cout << "Simulation PASSED" << std::endl;
+  std::cout << "TESTBENCH PASS" << std::endl;
   return 0;
 }
 

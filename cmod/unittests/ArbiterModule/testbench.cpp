@@ -197,7 +197,7 @@ int sc_main(int argc, char *argv[])
   if (rc)
     DCOUT("CMODEL FAIL" << endl);
   else
-    DCOUT("CMODEL PASS" << endl);
+    DCOUT("TESTBENCH PASS" << endl);
   return rc;
 };
 

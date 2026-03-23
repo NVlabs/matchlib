@@ -667,6 +667,6 @@ int sc_main(int argc, char* argv[]) {
   if (rc)
     cout << "Simulation FAILED\n";
   else
-    cout << "Simulation PASSED\n";
+    cout << "TESTBENCH PASS\n";
   return rc;
 };

@@ -303,6 +303,5 @@ CCS_MAIN(int argc, char *argv[]) {
     assert(!requested || served); // At least one request should have been served or nothing was requested
     refmem.check_response(curr_cli_rsp);
   }
-  DCOUT("CMODEL PASS" << endl);
   CCS_RETURN(0);
 }

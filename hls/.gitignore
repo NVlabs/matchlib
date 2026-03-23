@@ -4,7 +4,6 @@
 *.log_*
 *ucli.key
 *design_checker*tcl
-*vcs*
 *Catapult*
 *.ccs
 *.pinfo
@@ -12,3 +11,16 @@
 *.csv
 catapult_cache
 *.vcd
+*rda_generated*
+*simv_elab*
+*AN.DB*
+*csrc*
+*.vscode*
+*.rda*
+*simv*
+*txt
+*json
+*dat
+*fsdb
+testbench_rda.cpp
+channel.txt

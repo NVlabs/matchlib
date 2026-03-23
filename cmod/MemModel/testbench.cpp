@@ -39,7 +39,7 @@ CCS_MAIN(int argc, char *argv[]) {
   MemAddr_t address[count];
   MemWord_t ref[NUM_ENTRIES];
   MemWord_t write_data;
-  MemWord_t read_data;
+  MemWord_t read_data = 0;
 
   /* Do a write and a read of zero first to clear out some x's */
   MemOp_t mem_op = WRITE;

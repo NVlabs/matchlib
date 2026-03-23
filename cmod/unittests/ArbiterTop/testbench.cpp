@@ -86,7 +86,5 @@ CCS_MAIN(int argc, char *argv[]) {
         assert(ref == select);
     }
 
-    DCOUT("CMODEL PASS" << endl);
     CCS_RETURN(0) ;
 }
-

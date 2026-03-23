@@ -51,6 +51,7 @@ SC_MODULE(testbench) {
         rst = 1;
         counter_ref = 0;
         cout << "@" << sc_time_stamp() <<" END RESET" << endl;
+        wait(1, SC_NS);
 
         // operation
         for (unsigned int i=0; i < 100; i++) {
@@ -79,5 +80,6 @@ int sc_main(int argc, char *argv[]) {
   testbench my_testbench("my_testbench");
   sc_report_handler::set_actions (SC_ID_LOGIC_X_TO_BOOL_,SC_DO_NOTHING);
   sc_start();
+  cout << "TESTBENCH PASS" << endl;
   return 0;
 }

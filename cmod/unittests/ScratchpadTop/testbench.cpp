@@ -288,7 +288,7 @@ int sc_main(int argc, char *argv[]) {
     DCOUT("Simulation Failed" << endl);
     return 1;
   } else {
-    DCOUT("CMODEL PASS" << endl);
+    DCOUT("TESTBENCH PASS" << endl);
     return 0;
   }
 }

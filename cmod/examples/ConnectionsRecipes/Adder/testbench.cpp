@@ -204,7 +204,7 @@ int sc_main(int argc, char *argv[])
     nvhls::set_random_seed();
     testbench my_testbench("my_testbench");
     sc_start();
-    cout << "CMODEL PASS" << endl;
+    cout << "TESTBENCH PASS" << endl;
     return 0;
 };
 

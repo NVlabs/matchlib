@@ -21,6 +21,7 @@ void VectorUnit( const OpType& op,
                  const InVectorType& in3, 
                  OutVectorType& out)
 {
+    out = 0;
     switch (op)
     {
         case Mul:       nvhls::vector_mul<InScalarType, InScalarType, OutScalarType, VECTOR_LENGTH, true> (in1, in2, out); break;

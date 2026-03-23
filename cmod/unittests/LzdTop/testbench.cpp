@@ -66,7 +66,5 @@ CCS_MAIN(int argc, char *argv[])
         assert(count == count_ref);
     }
 
-    DCOUT("CMODEL PASS" << endl);
     CCS_RETURN(0) ;
 }
-

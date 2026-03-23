@@ -73,6 +73,8 @@ CCS_MAIN (int argc, char *argv[]) {
   for (unsigned k = 0; k < kNumReadPorts; k++) {
     read_address[k] = 0;
     read_req_valid[k] = false;
+    port_read_out[k] = 0;
+    port_read_out_valid[k] = false;
   }
   for (unsigned k = 0; k < kNumWritePorts; k++) {
     write_address[k] = 0; 
