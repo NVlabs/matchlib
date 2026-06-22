@@ -30,7 +30,6 @@ MatchLib is regressed against the following tool/dependency versions:
 * `vcs` - 2023.03
 * `verdi` - 2023.03
 * `python` - 3.6.1
-* `rapidjson` - 06d58b9 (included as submodule)
 
 ## Environment requirements
 
@@ -121,8 +120,6 @@ MatchLib originated as a project of [NVIDIA Research](https://research.nvidia.co
 Contributors to the initial open-source release (alphabetical): Jason Clemons, Christopher Fletcher, Davide Giri, Ben Keller, Brucek Khailany, Alicia Klinefelter, Evgeni Krimer, Hyoukjun Kwon, Ziyun Li, Michael Pellauer, Nathaniel Pinckney, Antonio Puglielli, Sophia Shao, Shreesha Srinath, Gopalakrishnan Srinivasan, Christopher Torng, Rangharajan Venkatesan, Sam Xi
 
 Portions of MatchLib are derived from code in Mentor Graphics' Algorithmic C Datatypes v3.7.1 (also released under the Apache 2.0 license). See individual file headers for details.
-
-MatchLib's back annotation feature is dependent on RapidJSON released under the MIT License. 
 
 # Attribution
 

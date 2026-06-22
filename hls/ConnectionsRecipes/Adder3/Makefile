@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-TOP_NAME      =  Adder2
+TOP_NAME      = Adder2
 SRC_PATH      = $(ROOT)/cmod/examples/ConnectionsRecipes
 SEARCH_PATH   = $(ROOT)/cmod \
                 $(ROOT)/cmod/include \
                 $(ROOT)/cmod/examples/ConnectionsRecipes/$(TOP_NAME) \
-		$(CONNECTIONS_HOME)/include \
-                $(RAPIDJSON_HOME)/include
-
+                $(BOOST_HOME)/include
 
 COMPILER_FLAGS  = SC_INCLUDE_DYNAMIC_PROCESSES CONNECTIONS_ACCURATE_SIM
 

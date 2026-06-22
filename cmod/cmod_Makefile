@@ -17,13 +17,10 @@
 TOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../)
 ROOT ?= $(TOT)
 
-# Location of submodules
-RAPIDJSON_HOME ?= $(ROOT)/rapidjson
-
 CC = g++
 
 INCDIR ?=
-INCDIR += -I. -I$(BOOST_HOME)/include -I$(RAPIDJSON_HOME)/include -I$(CATAPULT_HOME)/Mgc_home/shared/include
+INCDIR += -I. -I$(BOOST_HOME)/include -I$(CATAPULT_HOME)/Mgc_home/shared/include
 
 LIBDIR ?=
 LIBDIR += -L. -L$(BOOST_HOME)/lib -L$(CATAPULT_HOME)/Mgc_home/shared/lib
